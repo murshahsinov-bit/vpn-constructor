@@ -52,8 +52,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "tlsSettings": {
           "serverName": "ripelever.net",
@@ -89,8 +88,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "tlsSettings": {
           "serverName": "static.bakarova-top.ru",
@@ -131,8 +129,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "tlsSettings": {
           "serverName": "marshalltmp.top",
@@ -174,8 +171,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "tlsSettings": {
           "serverName": "lorettmay.top",
@@ -217,8 +213,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "realitySettings": {
           "serverName": "us2.cloudvienta.com",
@@ -256,8 +251,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "tlsSettings": {
           "serverName": "decdn2.bota7.com",
@@ -298,8 +292,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "realitySettings": {
           "serverName": "de2.frnet.space",
@@ -337,8 +330,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "realitySettings": {
           "serverName": "music.yandex.ru",
@@ -376,8 +368,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -415,8 +406,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -454,8 +444,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "tlsSettings": {
           "serverName": "d.nehtar.ru",
@@ -497,8 +486,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -536,8 +524,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -575,8 +562,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -614,8 +600,7 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
+          "tcpcongestion": "bbr"
         },
         "tlsSettings": {
           "serverName": "ce3fp598gr.j.cloudfront.hls.edgehls.net",
