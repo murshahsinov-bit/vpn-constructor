@@ -34,47 +34,6 @@
       "settings": {
         "vnext": [
           {
-            "address": "185.178.208.140",
-            "port": 443,
-            "users": [
-              {
-                "id": "ea277838-a188-44f1-a2e8-94aa110c4f27",
-                "encryption": "none",
-                "flow": ""
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "xhttp",
-        "security": "tls",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr"
-        },
-        "tlsSettings": {
-          "serverName": "static.bakarova-top.ru",
-          "fingerprint": "edge"
-        },
-        "xhttpSettings": {
-          "path": "/api/v2/events",
-          "host": "",
-          "mode": "packet-up"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-2",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
             "address": "176.124.218.80",
             "port": 443,
             "users": [
@@ -93,7 +52,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "bg2-ws.gacvpn.site",
@@ -108,11 +73,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-3",
+      "tag": "wl-proxy-2",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -135,7 +101,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "msk2.gacvpn.site",
@@ -150,11 +122,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-4",
+      "tag": "wl-proxy-3",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -177,7 +150,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "msk2.gacvpn.site",
@@ -192,11 +171,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-5",
+      "tag": "wl-proxy-4",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -219,7 +199,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "falmero.store",
@@ -231,11 +217,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-6",
+      "tag": "wl-proxy-5",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -258,7 +245,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "msk5.gacvpn.site",
@@ -273,11 +266,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-7",
+      "tag": "wl-proxy-6",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -300,7 +294,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "lv.gacvpn.site",
@@ -315,54 +315,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-8",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "135.106.143.121",
-            "port": 443,
-            "users": [
-              {
-                "id": "af9d0c6e-0c74-0037-8275-05b4aa0f2ebe",
-                "encryption": "none",
-                "flow": ""
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "xhttp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr"
-        },
-        "realitySettings": {
-          "serverName": "alfastat.ru",
-          "publicKey": "fz_xpZfQks3oa9c_d1OSokmTgmJuGbvFMkyK0Qt8w3I",
-          "shortId": "0066a7326f06d426",
-          "fingerprint": "firefox"
-        },
-        "xhttpSettings": {
-          "path": "/assets",
-          "host": "",
-          "mode": "packet-up"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-9",
+      "tag": "wl-proxy-7",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -385,7 +343,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "lorettmay.top",
@@ -400,11 +364,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-10",
+      "tag": "wl-proxy-8",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -427,7 +392,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "msk6.gacvpn.site",
@@ -442,11 +413,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-11",
+      "tag": "wl-proxy-9",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -469,7 +441,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "fi.gacvpn.site",
@@ -484,11 +462,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-12",
+      "tag": "wl-proxy-10",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -511,7 +490,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "ru1.cdn-space.org",
@@ -520,16 +505,23 @@
         "xhttpSettings": {
           "path": "/assets/api/v3/connect/",
           "host": "ru1.cdn-space.org",
-          "mode": "auto"
+          "mode": "auto",
+          "extra": {
+            "xmux": {
+              "maxConcurrency": "16-32",
+              "hKeepAlivePeriod": 0
+            }
+          }
         }
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-13",
+      "tag": "wl-proxy-11",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -552,7 +544,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "fi.gacvpn.site",
@@ -567,11 +565,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-14",
+      "tag": "wl-proxy-12",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -594,7 +593,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "fr2-ws.gacvpn.site",
@@ -609,11 +614,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-15",
+      "tag": "wl-proxy-13",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -636,7 +642,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "ru1.cdn-space.org",
@@ -645,16 +657,23 @@
         "xhttpSettings": {
           "path": "/assets/api/v3/connect/",
           "host": "ru1.cdn-space.org",
-          "mode": "auto"
+          "mode": "auto",
+          "extra": {
+            "xmux": {
+              "maxConcurrency": "16-32",
+              "hKeepAlivePeriod": 0
+            }
+          }
         }
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-16",
+      "tag": "wl-proxy-14",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -677,7 +696,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "us2-ws.gacvpn.site",
@@ -692,11 +717,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-17",
+      "tag": "wl-proxy-15",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -719,7 +745,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "decdn2.bota7.com",
@@ -728,16 +760,23 @@
         "xhttpSettings": {
           "path": "/api/v4/lop/",
           "host": "decdn2.bota7.com",
-          "mode": "packet-up"
+          "mode": "packet-up",
+          "extra": {
+            "xmux": {
+              "maxConcurrency": "16-32",
+              "hKeepAlivePeriod": 0
+            }
+          }
         }
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-18",
+      "tag": "wl-proxy-16",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -760,7 +799,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "de2.frnet.space",
@@ -771,281 +816,12 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
-      "tag": "wl-proxy-19",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "188.225.78.228",
-            "port": 443,
-            "users": [
-              {
-                "id": "bb190cdb-82ae-4212-b6cd-8ae9e6b768dd",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "raw",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr"
-        },
-        "realitySettings": {
-          "serverName": "music.yandex.ru",
-          "publicKey": "aV_BHCeZ30y4-5rpUIHaWHMYAgogLsw4AE06Rw2X4WE",
-          "shortId": "e202a94ad1711af2",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-20",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "185.86.145.112",
-            "port": 10452,
-            "users": [
-              {
-                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "raw",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr"
-        },
-        "realitySettings": {
-          "serverName": "passport.yandex.ru",
-          "publicKey": "L1Ug_ELbeZ_5q9QRzO5Lg_ZMkus9n72aiUfvFirN9Vo",
-          "shortId": "c8a79c7b64adca2a",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-21",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "87.242.127.51",
-            "port": 7452,
-            "users": [
-              {
-                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "raw",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr"
-        },
-        "realitySettings": {
-          "serverName": "passport.yandex.ru",
-          "publicKey": "0w339GBhpDiYwa9Wgqu3z3epu8dHAzeYUFXPtvzK8To",
-          "shortId": "190c27ae5f2e4d2c",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-22",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "95.129.236.149",
-            "port": 443,
-            "users": [
-              {
-                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
-                "encryption": "none",
-                "flow": ""
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "ws",
-        "security": "tls",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr"
-        },
-        "tlsSettings": {
-          "serverName": "d.nehtar.ru",
-          "fingerprint": "firefox"
-        },
-        "wsSettings": {
-          "path": "/gateway/v1/ws/74c4d5e82a8e50ccf09fc628c17dc9be",
-          "headers": {
-            "Host": ""
-          }
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-23",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "185.86.147.143",
-            "port": 7443,
-            "users": [
-              {
-                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "raw",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr"
-        },
-        "realitySettings": {
-          "serverName": "passport.yandex.ru",
-          "publicKey": "0w339GBhpDiYwa9Wgqu3z3epu8dHAzeYUFXPtvzK8To",
-          "shortId": "190c27ae5f2e4d2c",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-24",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "185.86.147.184",
-            "port": 9449,
-            "users": [
-              {
-                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "raw",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr"
-        },
-        "realitySettings": {
-          "serverName": "passport.yandex.ru",
-          "publicKey": "SsPslLCfw2CGDmCs17gTLRSUOsOfv0KgnuLnkyTqCzA",
-          "shortId": "62002c0a685ac208",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-25",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "91.185.83.105",
-            "port": 9443,
-            "users": [
-              {
-                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "raw",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr"
-        },
-        "realitySettings": {
-          "serverName": "passport.yandex.ru",
-          "publicKey": "Te3ZcFFTilb6_j4hdotSvXaRYBzGuNiRxuBh8n1NezU",
-          "shortId": "91d2d3db690f4b59",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-26",
+      "tag": "wl-proxy-17",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -1068,7 +844,13 @@
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
-          "tcpcongestion": "bbr"
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "ce3fp598gr.j.cloudfront.hls.edgehls.net",
@@ -1080,7 +862,8 @@
       },
       "mux": {
         "enabled": true,
-        "concurrency": 16
+        "concurrency": 16,
+        "xudpConcurrency": 16
       }
     },
     {
@@ -1149,16 +932,7 @@
           "wl-proxy-14",
           "wl-proxy-15",
           "wl-proxy-16",
-          "wl-proxy-17",
-          "wl-proxy-18",
-          "wl-proxy-19",
-          "wl-proxy-20",
-          "wl-proxy-21",
-          "wl-proxy-22",
-          "wl-proxy-23",
-          "wl-proxy-24",
-          "wl-proxy-25",
-          "wl-proxy-26"
+          "wl-proxy-17"
         ],
         "strategy": {
           "type": "leastPing"
@@ -1185,16 +959,7 @@
       "wl-proxy-14",
       "wl-proxy-15",
       "wl-proxy-16",
-      "wl-proxy-17",
-      "wl-proxy-18",
-      "wl-proxy-19",
-      "wl-proxy-20",
-      "wl-proxy-21",
-      "wl-proxy-22",
-      "wl-proxy-23",
-      "wl-proxy-24",
-      "wl-proxy-25",
-      "wl-proxy-26"
+      "wl-proxy-17"
     ],
     "pingConfig": {
       "destination": "http://cp.cloudflare.com/generate_204",
