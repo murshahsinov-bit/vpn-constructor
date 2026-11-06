@@ -35,6 +35,11 @@
       "streamSettings": {
         "network": "xhttp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "git.medrocket.ru",
           "publicKey": "YHPoUNxsml4z6pYt-7djOb1lqnBjxCk4-2mk84pveyc",
@@ -46,6 +51,12 @@
           "host": "",
           "mode": "packet-up"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -69,6 +80,11 @@
       "streamSettings": {
         "network": "xhttp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "dawn.wenllies.com",
           "publicKey": "3J8YJQeHFWsw534gd2p3iJr3XCnwS7Tpr-ElIX8G80I",
@@ -80,6 +96,12 @@
           "host": "",
           "mode": "auto"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -103,15 +125,23 @@
       "streamSettings": {
         "network": "grpc",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "",
           "publicKey": "RDWvDEygSk1eyAQhIK95H9EteFbrS2d9JEjBrco54Bw",
           "shortId": "1a3102bb8e51399e",
           "fingerprint": "chrome"
-        },
-        "grpcSettings": {
-          "serviceName": "gw.v2.RelayService"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -135,15 +165,23 @@
       "streamSettings": {
         "network": "grpc",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "",
           "publicKey": "sXsJ4ET-50TYqlhKZf03nPQr2JIy1F0D4m6lOsI0cAs",
           "shortId": "861ac7d66953e55f",
           "fingerprint": "chrome"
-        },
-        "grpcSettings": {
-          "serviceName": "media.v1.StreamService"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -167,15 +205,23 @@
       "streamSettings": {
         "network": "grpc",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "stashfuro-eweqee.ru",
           "publicKey": "qmQgs_yOloyjj9xqDjbaUqGlhWwp6ReBpBB99Qfi2CU",
           "shortId": "0bc73dd1f045",
           "fingerprint": "firefox"
-        },
-        "grpcSettings": {
-          "serviceName": "nexusGrpc"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -199,12 +245,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "de3.japancase.site",
           "publicKey": "iaJ8vIpfWkkzA-Tegc_wIQSF7DWKm2yTYCd3kvaGXig",
           "shortId": "d9d9e325a7f069e2",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -228,12 +285,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "de.galactichub.online",
           "publicKey": "GBO_paFyK9FihgPMH8r_vHa4IKMkSGfvAQ2fhPK_1H4",
           "shortId": "",
           "fingerprint": "firefox"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -257,12 +325,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "la.cdn-tech-images.com",
           "publicKey": "-tePObR3oZwGAUOb5kqTYkNWl6rtUKl0RFuzuu06wgw",
           "shortId": "50",
           "fingerprint": "safari"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -286,12 +365,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "unpkg.com",
           "publicKey": "CQBmePak1QN5SsSmK_KTOSLjsCTaiaM4Jtxt7jLheko",
           "shortId": "b0d8c9a285c70f6f",
           "fingerprint": "firefox"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -315,12 +405,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "fr.golangwikito.cfd",
           "publicKey": "isYQuhKDrgc7IQ7G0LHywFnt57wffrkZ-er18DkVsBA",
           "shortId": "e6d589857d1cec5e",
           "fingerprint": "firefox"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -344,16 +445,67 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "fr.golangwikito.cfd",
           "publicKey": "isYQuhKDrgc7IQ7G0LHywFnt57wffrkZ-er18DkVsBA",
           "shortId": "e6d589857d1cec5e",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
       "tag": "proxy-12",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "191.44.108.30",
+            "port": 443,
+            "users": [
+              {
+                "id": "558b26f6-061b-4079-9b84-ca13b3e90ae3",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
+        "realitySettings": {
+          "serverName": "c8.qwyak.ru",
+          "publicKey": "3pBHfffYFRPpe8Lt47cLSSgCgwNR-70blFzpEbm11AE",
+          "shortId": "b2baf331493d3de1",
+          "fingerprint": "chrome"
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
+      }
+    },
+    {
+      "tag": "proxy-13",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -373,16 +525,27 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "tva1.sinaimg.cn",
           "publicKey": "rV6kc94WuI-e8k94iQ8l8SHTvTynTjtd8io7LDByEnc",
           "shortId": "e5b9c61d",
           "fingerprint": "ios"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
-      "tag": "proxy-13",
+      "tag": "proxy-14",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -402,16 +565,27 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "unpkg.com",
           "publicKey": "CQBmePak1QN5SsSmK_KTOSLjsCTaiaM4Jtxt7jLheko",
           "shortId": "b0d8c9a285c70f6f",
           "fingerprint": "random"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
-      "tag": "proxy-14",
+      "tag": "proxy-15",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -431,16 +605,27 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "dvizhok.su",
           "publicKey": "1vSZjvhZO01oAEH3b7eebR1qF5dLU1Dq2E7xu8pwGSs",
           "shortId": "428ef87fd47a3a32",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
-      "tag": "proxy-15",
+      "tag": "proxy-16",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -460,16 +645,27 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "www.intel.com",
           "publicKey": "SVgtyuD9khylgHuB0treGekxVSHPOS-wPZTNHUf6zj8",
           "shortId": "85c86a9863",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
-      "tag": "proxy-16",
+      "tag": "proxy-17",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -489,16 +685,27 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "www.cloudflare.com",
           "publicKey": "Tiuy8om5Lk0pWL95-8LaFFTwH0vbURVMoOkaW9xGaiE",
           "shortId": "670ed9f350bd8ee0",
           "fingerprint": "firefox"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
-      "tag": "proxy-17",
+      "tag": "proxy-18",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -518,16 +725,27 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "www.cloudflare.com",
           "publicKey": "ALT8hIGeZEhi0sQFbXP_ntBg8Xo-v7i0YCLrqTnBxRk",
           "shortId": "0990d22f",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
-      "tag": "proxy-18",
+      "tag": "proxy-19",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -547,16 +765,27 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "yahoo.com",
           "publicKey": "e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg",
           "shortId": "c39cc7310a",
           "fingerprint": "ios"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
-      "tag": "proxy-19",
+      "tag": "proxy-20",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -576,16 +805,27 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "fuck.rkn",
           "publicKey": "1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s",
           "shortId": "01",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
-      "tag": "proxy-20",
+      "tag": "proxy-21",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -605,16 +845,27 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "yahoo.com",
           "publicKey": "e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg",
           "shortId": "c39cc7310a",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
-      "tag": "proxy-21",
+      "tag": "proxy-22",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -634,16 +885,27 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "fuck.rkn",
           "publicKey": "1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s",
           "shortId": "01",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
-      "tag": "proxy-22",
+      "tag": "proxy-23",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -663,16 +925,27 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "fuck.rkn",
           "publicKey": "1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s",
           "shortId": "",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
-      "tag": "proxy-23",
+      "tag": "proxy-24",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -692,41 +965,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "eh.vk.com",
           "publicKey": "0_FWbcTe6tvBuSZ7_7PrMaNmg44a8VxYRXPKjZuERwQ",
           "shortId": "a150dff4",
           "fingerprint": "firefox"
         }
-      }
-    },
-    {
-      "tag": "proxy-24",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "server.slavkiti.monster",
-            "port": 443,
-            "users": [
-              {
-                "id": "fad0b9a6-187d-4fcc-96fc-498bc5b3135a",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
       },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "realitySettings": {
-          "serverName": "www.foxsports.com",
-          "publicKey": "J-dv-HrWfQ_IOoyutv0Kg-rO8QwoRwc02dS1dS_tblk",
-          "shortId": "8325360e8bd2",
-          "fingerprint": "chrome"
-        }
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -750,12 +1005,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "",
           "publicKey": "GmZv3anSeAeHr_cMFKr-6MPLli-nyKNatnY6P3AFK00",
           "shortId": "9c2378562188c3cb",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -779,12 +1045,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "ads.x5.ru",
           "publicKey": "8h8t5eBWL9oERK7xWHQLFJE5j6sZdgNDQAs3EGnNbho",
           "shortId": "2f49bccf11150ef2",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -808,12 +1085,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "as.tunnelx.space",
           "publicKey": "UO3EObgU3xUrhIGEE0gfCn5ZOz8YxNcwwW6ZaYzD3SA",
           "shortId": "4e9b0c2d1a3f5768",
           "fingerprint": "firefox"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -837,12 +1125,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "g9.steptofsvo.com",
           "publicKey": "ivgTfLR13A6xBsicIA28OPoav2tXlsstTTmGuETfnSk",
           "shortId": "6d6f13013d3e1d0c",
           "fingerprint": "firefox"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -866,12 +1165,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "lv2.yservice.help",
           "publicKey": "-qLezG1nUEtvOJi-Ra7WRYv-aHkv3PSefEuXpWV2G04",
           "shortId": "abcd1234",
           "fingerprint": "firefox"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
@@ -895,12 +1205,23 @@
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMaxSeg": 1440,
+          "tcpNoDelay": true
+        },
         "realitySettings": {
           "serverName": "www.yahoo.com",
           "publicKey": "RHLiKldLu3DONcQoX4Kjs7Xmd2K25ndVbw4pwxe45XE",
           "shortId": "e6a5a4a9115456de",
           "fingerprint": "chrome"
         }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 32,
+        "xudpConcurrency": 16,
+        "xudpProxyUDP443": "reject"
       }
     },
     {
