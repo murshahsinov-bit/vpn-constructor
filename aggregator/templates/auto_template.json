@@ -1,12 +1,7 @@
 {
-  "log": {
-    "loglevel": "warning"
-  },
+  "log": { "loglevel": "warning" },
   "dns": {
-    "servers": [
-      "1.1.1.1",
-      "8.8.8.8"
-    ]
+    "servers": ["1.1.1.1", "8.8.8.8"]
   },
   "inbounds": [
     {
@@ -14,13 +9,8 @@
       "protocol": "socks",
       "port": 10808,
       "listen": "127.0.0.1",
-      "settings": {
-        "udp": true
-      },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": ["http", "tls", "quic"]
-      }
+      "settings": { "udp": true },
+      "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic"] }
     }
   ],
   "outbounds": [],
@@ -57,11 +47,11 @@
   "burstObservatory": {
     "subjectSelector": ["proxy-"],
     "pingConfig": {
-      "destination": "http://www.gstatic.com/generate_204",
+      "destination": "http://speed.cloudflare.com/__down?bytes=1000000",
       "connectivity": "http://www.gstatic.com/generate_204",
-      "interval": "30s",
+      "interval": "1m",
       "sampling": 2,
-      "timeout": "5s",
+      "timeout": "10s",
       "httpMethod": "HEAD"
     }
   },

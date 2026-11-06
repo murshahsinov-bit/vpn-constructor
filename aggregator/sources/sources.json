@@ -19,11 +19,42 @@
       "enabled": true
     },
     {
-      "name": "tiagorrg_keys",
-      "url": "https://raw.githubusercontent.com/tiagorrg/vless-checker/main/keys.json",
+      "name": "0xradikal_verified",
+      "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/verified/configs_base64.txt",
       "mirror_type": "raw",
       "enabled": true,
-      "format": "json" 
+      "format": "base64"
+    },
+    {
+      "name": "goida_all",
+      "url": "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/all.txt",
+      "mirror_type": "raw",
+      "enabled": true
+    },
+    {
+      "name": "nexus_all",
+      "url": "https://raw.githubusercontent.com/ninjastrikers/Nexus-nodes/main/configs/all.txt",
+      "mirror_type": "raw",
+      "enabled": true
+    },
+    {
+      "name": "balochscript_realdelay",
+      "url": "https://raw.githubusercontent.com/balochscript/free-vpn-configs/gh-pages/subscription-realdelay.txt",
+      "mirror_type": "raw",
+      "enabled": true
+    },
+    {
+      "name": "gfpcom_vless",
+      "url": "https://raw.githubusercontent.com/gfpcom/free-proxy-list/main/list/vless.txt",
+      "mirror_type": "raw",
+      "enabled": true
+    },
+    {
+      "name": "awesome_vpn_base64",
+      "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/all",
+      "mirror_type": "raw",
+      "enabled": true,
+      "format": "base64"
     }
   ],
   "whitelist": [
@@ -36,6 +67,12 @@
     {
       "name": "igareck_white_mobile",
       "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
+      "mirror_type": "raw",
+      "enabled": true
+    },
+    {
+      "name": "rom5n_whitelist",
+      "url": "http://127.0.0.1:55000/sub/50",
       "mirror_type": "raw",
       "enabled": true
     }

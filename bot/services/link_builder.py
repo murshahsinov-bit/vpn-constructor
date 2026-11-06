@@ -2,6 +2,7 @@ import hmac
 import hashlib
 import secrets
 from urllib.parse import urlencode
+from bot.config import settings
 
 class LinkBuilder:
     def __init__(self, secret_key: str, base_url: str = "https://your-domain.com/sub"):
@@ -30,4 +31,13 @@ def verify_subscription_token(secret_key: str, user_id: int, mode: str, token: s
     """Проверяет подлинность подписи при запросе подписки (используется на веб-сервере)."""
     payload = f"{user_id}:{mode}:{token}".encode()
     expected_sig = hmac.new(secret_key.encode(), payload, hashlib.sha256).hexdigest()[:16]
-    return hmac.compare_digest(signature := expected_sig, sig)
+    return hmac.compare_digest(expected_sig, sig)
+
+# Функция-обертка, которую ожидает бот в handlers/purchase.py
+def generate_subscription_url(user_id: int, mode: str) -> str:
+    # Берем ключ и URL из настроек (.env)
+    builder = LinkBuilder(
+        secret_key=settings.sub_secret_key.get_secret_value(),
+        base_url=settings.base_sub_url
+    )
+    return builder.generate_url(user_id, mode)

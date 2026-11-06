@@ -14,3 +14,4 @@ python-dotenv==1.1.1
 
 # Утилиты
 PyYAML==6.0.2
+aiohttp-socks==0.10.1
