@@ -1,75 +1,46 @@
 {
-  "log": {
-    "loglevel": "warning"
-  },
+  "log": { "loglevel": "warning" },
   "dns": {
-    "servers": [
-      "77.88.8.8",
-      "1.1.1.1"
-    ]
+    "servers": ["77.88.8.8", "1.1.1.1"]
   },
   "inbounds": [
     {
       "tag": "socks-in",
-      "protocol": "socks",
       "port": 10808,
       "listen": "127.0.0.1",
-      "settings": {
-        "udp": true
-      },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": ["http", "tls", "quic"]
-      }
+      "protocol": "socks",
+      "settings": { "udp": true },
+      "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic"] }
     }
   ],
   "outbounds": [],
   "routing": {
     "domainStrategy": "IPIfNonMatch",
     "rules": [
-      {
-        "type": "field",
-        "ip": ["8.8.8.8", "1.1.1.1"],
-        "outboundTag": "direct"
-      },
-      {
-        "type": "field",
-        "domain": ["geosite:category-ru", "geosite:private"],
-        "ip": ["geoip:ru", "geoip:private"],
-        "outboundTag": "direct"
-      },
-      {
-        "type": "field",
-        "network": "tcp,udp",
-        "balancerTag": "auto-balancer"
-      }
+      { "type": "field", "ip": ["geoip:private"], "outboundTag": "direct" },
+      { "type": "field", "domain": ["geosite:private"], "outboundTag": "direct" },
+      { "type": "field", "ip": ["geoip:ru"], "outboundTag": "direct" },
+      { "type": "field", "domain": ["geosite:category-ru"], "outboundTag": "direct" },
+      { "type": "field", "network": "tcp,udp", "balancerTag": "whitelist-balancer" }
     ],
     "balancers": [
       {
-        "tag": "auto-balancer",
-        "selector": ["proxy-"],
-        "strategy": {
-          "type": "leastLoad",
-          "settings": {
-            "expected": 2,
-            "maxRTT": "1500ms",
-            "tolerance": 0.4
-          }
-        },
+        "tag": "whitelist-balancer",
+        "selector": ["wl-proxy-"],
+        "strategy": { "type": "leastPing" },
         "fallbackTag": "direct"
       }
     ]
   },
   "burstObservatory": {
-    "subjectSelector": ["proxy-"],
+    "subjectSelector": ["wl-proxy-"],
     "pingConfig": {
-      "destination": "http://www.gstatic.com/generate_204",
-      "connectivity": "http://www.gstatic.com/generate_204",
+      "destination": "http://cp.cloudflare.com/generate_204",
       "interval": "30s",
       "sampling": 2,
-      "timeout": "5s",
-      "httpMethod": "HEAD"
+      "timeout": "5s"
     }
   },
+  "meta": { "serverDescription": "🛡️ Обход Белых Списков" },
   "stats": {}
 }

@@ -1,91 +1,16 @@
 {
   "auto": [
-    {
-      "name": "igareck_mobile",
-      "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    },
-    {
-      "name": "igareck_pc",
-      "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    },
-    {
-      "name": "hidashimora_1_1",
-      "url": "https://raw.githubusercontent.com/Hidashimora/free-vpn-anti-rkn/main/configs/1.1.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    },
-    {
-      "name": "0xradikal_verified",
-      "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/verified/configs_base64.txt",
-      "mirror_type": "raw",
-      "enabled": true,
-      "format": "base64"
-    },
-    {
-      "name": "goida_all",
-      "url": "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/all.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    },
-    {
-      "name": "nexus_all",
-      "url": "https://raw.githubusercontent.com/ninjastrikers/Nexus-nodes/main/configs/all.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    },
-    {
-      "name": "balochscript_realdelay",
-      "url": "https://raw.githubusercontent.com/balochscript/free-vpn-configs/gh-pages/subscription-realdelay.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    },
-    {
-      "name": "amir_shaman_russia",
-      "url": "https://raw.githubusercontent.com/amir-shaman/vless-vpn-russia/main/configs.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    },
-    {
-      "name": "subzio_all",
-      "url": "https://raw.githubusercontent.com/Subzio/subzio/main/all.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    },
-    {
-      "name": "rjsxrd_all",
-      "url": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/all.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    }
+    { "name": "igareck_black_mobile", "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt", "enabled": true },
+    { "name": "0xradikal_verified", "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/verified/configs_base64.txt", "enabled": true, "format": "base64" },
+    { "name": "goida_all", "url": "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/all.txt", "enabled": true },
+    { "name": "gfpcom_all", "url": "https://raw.githubusercontent.com/gfpcom/free-proxy-list/main/list/all.txt", "enabled": true },
+    { "name": "vless_po_gribi", "url": "https://raw.githubusercontent.com/histeenn/VLESS-PO-GRIBI/main/deploy/subscriptions/1.txt", "enabled": true },
+    { "name": "hiddify_xhttp", "url": "https://raw.githubusercontent.com/lanopivijo93782-ops/hiddify-vless-xhttp-parser/main/sub/subscription.txt", "enabled": true },
+    { "name": "soroush_telegram", "url": "https://raw.githubusercontent.com/soroushmirzaei/telegram-configs-collector/main/protocols/all.txt", "enabled": true }
   ],
   "whitelist": [
-    {
-      "name": "zieng2_universal",
-      "url": "https://raw.githubusercontent.com/zieng2/wl/main/vless_universal.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    },
-    {
-      "name": "igareck_white_mobile",
-      "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    },
-    {
-      "name": "igareck_white_cidr",
-      "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/WHITE-CIDR-RU-checked.txt",
-      "mirror_type": "raw",
-      "enabled": true
-    },
-    {
-      "name": "rom5n_whitelist",
-      "url": "http://127.0.0.1:55000/sub/50",
-      "mirror_type": "raw",
-      "enabled": true
-    }
+    { "name": "igareck_sni_whitelist", "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/Vless-Reality-White-Lists-Rus-Mobile.txt", "enabled": true },
+    { "name": "igareck_cidr_checked", "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/WHITE-CIDR-RU-checked.txt", "enabled": true },
+    { "name": "zieng2_wl", "url": "https://raw.githubusercontent.com/zieng2/wl/main/vless_lite.txt", "enabled": true }
   ]
 }

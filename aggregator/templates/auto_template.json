@@ -1,26 +1,7 @@
 {
-  "log": {
-    "loglevel": "warning"
-  },
+  "log": { "loglevel": "warning" },
   "dns": {
-    "hosts": {
-      "domain:ntc.party": "127.0.0.1"
-    },
-    "servers": [
-      {
-        "address": "77.88.8.8",
-        "domains": [
-          "geosite:category-ru",
-          "domain:yandex.ru",
-          "domain:vk.com",
-          "domain:mail.ru",
-          "domain:gosuslugi.ru",
-          "domain:nalog.ru"
-        ]
-      },
-      "1.1.1.1",
-      "8.8.8.8"
-    ]
+    "servers": ["1.1.1.1", "8.8.8.8"]
   },
   "inbounds": [
     {
@@ -28,88 +9,38 @@
       "port": 10808,
       "listen": "127.0.0.1",
       "protocol": "socks",
-      "settings": {
-        "udp": true
-      },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": [
-          "http",
-          "tls",
-          "quic"
-        ]
-      }
+      "settings": { "udp": true },
+      "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic"] }
     }
   ],
   "outbounds": [],
   "routing": {
     "domainStrategy": "IPIfNonMatch",
     "rules": [
-      {
-        "type": "field",
-        "ip": [
-          "geoip:private"
-        ],
-        "outboundTag": "direct"
-      },
-      {
-        "type": "field",
-        "domain": [
-          "geosite:private",
-          "domain:local"
-        ],
-        "outboundTag": "direct"
-      },
-      {
-        "type": "field",
-        "ip": [
-          "geoip:ru"
-        ],
-        "outboundTag": "direct"
-      },
-      {
-        "type": "field",
-        "domain": [
-          "geosite:category-ru"
-        ],
-        "outboundTag": "direct"
-      },
-      {
-        "type": "field",
-        "network": "tcp,udp",
-        "balancerTag": "auto-balancer"
-      }
+      { "type": "field", "ip": ["geoip:private", "geoip:ru"], "outboundTag": "direct" },
+      { "type": "field", "domain": ["geosite:category-ru", "geosite:private"], "outboundTag": "direct" },
+      { "type": "field", "network": "tcp,udp", "balancerTag": "auto-balancer" }
     ],
     "balancers": [
       {
         "tag": "auto-balancer",
-        "selector": [
-          "proxy-"
-        ],
-        "strategy": {
-          "type": "leastLoad",
-          "settings": {
-            "expected": 2,
-            "maxRTT": "1500ms",
-            "tolerance": 0.4
-          }
-        },
+        "selector": ["proxy-"],
+        "strategy": { "type": "leastLoad", "settings": { "expected": 2, "maxRTT": "1500ms", "tolerance": 0.4 } },
         "fallbackTag": "direct"
       }
     ]
   },
   "burstObservatory": {
-    "subjectSelector": [
-      "proxy-"
-    ],
+    "subjectSelector": ["proxy-"],
     "pingConfig": {
-      "destination": "http://speed.cloudflare.com/__down?bytes=1000000",
-      "connectivity": "http://www.gstatic.com/generate_204",
-      "interval": "1m",
-      "sampling": 2,
-      "timeout": "10s",
+      "destination": "https://www.gstatic.com/generate_204",
+      "connectivity": "https://www.gstatic.com/generate_204",
+      "interval": "10s",
+      "sampling": 3,
+      "timeout": "5s",
       "httpMethod": "HEAD"
     }
   },
+  "meta": { "serverDescription": "🤖 Умный Авто" },
   "stats": {}
 }
