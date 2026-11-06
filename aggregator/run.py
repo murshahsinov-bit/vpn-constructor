@@ -2,7 +2,6 @@ import asyncio
 import yaml
 import logging
 import os
-import sys
 import base64
 
 from aggregator.sources.loader import SourceLoader
@@ -11,30 +10,27 @@ from aggregator.converter.link_to_outbound import LinkToOutboundConverter
 from aggregator.filter.deduplicator import Deduplicator
 from aggregator.health.checker import HealthChecker
 from aggregator.formatter.to_json import build_subscription, save_config
+from aggregator.formatter.to_txt import generate_txt  # Импортируем новый генератор
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 async def process_mode(mode: str, config: dict):
-    print(f"\n=== ЗАПУСК СБОРКИ ДЛЯ РЕЖИМА: {mode} ===")
+    logger.info(f"=== ЗАПУСК СБОРКИ ДЛЯ РЕЖИМА: {mode} ===")
     
     loader = SourceLoader()
     urls = loader.get_urls(mode)
     if not urls:
-        print(f"❌ Нет источников для {mode}")
         return
 
     async with ConfigDownloader() as downloader:
         raw_texts = await downloader.fetch_many(urls)
     
-    print(f"📥 Успешно скачано файлов: {len(raw_texts)} из {len(urls)}")
-    
     converter = LinkToOutboundConverter()
     parsed_outbounds = []
-    total_lines = 0
+    raw_valid_links = [] # Сюда собираем сами ссылки (vless://...)
     
     for url, text in raw_texts.items():
-        # Пытаемся расшифровать Base64
         try:
             decoded = base64.b64decode(text).decode('utf-8')
             if "://" in decoded:
@@ -42,10 +38,7 @@ async def process_mode(mode: str, config: dict):
         except Exception:
             pass
 
-        lines = text.splitlines()
-        total_lines += len(lines)
-        
-        for line in lines:
+        for line in text.splitlines():
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
@@ -54,33 +47,41 @@ async def process_mode(mode: str, config: dict):
                 outbound = converter.convert(line)
                 if outbound:
                     parsed_outbounds.append(outbound)
-    
-    print(f"📄 Всего строк скачано: {total_lines}")
-    print(f"🔍 Успешно спарсено серверов: {len(parsed_outbounds)}")
+                    raw_valid_links.append(line) # Сохраняем оригинальную ссылку
+
+    logger.info(f"📄 Всего спарсено: {len(parsed_outbounds)}")
     
     unique_outbounds = Deduplicator.deduplicate(parsed_outbounds)
-    print(f"🧹 После удаления дубликатов: {len(unique_outbounds)}")
+    # Дедупликация для сырых ссылок (чтобы в txt не было дублей)
+    unique_raw_links = list(set(raw_valid_links))
     
-    # Для "Авто" не проверяем на сервере, отдаем как есть
+    logger.info(f"🧹 Уникальных серверов: {len(unique_outbounds)}")
+    
     if mode == "auto":
         alive_outbounds = unique_outbounds
-        print("⏩ Пропускаем health_check для auto")
     else:
         checker = HealthChecker(timeout=5.0, concurrency=50)
         alive_outbounds = await checker.check_many(unique_outbounds)
-        print(f"💓 Живых серверов: {len(alive_outbounds)}")
     
     max_servers = config['aggregator']['max_servers_per_subscription']
     final_outbounds = alive_outbounds[:max_servers]
-    print(f"✅ Итоговое количество в файле: {len(final_outbounds)}")
+    final_raw_links = unique_raw_links[:max_servers]
     
+    # 1. Сохраняем JSON (Умный автовыбор)
     template_path = os.path.join(config['paths']['templates_dir'], f"{mode}_template.json")
     final_config = build_subscription(final_outbounds, template_path)
     
-    output_path = os.path.join(config['paths']['output_dir'], f"{mode}.json")
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    save_config(final_config, output_path)
-    print(f"💾 Сохранено: {output_path}")
+    output_json = os.path.join(config['paths']['output_dir'], f"{mode}.json")
+    os.makedirs(os.path.dirname(output_json), exist_ok=True)
+    save_config(final_config, output_json)
+    logger.info(f"💾 Сохранено: {output_json} (серверов: {len(final_outbounds)})")
+    
+    # 2. Сохраняем TXT (Список стран с флагами)
+    txt_content = generate_txt(final_raw_links)
+    output_txt = os.path.join(config['paths']['output_dir'], f"{mode}_all.txt")
+    with open(output_txt, "w", encoding="utf-8") as f:
+        f.write(txt_content)
+    logger.info(f"💾 Сохранено: {output_txt} (серверов: {len(final_raw_links)})")
 
 async def main():
     with open("aggregator/config.yaml", "r", encoding="utf-8") as f:

@@ -19,7 +19,11 @@
     "rules": [
       { "type": "field", "ip": ["geoip:private", "geoip:ru"], "outboundTag": "direct" },
       { "type": "field", "domain": ["geosite:category-ru", "geosite:private"], "outboundTag": "direct" },
-      { "type": "field", "network": "tcp,udp", "balancerTag": "auto-balancer" }
+      {
+        "type": "field",
+        "network": "tcp,udp",
+        "balancerTag": "auto-balancer"
+      }
     ],
     "balancers": [
       {
@@ -34,8 +38,7 @@
     "subjectSelector": ["proxy-"],
     "pingConfig": {
       "destination": "https://www.gstatic.com/generate_204",
-      "connectivity": "https://www.gstatic.com/generate_204",
-      "interval": "10s",
+      "interval": "30s",
       "sampling": 3,
       "timeout": "5s",
       "httpMethod": "HEAD"

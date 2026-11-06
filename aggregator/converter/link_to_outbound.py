@@ -26,7 +26,17 @@ class LinkToOutboundConverter:
                 "streamSettings": {
                     "network": params.get("type", ["tcp"])[0],
                     "security": params.get("security", ["none"])[0],
-                    "sockopt": {"tcpFastOpen": True}
+                    "sockopt": {
+                        "tcpFastOpen": True,
+                        "tcpMss": 1440,
+                        "tcpcongestion": "bbr",
+                        "domainStrategy": "UseIP"
+                    },
+                    "fragment": {
+                        "packets": "tlshello",
+                        "length": "100-200",
+                        "interval": "10-20"
+                    }
                 },
                 "mux": {"enabled": True, "concurrency": 16}
             }
@@ -41,7 +51,7 @@ class LinkToOutboundConverter:
                 }
             elif security == "reality":
                 pbk = params.get("pbk", params.get("publicKey", [""]))[0]
-                if not pbk: return None # Без ключа REALITY не работает
+                if not pbk: return None
                 
                 outbound["streamSettings"]["realitySettings"] = {
                     "serverName": sni,
@@ -89,7 +99,8 @@ class LinkToOutboundConverter:
                     "network": "hysteria",
                     "security": "tls",
                     "hysteriaSettings": {"version": 2, "auth": password},
-                    "tlsSettings": {"serverName": sni, "alpn": ["h3"]}
+                    "tlsSettings": {"serverName": sni, "alpn": ["h3"]},
+                    "sockopt": {"tcpFastOpen": True}
                 },
                 "mux": {"enabled": True, "concurrency": 16}
             }

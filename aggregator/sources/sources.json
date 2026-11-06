@@ -3,8 +3,6 @@
     { "name": "igareck_black_mobile", "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt", "enabled": true },
     { "name": "0xradikal_verified", "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/verified/configs_base64.txt", "enabled": true, "format": "base64" },
     { "name": "goida_all", "url": "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/all.txt", "enabled": true },
-    { "name": "gfpcom_all", "url": "https://raw.githubusercontent.com/gfpcom/free-proxy-list/main/list/all.txt", "enabled": true },
-    { "name": "vless_po_gribi", "url": "https://raw.githubusercontent.com/histeenn/VLESS-PO-GRIBI/main/deploy/subscriptions/1.txt", "enabled": true },
     { "name": "hiddify_xhttp", "url": "https://raw.githubusercontent.com/lanopivijo93782-ops/hiddify-vless-xhttp-parser/main/sub/subscription.txt", "enabled": true },
     { "name": "soroush_telegram", "url": "https://raw.githubusercontent.com/soroushmirzaei/telegram-configs-collector/main/protocols/all.txt", "enabled": true }
   ],

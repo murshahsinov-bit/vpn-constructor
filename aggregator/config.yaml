@@ -1,17 +1,22 @@
 aggregator:
+  # Режимы, которые нужно собрать за один запуск
   modes:
     - auto
     - whitelist
   
-  max_servers_per_subscription: 300
+  # Оставляем 30 лучших серверов для стабильности и скорости
+  max_servers_per_subscription: 30
   
+  # Настройки health-checker (TCP-проверка)
   health_check:
     timeout_seconds: 5.0
     concurrency: 50
 
+  # Настройки scorer (оценка качества)
   scoring:
     min_score_to_keep: 0
 
+# Пути (относительно корня проекта)
 paths:
   templates_dir: "aggregator/templates"
   output_dir: "web/subscriptions"
