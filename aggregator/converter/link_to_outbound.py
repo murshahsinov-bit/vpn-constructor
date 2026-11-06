@@ -13,6 +13,14 @@ class LinkToOutboundConverter:
                 return None
 
             params = parse_qs(parsed.query)
+            
+            # Приводим security к нижнему регистру
+            security_type = params.get("security", ["none"])[0].lower()
+            
+            # ЖЕСТКИЙ ФИЛЬТР: Если это не TLS и не Reality — выкидываем сразу
+            if security_type not in ["tls", "reality"]:
+                return None
+
             outbound = {
                 "tag": "proxy",
                 "protocol": "vless",
@@ -29,34 +37,26 @@ class LinkToOutboundConverter:
                 },
                 "streamSettings": {
                     "network": params.get("type", ["tcp"])[0],
-                    "security": params.get("security", ["none"])[0],
+                    "security": security_type,
                     "sockopt": {
                         "tcpFastOpen": True,
                         "tcpMss": 1440,
-                        "tcpcongestion": "bbr",
-                        "domainStrategy": "UseIP"
+                        "tcpcongestion": "bbr"
                     }
                 },
                 "mux": {"enabled": True, "concurrency": 16}
             }
 
-            security = outbound["streamSettings"]["security"]
-            encryption = params.get("encryption", ["none"])[0]
             sni = params.get("sni", params.get("host", [host]))[0]
 
-            # БЛОКИРУЕМ НЕБЕЗОПАСНЫЕ СЕРВЕРЫ (без TLS/Reality и без шифрования)
-            if security == "none" and encryption == "none":
-                return None
-            
-            if security == "tls":
+            if security_type == "tls":
                 outbound["streamSettings"]["tlsSettings"] = {
                     "serverName": sni,
                     "fingerprint": params.get("fp", ["chrome"])[0]
                 }
-            elif security == "reality":
+            elif security_type == "reality":
                 pbk = params.get("pbk", params.get("publicKey", [""]))[0]
-                if not pbk:
-                    return None
+                if not pbk: return None
                 
                 outbound["streamSettings"]["realitySettings"] = {
                     "serverName": sni,
@@ -91,8 +91,7 @@ class LinkToOutboundConverter:
             password = parsed.username
             host = parsed.hostname
             port = parsed.port or 443
-            if not password or not host:
-                return None
+            if not password or not host: return None
             
             params = parse_qs(parsed.query)
             sni = params.get("sni", params.get("host", [host]))[0]
