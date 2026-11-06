@@ -3,7 +3,6 @@ aggregator:
     - auto
     - whitelist
   
-  # Оставляем много серверов, чтобы INCY было из чего выбирать
   max_servers_per_subscription: 300
   
   health_check:

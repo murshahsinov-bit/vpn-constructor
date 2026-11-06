@@ -44,17 +44,22 @@
       "enabled": true
     },
     {
-      "name": "gfpcom_vless",
-      "url": "https://raw.githubusercontent.com/gfpcom/free-proxy-list/main/list/vless.txt",
+      "name": "amir_shaman_russia",
+      "url": "https://raw.githubusercontent.com/amir-shaman/vless-vpn-russia/main/configs.txt",
       "mirror_type": "raw",
       "enabled": true
     },
     {
-      "name": "awesome_vpn_base64",
-      "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/all",
+      "name": "subzio_all",
+      "url": "https://raw.githubusercontent.com/Subzio/subzio/main/all.txt",
       "mirror_type": "raw",
-      "enabled": true,
-      "format": "base64"
+      "enabled": true
+    },
+    {
+      "name": "rjsxrd_all",
+      "url": "https://raw.githubusercontent.com/whoahaow/rjsxrd/main/all.txt",
+      "mirror_type": "raw",
+      "enabled": true
     }
   ],
   "whitelist": [
@@ -67,6 +72,12 @@
     {
       "name": "igareck_white_mobile",
       "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
+      "mirror_type": "raw",
+      "enabled": true
+    },
+    {
+      "name": "igareck_white_cidr",
+      "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/WHITE-CIDR-RU-checked.txt",
       "mirror_type": "raw",
       "enabled": true
     },
