@@ -1,87 +1,39 @@
 import json
-from typing import List, Dict, Any
+import os
 
-def build_subscription(
-    outbounds: List[Dict[str, Any]], 
-    balancer_tag: str = "auto-balancer",
-    selector_prefix: str = "proxy-",
-    probe_url: str = "http://www.gstatic.com/generate_204"
-) -> Dict[str, Any]:
+def build_subscription(outbounds: list, template_path: str) -> dict:
     """
-    Собирает финальный JSON-конфиг для Xray/INCY с балансировщиком и burstObservatory.
-    
-    :param outbounds: Список готовых outbound-объектов (от конвертера и фильтра).
-    :param balancer_tag: Тег балансировщика для routing.rules.
-    :param selector_prefix: Префикс тегов серверов, которые попадут в балансировщик.
-    :param probe_url: URL для проверки живости серверов в burstObservatory.
-    :return: Полный JSON-конфиг (dict).
+    Берет шаблон из папки templates, вставляет туда серверы 
+    и настраивает балансировщик.
     """
-    
-    # 1. Присваиваем уникальные теги всем outbound'ам, чтобы балансировщик мог их найти
+    # Присваиваем уникальные теги
     for i, ob in enumerate(outbounds):
-        ob["tag"] = f"{selector_prefix}{i+1}"
+        ob["tag"] = f"proxy-{i+1}"
 
-    # 2. Собираем список тегов для селектора балансировщика
+    # Читаем шаблон
+    with open(template_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+
+    # Вставляем серверы + direct и block
+    config["outbounds"] = outbounds + [
+        {"tag": "direct", "protocol": "freedom"},
+        {"tag": "block", "protocol": "blackhole"}
+    ]
+
+    # Собираем теги для балансировщика
     selector_tags = [ob["tag"] for ob in outbounds]
 
-    # 3. Формируем итоговый конфиг
-    config = {
-        "log": {"loglevel": "warning"},
-        "inbounds": [
-            {
-                "tag": "socks-in",
-                "protocol": "socks",
-                "port": 10808,
-                "listen": "127.0.0.1",
-                "settings": {"udp": True}
-            }
-        ],
-        "outbounds": outbounds + [
-            {"tag": "direct", "protocol": "freedom"},
-            {"tag": "block", "protocol": "blackhole"}
-        ],
-        "routing": {
-            "domainStrategy": "IPIfNonMatch",
-            "rules": [
-                {
-                    "type": "field",
-                    "network": "tcp,udp",
-                    "balancerTag": balancer_tag
-                }
-            ],
-            "balancers": [
-                {
-                    "tag": balancer_tag,
-                    "selector": selector_tags,
-                    "strategy": {
-                        "type": "leastLoad",
-                        "settings": {
-                            "expected": 2,
-                            "maxRTT": "1500ms",
-                            "tolerance": 0.4
-                        }
-                    },
-                    "fallbackTag": "direct"
-                }
-            ]
-        },
-        "burstObservatory": {
-            "subjectSelector": selector_tags,
-            "pingConfig": {
-                "destination": probe_url,
-                "connectivity": "",
-                "interval": "30s",
-                "sampling": 2,
-                "timeout": "5s",
-                "httpMethod": "HEAD"
-            }
-        },
-        "stats": {}
-    }
+    # Обновляем балансировщик и burstObservatory, чтобы они знали про наши серверы
+    if "routing" in config and "balancers" in config["routing"]:
+        for balancer in config["routing"]["balancers"]:
+            if balancer.get("tag") == "auto-balancer":
+                balancer["selector"] = selector_tags
+
+    if "burstObservatory" in config:
+        config["burstObservatory"]["subjectSelector"] = selector_tags
 
     return config
 
-def save_config(config: Dict[str, Any], filepath: str):
-    """Сохраняет конфиг в файл."""
+def save_config(config: dict, filepath: str):
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(config, f, indent=2, ensure_ascii=False)

@@ -1,24 +1,18 @@
 aggregator:
-  # Режимы, которые нужно собрать за один запуск
   modes:
     - auto
     - whitelist
   
-  # Увеличили лимит: теперь в подписку сможет попасть до 50 серверов (а не 30)
-  max_servers_per_subscription: 50
+  # Оставляем много серверов, чтобы INCY было из чего выбирать
+  max_servers_per_subscription: 300
   
-  # Настройки health-checker (TCP-проверка)
   health_check:
-    # Увеличили таймаут до 5 секунд. Теперь медленные, но живые серверы тоже пройдут проверку.
     timeout_seconds: 5.0
     concurrency: 50
 
-  # Настройки scorer (оценка качества)
   scoring:
-    # Снизили порог до 0. Теперь скрипт не будет отбрасывать серверы со старым шифрованием.
     min_score_to_keep: 0
 
-# Пути (относительно корня проекта)
 paths:
   templates_dir: "aggregator/templates"
   output_dir: "web/subscriptions"
