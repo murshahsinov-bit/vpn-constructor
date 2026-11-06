@@ -17,9 +17,6 @@ logs/
 backups/
 *.log
 
-# Сгенерированные подписки
-web/subscriptions/*.json
-
 # Секреты и ключи
 *.pem
 *.key
