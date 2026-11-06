@@ -55,11 +55,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "tlsSettings": {
           "serverName": "ripelever.net",
           "fingerprint": "chrome"
@@ -96,11 +91,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "static.bakarova-top.ru",
@@ -143,11 +133,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "marshalltmp.top",
@@ -192,11 +177,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "tlsSettings": {
           "serverName": "lorettmay.top",
           "fingerprint": "chrome"
@@ -240,11 +220,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "us2.cloudvienta.com",
           "publicKey": "WwDK-bG5qji91Cqw6F_VSW1MWygTYrqjsuoN6Pyvzlg",
@@ -259,6 +234,48 @@
     },
     {
       "tag": "wl-proxy-6",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "188.72.103.4",
+            "port": 443,
+            "users": [
+              {
+                "id": "00a560f4-035e-48eb-b698-6f6be0b5e477",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "tlsSettings": {
+          "serverName": "decdn2.bota7.com",
+          "fingerprint": "chrome"
+        },
+        "xhttpSettings": {
+          "path": "/api/v4/lop/",
+          "host": "decdn2.bota7.com",
+          "mode": "packet-up"
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-7",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -284,11 +301,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "de2.frnet.space",
           "publicKey": "Dj93DPhAYHy9WEFC6UwxgGGPGF0Hrdhv3_kkoTcy0SM",
@@ -302,7 +314,7 @@
       }
     },
     {
-      "tag": "wl-proxy-7",
+      "tag": "wl-proxy-8",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -328,59 +340,10 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "music.yandex.ru",
           "publicKey": "aV_BHCeZ30y4-5rpUIHaWHMYAgogLsw4AE06Rw2X4WE",
           "shortId": "e202a94ad1711af2",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-8",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "185.86.145.112",
-            "port": 10452,
-            "users": [
-              {
-                "id": "ff117e7f-90a5-4aa7-b692-390a658fcd03",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "raw",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "passport.yandex.ru",
-          "publicKey": "L1Ug_ELbeZ_5q9QRzO5Lg_ZMkus9n72aiUfvFirN9Vo",
-          "shortId": "c8a79c7b64adca2a",
           "fingerprint": "firefox"
         }
       },
@@ -395,11 +358,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "87.242.127.51",
-            "port": 7452,
+            "address": "185.86.145.112",
+            "port": 10452,
             "users": [
               {
-                "id": "ff117e7f-90a5-4aa7-b692-390a658fcd03",
+                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
                 "encryption": "none",
                 "flow": "xtls-rprx-vision"
               }
@@ -416,15 +379,10 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
-          "publicKey": "0w339GBhpDiYwa9Wgqu3z3epu8dHAzeYUFXPtvzK8To",
-          "shortId": "190c27ae5f2e4d2c",
+          "publicKey": "L1Ug_ELbeZ_5q9QRzO5Lg_ZMkus9n72aiUfvFirN9Vo",
+          "shortId": "c8a79c7b64adca2a",
           "fingerprint": "firefox"
         }
       },
@@ -439,11 +397,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "185.86.147.184",
-            "port": 9449,
+            "address": "87.242.127.51",
+            "port": 7452,
             "users": [
               {
-                "id": "ff117e7f-90a5-4aa7-b692-390a658fcd03",
+                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
                 "encryption": "none",
                 "flow": "xtls-rprx-vision"
               }
@@ -460,15 +418,10 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
-          "publicKey": "SsPslLCfw2CGDmCs17gTLRSUOsOfv0KgnuLnkyTqCzA",
-          "shortId": "62002c0a685ac208",
+          "publicKey": "0w339GBhpDiYwa9Wgqu3z3epu8dHAzeYUFXPtvzK8To",
+          "shortId": "190c27ae5f2e4d2c",
           "fingerprint": "firefox"
         }
       },
@@ -483,37 +436,36 @@
       "settings": {
         "vnext": [
           {
-            "address": "185.86.145.216",
-            "port": 32944,
+            "address": "95.129.236.149",
+            "port": 443,
             "users": [
               {
-                "id": "ff117e7f-90a5-4aa7-b692-390a658fcd03",
+                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
                 "encryption": "none",
-                "flow": "xtls-rprx-vision"
+                "flow": ""
               }
             ]
           }
         ]
       },
       "streamSettings": {
-        "network": "raw",
-        "security": "reality",
+        "network": "ws",
+        "security": "tls",
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "passport.yandex.ru",
-          "publicKey": "Te3ZcFFTilb6_j4hdotSvXaRYBzGuNiRxuBh8n1NezU",
-          "shortId": "91d2d3db690f4b59",
+        "tlsSettings": {
+          "serverName": "d.nehtar.ru",
           "fingerprint": "firefox"
+        },
+        "wsSettings": {
+          "path": "/gateway/v1/ws/74c4d5e82a8e50ccf09fc628c17dc9be",
+          "headers": {
+            "Host": ""
+          }
         }
       },
       "mux": {
@@ -531,7 +483,7 @@
             "port": 7443,
             "users": [
               {
-                "id": "ff117e7f-90a5-4aa7-b692-390a658fcd03",
+                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
                 "encryption": "none",
                 "flow": "xtls-rprx-vision"
               }
@@ -547,11 +499,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -571,41 +518,32 @@
       "settings": {
         "vnext": [
           {
-            "address": "95.129.236.149",
-            "port": 443,
+            "address": "185.86.147.184",
+            "port": 9449,
             "users": [
               {
-                "id": "ff117e7f-90a5-4aa7-b692-390a658fcd03",
+                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
                 "encryption": "none",
-                "flow": ""
+                "flow": "xtls-rprx-vision"
               }
             ]
           }
         ]
       },
       "streamSettings": {
-        "network": "ws",
-        "security": "tls",
+        "network": "raw",
+        "security": "reality",
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "tlsSettings": {
-          "serverName": "d.nehtar.ru",
+        "realitySettings": {
+          "serverName": "passport.yandex.ru",
+          "publicKey": "SsPslLCfw2CGDmCs17gTLRSUOsOfv0KgnuLnkyTqCzA",
+          "shortId": "62002c0a685ac208",
           "fingerprint": "firefox"
-        },
-        "wsSettings": {
-          "path": "/gateway/v1/ws/74c4d5e82a8e50ccf09fc628c17dc9be",
-          "headers": {
-            "Host": ""
-          }
         }
       },
       "mux": {
@@ -623,7 +561,7 @@
             "port": 9443,
             "users": [
               {
-                "id": "ff117e7f-90a5-4aa7-b692-390a658fcd03",
+                "id": "09d8d8dd-44cb-4bb7-89f2-917b2fbf8300",
                 "encryption": "none",
                 "flow": "xtls-rprx-vision"
               }
@@ -639,11 +577,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -684,61 +617,12 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "tlsSettings": {
           "serverName": "ce3fp598gr.j.cloudfront.hls.edgehls.net",
           "fingerprint": "safari"
         },
         "grpcSettings": {
           "serviceName": "sync.v1"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-16",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "84.201.158.195",
-            "port": 443,
-            "users": [
-              {
-                "id": "06ec3898-f952-52a5-8547-51ae1e6f0a62",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "raw",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "api-maps.yandex.ru",
-          "publicKey": "W4k2NnQJBHQciIPcm5TdpPOv_rqKhoUUyU3nGewoCjg",
-          "shortId": "",
-          "fingerprint": "firefox"
         }
       },
       "mux": {
@@ -810,8 +694,7 @@
           "wl-proxy-12",
           "wl-proxy-13",
           "wl-proxy-14",
-          "wl-proxy-15",
-          "wl-proxy-16"
+          "wl-proxy-15"
         ],
         "strategy": {
           "type": "leastPing"
@@ -836,8 +719,7 @@
       "wl-proxy-12",
       "wl-proxy-13",
       "wl-proxy-14",
-      "wl-proxy-15",
-      "wl-proxy-16"
+      "wl-proxy-15"
     ],
     "pingConfig": {
       "destination": "http://cp.cloudflare.com/generate_204",

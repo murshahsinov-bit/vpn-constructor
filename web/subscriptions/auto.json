@@ -55,11 +55,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "tlsSettings": {
           "serverName": "vpn.cintaku.qzz.io",
           "fingerprint": "chrome"
@@ -102,11 +97,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "fast.145779.xyz",
@@ -151,11 +141,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "tlsSettings": {
           "serverName": "fast.145779.xyz",
           "fingerprint": "chrome"
@@ -198,11 +183,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "fast.145779.xyz",
@@ -247,11 +227,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "tlsSettings": {
           "serverName": "fast.145779.xyz",
           "fingerprint": "safari"
@@ -294,11 +269,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "fast.145779.xyz",
@@ -343,11 +313,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "tlsSettings": {
           "serverName": "web-app-nr6wpa.app-tp57xz.workers.dev",
           "fingerprint": "chrome"
@@ -391,11 +356,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "updates.cdn-apple.com",
           "publicKey": "D3ojIs3AUKP_tV0E4TEjh90HBVJp24Nq3qMfdxD30kc",
@@ -434,11 +394,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "www.amazon.com",
@@ -479,11 +434,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "www.cloudflare.com",
           "publicKey": "SmgYcFIvvFXW3xh4gvGhIJuQsaZvWkAylcjB6TEddEs",
@@ -522,11 +472,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "www.apple.com",
@@ -567,11 +512,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "fuck.rkn",
           "publicKey": "1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s",
@@ -610,11 +550,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "fuck.rkn",
@@ -655,11 +590,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "fuck.rkn",
           "publicKey": "1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s",
@@ -698,11 +628,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "fuck.rkn",
@@ -743,11 +668,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "fuck.rkn",
           "publicKey": "1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s",
@@ -786,11 +706,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "fuck.rkn",
@@ -831,11 +746,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "fuck.rkn",
           "publicKey": "1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s",
@@ -874,11 +784,6 @@
           "tcpMss": 1440,
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "fuck.rkn",
@@ -919,11 +824,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "fuck.rkn",
           "publicKey": "1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s",
@@ -938,44 +838,6 @@
     },
     {
       "tag": "proxy-21",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "45.138.100.248",
-            "port": 10443,
-            "users": [
-              {
-                "id": "ae908ff5-f749-402c-af25-e6e9aef4d6bb",
-                "encryption": "none",
-                "flow": ""
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "none",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-22",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -1001,11 +863,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "zh-hk.vuejs.org",
           "publicKey": "4GIE6ygCBY4pqRPkQ3OLLo6inpNcbBUEYLIqjMoZ3n4",
@@ -1019,7 +876,7 @@
       }
     },
     {
-      "tag": "proxy-23",
+      "tag": "proxy-22",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -1045,11 +902,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "assets-32.topp-con.xyz",
           "publicKey": "66-TFe0f5ub9A27G6hLPLm-KRZ4LGixHi8IA_Nv7jVM",
@@ -1063,7 +915,7 @@
       }
     },
     {
-      "tag": "proxy-24",
+      "tag": "proxy-23",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -1089,11 +941,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "assets-70.topp-con.xyz",
           "publicKey": "OQu-e59wDwOSwiBBawquNAPhg8Li1hmioWU2Up1TGDw",
@@ -1107,7 +954,7 @@
       }
     },
     {
-      "tag": "proxy-25",
+      "tag": "proxy-24",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -1133,11 +980,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "www.cloudflare.com",
           "publicKey": "Svl81isn16RPAFnjtmYw7A6TPnsEPLHuYYaJht65Rzc",
@@ -1151,7 +993,7 @@
       }
     },
     {
-      "tag": "proxy-26",
+      "tag": "proxy-25",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -1177,11 +1019,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "www.cloudflare.com",
           "publicKey": "xPnpkXu5qfwIArlHKvJsqKJnGdGbJK1tT2GzWMyLohA",
@@ -1195,51 +1032,7 @@
       }
     },
     {
-      "tag": "proxy-27",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "45.138.100.248",
-            "port": 14430,
-            "users": [
-              {
-                "id": "ae908ff5-f749-402c-af25-e6e9aef4d6bb",
-                "encryption": "none",
-                "flow": ""
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "ws",
-        "security": "none",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "wsSettings": {
-          "path": "/vless",
-          "headers": {
-            "Host": ""
-          }
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-28",
+      "tag": "proxy-26",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -1265,11 +1058,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "aws.amazon.com",
           "publicKey": "ZJRnFU-1s1JOnO8E9uZ7b00l1fPEh63fGRbdBANFRno",
@@ -1283,7 +1071,7 @@
       }
     },
     {
-      "tag": "proxy-29",
+      "tag": "proxy-27",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -1309,11 +1097,6 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "tlsSettings": {
           "serverName": "us007.zestapp778.com",
           "fingerprint": "chrome"
@@ -1325,7 +1108,7 @@
       }
     },
     {
-      "tag": "proxy-30",
+      "tag": "proxy-28",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -1351,15 +1134,88 @@
           "tcpcongestion": "bbr",
           "domainStrategy": "UseIP"
         },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
         "realitySettings": {
           "serverName": "www.apple.com",
           "publicKey": "8eXftARun6KH38UZhuqIfPR1VF2DLS9RMBZEnF5k6To",
           "shortId": "a3a578ab",
+          "fingerprint": "chrome"
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-29",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "167.17.69.171",
+            "port": 443,
+            "users": [
+              {
+                "id": "00144519-7e0d-476b-8d28-435576af9262",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "realitySettings": {
+          "serverName": "www.cloudflare.com",
+          "publicKey": "ALT8hIGeZEhi0sQFbXP_ntBg8Xo-v7i0YCLrqTnBxRk",
+          "shortId": "0990d22f",
+          "fingerprint": "chrome"
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-30",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "195.123.235.183",
+            "port": 443,
+            "users": [
+              {
+                "id": "c14ec728-3eca-4750-87fc-fd1e6aeb81d5",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "realitySettings": {
+          "serverName": "gateway.icloud.com",
+          "publicKey": "H3R3BUAl7thrIZsznTbb-eRREIjQOH2f3WO0oTN7OGY",
+          "shortId": "a0e2a6074c6456b0",
           "fingerprint": "chrome"
         }
       },
