@@ -3,7 +3,21 @@
     "loglevel": "warning"
   },
   "dns": {
+    "hosts": {
+      "domain:ntc.party": "127.0.0.1"
+    },
     "servers": [
+      {
+        "address": "77.88.8.8",
+        "domains": [
+          "geosite:category-ru",
+          "domain:yandex.ru",
+          "domain:vk.com",
+          "domain:mail.ru",
+          "domain:gosuslugi.ru",
+          "domain:nalog.ru"
+        ]
+      },
       "1.1.1.1",
       "8.8.8.8"
     ]
@@ -11,9 +25,9 @@
   "inbounds": [
     {
       "tag": "socks-in",
-      "protocol": "socks",
       "port": 10808,
       "listen": "127.0.0.1",
+      "protocol": "socks",
       "settings": {
         "udp": true
       },
@@ -12311,8 +12325,29 @@
       {
         "type": "field",
         "ip": [
-          "8.8.8.8",
-          "1.1.1.1"
+          "geoip:private"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "geosite:private",
+          "domain:local"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "geoip:ru"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "geosite:category-ru"
         ],
         "outboundTag": "direct"
       },
