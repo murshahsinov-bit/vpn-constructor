@@ -2,6 +2,10 @@ import json
 from urllib.parse import urlparse, parse_qs, unquote
 
 class LinkToOutboundConverter:
+    """
+    Преобразует строки протоколов (vless, hysteria2) в JSON-объекты outbound для Xray.
+    """
+
     @staticmethod
     def parse_vless(link: str) -> dict:
         try:
@@ -9,6 +13,11 @@ class LinkToOutboundConverter:
             uuid = parsed.username
             host = parsed.hostname
             port = parsed.port or 443
+            
+            # Защита от пустых обязательных полей
+            if not uuid or not host:
+                return None
+
             params = parse_qs(parsed.query)
             
             outbound = {
@@ -34,7 +43,6 @@ class LinkToOutboundConverter:
                         "tcpNoDelay": True
                     }
                 },
-                # Включаем Mux для ускорения открытия сайтов
                 "mux": {
                     "enabled": True,
                     "concurrency": 32,
@@ -45,15 +53,26 @@ class LinkToOutboundConverter:
             
             security = outbound["streamSettings"]["security"]
             if security == "tls":
-                outbound["streamSettings"]["tlsSettings"] = {
-                    "serverName": params.get("sni", [""])[0],
-                    "fingerprint": params.get("fp", ["chrome"])[0],
-                    "alpn": params.get("alpn", [""])[0].split(",") if "alpn" in params else []
-                }
+                sni = params.get("sni", [""])[0]
+                if not sni:
+                    outbound["streamSettings"]["tlsSettings"] = {"fingerprint": params.get("fp", ["chrome"])[0]}
+                else:
+                    outbound["streamSettings"]["tlsSettings"] = {
+                        "serverName": sni,
+                        "fingerprint": params.get("fp", ["chrome"])[0],
+                        "alpn": params.get("alpn", [""])[0].split(",") if "alpn" in params and params["alpn"][0] else []
+                    }
             elif security == "reality":
+                pbk = params.get("pbk", [""])[0]
+                sni = params.get("sni", [""])[0]
+                
+                # КРИТИЧЕСКАЯ ПРОВЕРКА: если нет публичного ключа или SNI, сервер нерабочий
+                if not pbk or not sni:
+                    return None
+
                 outbound["streamSettings"]["realitySettings"] = {
-                    "serverName": params.get("sni", [""])[0],
-                    "publicKey": params.get("pbk", [""])[0],
+                    "serverName": sni,
+                    "publicKey": pbk,
                     "shortId": params.get("sid", [""])[0],
                     "fingerprint": params.get("fp", ["chrome"])[0]
                 }
@@ -70,6 +89,13 @@ class LinkToOutboundConverter:
                     "path": unquote(params.get("path", ["/"])[0]),
                     "headers": {"Host": params.get("host", [""])[0]}
                 }
+            elif network == "grpc":
+                service_name = params.get("serviceName", [""])[0]
+                if not service_name:
+                    return None
+                outbound["streamSettings"]["grpcSettings"] = {
+                    "serviceName": service_name
+                }
 
             return outbound
 
@@ -84,7 +110,16 @@ class LinkToOutboundConverter:
             password = parsed.username
             host = parsed.hostname
             port = parsed.port or 443
+            
+            # Защита от пустых обязательных полей
+            if not password or not host:
+                return None
+
             params = parse_qs(parsed.query)
+            sni = params.get("sni", [""])[0]
+            
+            if not sni:
+                return None
             
             outbound = {
                 "tag": "proxy-hy2",
@@ -98,17 +133,35 @@ class LinkToOutboundConverter:
                 "streamSettings": {
                     "network": "hysteria",
                     "security": "tls",
-                    "hysteriaSettings": {"version": 2, "auth": password},
+                    "hysteriaSettings": {
+                        "version": 2,
+                        "auth": password
+                    },
                     "tlsSettings": {
-                        "serverName": params.get("sni", [""])[0],
+                        "serverName": sni,
                         "fingerprint": params.get("fp", ["chrome"])[0],
                         "alpn": ["h3"]
                     },
-                    "sockopt": {"tcpFastOpen": True}
+                    "sockopt": {
+                        "tcpFastOpen": True
+                    }
                 },
-                "mux": {"enabled": True, "concurrency": 32}
+                "mux": {
+                    "enabled": True,
+                    "concurrency": 32
+                }
             }
+            
+            if "obfs" in params and params["obfs"][0]:
+                outbound["streamSettings"]["finalmask"] = {
+                    "udp": [{
+                        "type": params.get("obfs", ["salamander"])[0], 
+                        "settings": {"password": params.get("obfs-password", [""])[0]}
+                    }]
+                }
+
             return outbound
+
         except Exception as e:
             print(f"Ошибка парсинга Hysteria2: {e}")
             return None
@@ -117,7 +170,7 @@ class LinkToOutboundConverter:
         link = link.strip()
         if link.startswith("vless://"):
             outbound = self.parse_vless(link)
-        elif link.startswith("hysteria2://"):
+        elif link.startswith("hysteria2://") or link.startswith("hy2://"):
             outbound = self.parse_hysteria2(link)
         else:
             return None
