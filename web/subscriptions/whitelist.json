@@ -34,42 +34,6 @@
       "settings": {
         "vnext": [
           {
-            "address": "168.113.128.70",
-            "port": 20105,
-            "users": [
-              {
-                "id": "9aff658c-1f80-4c82-9213-48ca26996142",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "tls",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr"
-        },
-        "tlsSettings": {
-          "serverName": "ripelever.net",
-          "fingerprint": "chrome"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-2",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
             "address": "185.178.208.140",
             "port": 443,
             "users": [
@@ -96,7 +60,7 @@
         },
         "xhttpSettings": {
           "path": "/api/v2/events",
-          "host": "static.bakarova-top.ru",
+          "host": "",
           "mode": "packet-up"
         }
       },
@@ -106,16 +70,16 @@
       }
     },
     {
-      "tag": "wl-proxy-3",
+      "tag": "wl-proxy-2",
       "protocol": "vless",
       "settings": {
         "vnext": [
           {
-            "address": "185.178.208.140",
+            "address": "176.124.218.80",
             "port": 443,
             "users": [
               {
-                "id": "fb37d713-0ed3-4146-b085-a5c879a9aafa",
+                "id": "981c7ccc-2b17-473c-8358-7fd1d6eec1b4",
                 "encryption": "none",
                 "flow": ""
               }
@@ -132,13 +96,55 @@
           "tcpcongestion": "bbr"
         },
         "tlsSettings": {
-          "serverName": "marshalltmp.top",
+          "serverName": "bg2-ws.gacvpn.site",
+          "fingerprint": "firefox"
+        },
+        "wsSettings": {
+          "path": "/static/js/vendor.f857f795.js",
+          "headers": {
+            "Host": "bg2-ws.gacvpn.site"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-3",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "103.74.93.240",
+            "port": 993,
+            "users": [
+              {
+                "id": "981c7ccc-2b17-473c-8358-7fd1d6eec1b4",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "tlsSettings": {
+          "serverName": "msk2.gacvpn.site",
           "fingerprint": "edge"
         },
         "wsSettings": {
-          "path": "/shop/catalog",
+          "path": "/static/js/vendor.549bd856.js",
           "headers": {
-            "Host": "marshalltmp.top"
+            "Host": "msk2.gacvpn.site"
           }
         }
       },
@@ -149,6 +155,214 @@
     },
     {
       "tag": "wl-proxy-4",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "103.74.93.240",
+            "port": 995,
+            "users": [
+              {
+                "id": "981c7ccc-2b17-473c-8358-7fd1d6eec1b4",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "tlsSettings": {
+          "serverName": "msk2.gacvpn.site",
+          "fingerprint": "chrome"
+        },
+        "wsSettings": {
+          "path": "/static/js/app.5b8e2c41.js",
+          "headers": {
+            "Host": "msk2.gacvpn.site"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-5",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "falmero.store",
+            "port": 443,
+            "users": [
+              {
+                "id": "8fb19a9e-ca2b-433a-8469-e4c7796033b2",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "grpc",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "tlsSettings": {
+          "serverName": "falmero.store",
+          "fingerprint": "chrome"
+        },
+        "grpcSettings": {
+          "serviceName": "glush.de1.v1"
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-6",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "186.246.4.49",
+            "port": 993,
+            "users": [
+              {
+                "id": "981c7ccc-2b17-473c-8358-7fd1d6eec1b4",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "tlsSettings": {
+          "serverName": "msk5.gacvpn.site",
+          "fingerprint": "android"
+        },
+        "wsSettings": {
+          "path": "/static/js/runtime.d9e71138.js",
+          "headers": {
+            "Host": "msk5.gacvpn.site"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-7",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "176.124.218.80",
+            "port": 993,
+            "users": [
+              {
+                "id": "981c7ccc-2b17-473c-8358-7fd1d6eec1b4",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "tlsSettings": {
+          "serverName": "lv.gacvpn.site",
+          "fingerprint": "chrome"
+        },
+        "wsSettings": {
+          "path": "/static/js/vendor.448f02e7.js",
+          "headers": {
+            "Host": "lv.gacvpn.site"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-8",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "135.106.143.121",
+            "port": 443,
+            "users": [
+              {
+                "id": "af9d0c6e-0c74-0037-8275-05b4aa0f2ebe",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "realitySettings": {
+          "serverName": "alfastat.ru",
+          "publicKey": "fz_xpZfQks3oa9c_d1OSokmTgmJuGbvFMkyK0Qt8w3I",
+          "shortId": "0066a7326f06d426",
+          "fingerprint": "firefox"
+        },
+        "xhttpSettings": {
+          "path": "/assets",
+          "host": "",
+          "mode": "packet-up"
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-9",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -190,36 +404,40 @@
       }
     },
     {
-      "tag": "wl-proxy-5",
+      "tag": "wl-proxy-10",
       "protocol": "vless",
       "settings": {
         "vnext": [
           {
-            "address": "82.146.32.120",
-            "port": 8443,
+            "address": "77.233.222.33",
+            "port": 993,
             "users": [
               {
-                "id": "93969894-5156-472b-9534-5fad18768e50",
+                "id": "981c7ccc-2b17-473c-8358-7fd1d6eec1b4",
                 "encryption": "none",
-                "flow": "xtls-rprx-vision"
+                "flow": ""
               }
             ]
           }
         ]
       },
       "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
+        "network": "ws",
+        "security": "tls",
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
           "tcpcongestion": "bbr"
         },
-        "realitySettings": {
-          "serverName": "us2.cloudvienta.com",
-          "publicKey": "WwDK-bG5qji91Cqw6F_VSW1MWygTYrqjsuoN6Pyvzlg",
-          "shortId": "b68ef2733ce64fe2",
+        "tlsSettings": {
+          "serverName": "msk6.gacvpn.site",
           "fingerprint": "firefox"
+        },
+        "wsSettings": {
+          "path": "/static/js/vendor.32acab26.js",
+          "headers": {
+            "Host": "msk6.gacvpn.site"
+          }
         }
       },
       "mux": {
@@ -228,7 +446,257 @@
       }
     },
     {
-      "tag": "wl-proxy-6",
+      "tag": "wl-proxy-11",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "62.113.42.147",
+            "port": 995,
+            "users": [
+              {
+                "id": "981c7ccc-2b17-473c-8358-7fd1d6eec1b4",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "tlsSettings": {
+          "serverName": "fi.gacvpn.site",
+          "fingerprint": "chrome"
+        },
+        "wsSettings": {
+          "path": "/static/js/runtime.6dc28486.js",
+          "headers": {
+            "Host": "fi.gacvpn.site"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-12",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "ru1.cdn-space.org",
+            "port": 443,
+            "users": [
+              {
+                "id": "f219ffe2-bc36-495f-a83d-8f9ac4af05fd",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "tlsSettings": {
+          "serverName": "ru1.cdn-space.org",
+          "fingerprint": "edge"
+        },
+        "xhttpSettings": {
+          "path": "/assets/api/v3/connect/",
+          "host": "ru1.cdn-space.org",
+          "mode": "auto"
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-13",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "62.113.42.147",
+            "port": 993,
+            "users": [
+              {
+                "id": "981c7ccc-2b17-473c-8358-7fd1d6eec1b4",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "tlsSettings": {
+          "serverName": "fi.gacvpn.site",
+          "fingerprint": "firefox"
+        },
+        "wsSettings": {
+          "path": "/static/js/vendor.63a45d33.js",
+          "headers": {
+            "Host": "fi.gacvpn.site"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-14",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "201.24.113.108",
+            "port": 993,
+            "users": [
+              {
+                "id": "981c7ccc-2b17-473c-8358-7fd1d6eec1b4",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "tlsSettings": {
+          "serverName": "fr2-ws.gacvpn.site",
+          "fingerprint": "android"
+        },
+        "wsSettings": {
+          "path": "/static/js/vendor.61db254e.js",
+          "headers": {
+            "Host": "fr2-ws.gacvpn.site"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-15",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "185.173.179.218",
+            "port": 443,
+            "users": [
+              {
+                "id": "f219ffe2-bc36-495f-a83d-8f9ac4af05fd",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "tlsSettings": {
+          "serverName": "ru1.cdn-space.org",
+          "fingerprint": "chrome"
+        },
+        "xhttpSettings": {
+          "path": "/assets/api/v3/connect/",
+          "host": "ru1.cdn-space.org",
+          "mode": "auto"
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-16",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "194.87.118.232",
+            "port": 993,
+            "users": [
+              {
+                "id": "981c7ccc-2b17-473c-8358-7fd1d6eec1b4",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr"
+        },
+        "tlsSettings": {
+          "serverName": "us2-ws.gacvpn.site",
+          "fingerprint": "edge"
+        },
+        "wsSettings": {
+          "path": "/static/js/vendor.2e12e7f4.js",
+          "headers": {
+            "Host": "us2-ws.gacvpn.site"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-17",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -269,7 +737,7 @@
       }
     },
     {
-      "tag": "wl-proxy-7",
+      "tag": "wl-proxy-18",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -307,7 +775,7 @@
       }
     },
     {
-      "tag": "wl-proxy-8",
+      "tag": "wl-proxy-19",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -345,7 +813,7 @@
       }
     },
     {
-      "tag": "wl-proxy-9",
+      "tag": "wl-proxy-20",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -383,7 +851,7 @@
       }
     },
     {
-      "tag": "wl-proxy-10",
+      "tag": "wl-proxy-21",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -421,7 +889,7 @@
       }
     },
     {
-      "tag": "wl-proxy-11",
+      "tag": "wl-proxy-22",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -463,7 +931,7 @@
       }
     },
     {
-      "tag": "wl-proxy-12",
+      "tag": "wl-proxy-23",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -501,7 +969,7 @@
       }
     },
     {
-      "tag": "wl-proxy-13",
+      "tag": "wl-proxy-24",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -539,7 +1007,7 @@
       }
     },
     {
-      "tag": "wl-proxy-14",
+      "tag": "wl-proxy-25",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -577,7 +1045,7 @@
       }
     },
     {
-      "tag": "wl-proxy-15",
+      "tag": "wl-proxy-26",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -679,7 +1147,18 @@
           "wl-proxy-12",
           "wl-proxy-13",
           "wl-proxy-14",
-          "wl-proxy-15"
+          "wl-proxy-15",
+          "wl-proxy-16",
+          "wl-proxy-17",
+          "wl-proxy-18",
+          "wl-proxy-19",
+          "wl-proxy-20",
+          "wl-proxy-21",
+          "wl-proxy-22",
+          "wl-proxy-23",
+          "wl-proxy-24",
+          "wl-proxy-25",
+          "wl-proxy-26"
         ],
         "strategy": {
           "type": "leastPing"
@@ -704,7 +1183,18 @@
       "wl-proxy-12",
       "wl-proxy-13",
       "wl-proxy-14",
-      "wl-proxy-15"
+      "wl-proxy-15",
+      "wl-proxy-16",
+      "wl-proxy-17",
+      "wl-proxy-18",
+      "wl-proxy-19",
+      "wl-proxy-20",
+      "wl-proxy-21",
+      "wl-proxy-22",
+      "wl-proxy-23",
+      "wl-proxy-24",
+      "wl-proxy-25",
+      "wl-proxy-26"
     ],
     "pingConfig": {
       "destination": "http://cp.cloudflare.com/generate_204",
