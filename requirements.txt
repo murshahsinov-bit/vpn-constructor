@@ -1,0 +1,16 @@
+# Telegram Bot
+aiogram==3.31.0
+pydantic==2.12.5
+pydantic-settings==2.13.1
+
+# База данных
+SQLAlchemy==2.0.48
+aiosqlite==0.22.1
+
+# HTTP-клиенты и парсинг
+aiohttp==3.13.2
+requests==2.32.5
+python-dotenv==1.1.1
+
+# Утилиты
+PyYAML==6.0.2

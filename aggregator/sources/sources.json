@@ -1,0 +1,43 @@
+{
+  "auto": [
+    {
+      "name": "igareck_mobile",
+      "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt",
+      "mirror_type": "raw",
+      "enabled": true
+    },
+    {
+      "name": "igareck_pc",
+      "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt",
+      "mirror_type": "raw",
+      "enabled": true
+    },
+    {
+      "name": "hidashimora_1_1",
+      "url": "https://raw.githubusercontent.com/Hidashimora/free-vpn-anti-rkn/main/configs/1.1.txt",
+      "mirror_type": "raw",
+      "enabled": true
+    },
+    {
+      "name": "tiagorrg_keys",
+      "url": "https://raw.githubusercontent.com/tiagorrg/vless-checker/main/keys.json",
+      "mirror_type": "raw",
+      "enabled": true,
+      "format": "json" 
+    }
+  ],
+  "whitelist": [
+    {
+      "name": "zieng2_universal",
+      "url": "https://raw.githubusercontent.com/zieng2/wl/main/vless_universal.txt",
+      "mirror_type": "raw",
+      "enabled": true
+    },
+    {
+      "name": "igareck_white_mobile",
+      "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/Vless-Reality-White-Lists-Rus-Mobile.txt",
+      "mirror_type": "raw",
+      "enabled": true
+    }
+  ]
+}

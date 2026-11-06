@@ -1,0 +1,36 @@
+# Окружение
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Базы данных
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Логи и бэкапы
+logs/
+backups/
+*.log
+
+# Сгенерированные подписки
+web/subscriptions/*.json
+
+# Секреты и ключи
+*.pem
+*.key
+yandex_key.json
+quota_state.json
+
+# Docker
+postgres_data/
+redis_data/
+
+# IDE
+.vscode/
+.idea/
+*.swp

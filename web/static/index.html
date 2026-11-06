@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPN Constructor | Умный доступ</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        .status::before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        .btn {
+            display: block;
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-bottom: 20px;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .instruction {
+            background-color: #0f172a;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            font-size: 14px;
+            border: 1px solid #334155;
+        }
+
+        .instruction h3 {
+            color: var(--text-main);
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .instruction ol {
+            margin-left: 20px;
+            color: var(--text-muted);
+        }
+
+        .instruction li {
+            margin-bottom: 8px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo">🛡️</div>
+        <h1>VPN Constructor</h1>
+        <p>Быстрый и стабильный доступ к сети с умным автовыбором серверов.</p>
+
+        <div class="status">Сервера работают в штатном режиме</div>
+
+        <a href="https://t.me/твой_бот_для_продаж" class="btn" target="_blank">
+            🚀 Купить подписку в Telegram
+        </a>
+
+        <div class="instruction">
+            <h3>Как подключиться?</h3>
+            <ol>
+                <li>Оплати подписку в нашем Telegram-боте.</li>
+                <li>Скопируй персональную ссылку.</li>
+                <li>Открой приложение <b>INCY</b>.</li>
+                <li>Нажми «+» и вставь ссылку.</li>
+                <li>Включи «Умный автовыбор» и пользуйся!</li>
+            </ol>
+        </div>
+
+        <div class="footer">
+            &copy; 2026 VPN Constructor. Все права защищены.
+        </div>
+    </div>
+
+</body>
+</html>

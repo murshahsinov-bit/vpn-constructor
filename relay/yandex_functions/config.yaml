@@ -1,0 +1,14 @@
+yandex_functions:
+  folder_id: "b1gXXXXXXXXXXXXXXXX"
+  function_name: "vpn-relay-node"
+  runtime: "python311"
+  entrypoint: "socks5_handler.relay_handler"
+  memory_mb: 256
+  timeout_sec: 60
+  concurrency: 1
+  service_account_id: "ajeXXXXXXXXXXXXXXXX"
+
+quota:
+  monthly_invocations_limit: 1000000
+  monthly_gb_hours_limit: 10.0
+  warning_threshold_percent: 85

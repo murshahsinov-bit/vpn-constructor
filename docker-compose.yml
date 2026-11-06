@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    container_name: vpn-bot
+    restart: unless-stopped
+    command: python -m bot.main
+    env_file: .env
+    volumes:
+      - .:/app
+      - ./vpn_bot.db:/app/vpn_bot.db
+    depends_on:
+      - aggregator
+    networks:
+      - vpn-network
+
+  aggregator:
+    build: .
+    container_name: vpn-aggregator
+    restart: unless-stopped
+    command: python -m aggregator.run
+    env_file: .env
+    volumes:
+      - .:/app
+      - ./web/subscriptions:/app/web/subscriptions
+    networks:
+      - vpn-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: vpn-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./web/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./web:/var/www/vpn-constructor/web:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      - bot
+    networks:
+      - vpn-network
+
+  certbot:
+    image: certbot/certbot
+    container_name: vpn-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - vpn-network
+
+networks:
+  vpn-network:
+    driver: bridge

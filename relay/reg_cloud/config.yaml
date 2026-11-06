@@ -1,0 +1,16 @@
+reg_cloud:
+  # API настройки
+  api_base_url: "https://api.cloudvps.reg.ru"
+  api_version: "v1"
+  
+  # Параметры развертывания по умолчанию
+  default_region: "msk1"
+  default_size: "cloud-1"            # Идентификатор тарифа (получать через /v2/plans)
+  default_image: "ubuntu-22.04"      # Идентификатор образа (получать через /v2/images)
+  default_name_prefix: "vpn-relay-node"
+  
+  # Мониторинг и предохранители
+  min_balance_threshold_rub: 300      # Минимальный остаток средств на счету
+  max_active_nodes: 3                 # Лимит одновременных реглетов
+  check_interval_minutes: 30          # Частота проверки баланса и статуса
+  auto_destroy_on_low_balance: true   # Удалять временные ноды при падении баланса

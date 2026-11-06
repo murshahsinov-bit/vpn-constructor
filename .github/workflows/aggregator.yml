@@ -1,0 +1,41 @@
+name: Update VPN Configs
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Каждые 15 минут (UTC)
+  workflow_dispatch:      # Кнопка ручного запуска в GitHub
+
+permissions:
+  contents: write         # Разрешение на коммит файлов обратно в репозиторий
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Aggregator
+        run: python aggregator/run.py
+
+      - name: Commit and Push if Changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/subscriptions/
+          # Проверяем, есть ли изменения, чтобы не спамить коммитами
+          if git diff --staged --quiet; then
+            echo "Конфиги не изменились, коммит не требуется."
+          else
+            git commit -m "Auto-update VPN configs [skip ci]"
+            git push
+          fi
