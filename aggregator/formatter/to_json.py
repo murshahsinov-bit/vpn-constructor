@@ -2,11 +2,14 @@ import json
 import os
 
 def build_subscription(outbounds: list, template_path: str) -> dict:
-    # ФИНАЛЬНЫЙ ФИЛЬТР: проверяем, что security == tls или reality
     safe_outbounds = []
     for ob in outbounds:
         sec = ob.get("streamSettings", {}).get("security", "none").lower()
         if sec in ["tls", "reality"]:
+            sni = ob.get("streamSettings", {}).get("tlsSettings", {}).get("serverName", "") or \
+                  ob.get("streamSettings", {}).get("realitySettings", {}).get("serverName", "")
+            if sni.endswith((".ru", ".ir", ".cn")) or sni in ["microsoft.com", "apple.com", "icloud.com"]:
+                continue
             safe_outbounds.append(ob)
     
     prefix = "wl-proxy-" if "whitelist" in template_path else "proxy-"

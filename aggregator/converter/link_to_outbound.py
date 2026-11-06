@@ -39,10 +39,16 @@ class LinkToOutboundConverter:
                     "sockopt": {
                         "tcpFastOpen": True,
                         "tcpMss": 1440,
-                        "tcpcongestion": "bbr"
+                        "tcpcongestion": "bbr",
+                        "domainStrategy": "UseIP"
+                    },
+                    "fragment": {
+                        "packets": "tlshello",
+                        "length": "100-200",
+                        "interval": "10-20"
                     }
                 },
-                "mux": {"enabled": True, "concurrency": 16}
+                "mux": { "enabled": True, "concurrency": 16, "xudpConcurrency": 16 }
             }
 
             sni = params.get("sni", params.get("host", [host]))[0]
@@ -50,13 +56,12 @@ class LinkToOutboundConverter:
             if security_type == "tls":
                 outbound["streamSettings"]["tlsSettings"] = {
                     "serverName": sni,
-                    "fingerprint": params.get("fp", ["chrome"])[0]
+                    "fingerprint": params.get("fp", ["firefox"])[0]
                 }
             elif security_type == "reality":
                 pbk = params.get("pbk", params.get("publicKey", [""]))[0]
                 sid = params.get("sid", [""])[0]
                 
-                # СТРОГАЯ ПРОВЕРКА: если нет ключа или shortId — выкидываем
                 if not pbk or not sid:
                     return None
                 
@@ -64,7 +69,7 @@ class LinkToOutboundConverter:
                     "serverName": sni,
                     "publicKey": pbk,
                     "shortId": sid,
-                    "fingerprint": params.get("fp", ["chrome"])[0]
+                    "fingerprint": params.get("fp", ["firefox"])[0]
                 }
 
             network = outbound["streamSettings"]["network"]
@@ -72,7 +77,8 @@ class LinkToOutboundConverter:
                 outbound["streamSettings"]["xhttpSettings"] = {
                     "path": unquote(params.get("path", ["/"])[0]),
                     "host": params.get("host", [""])[0],
-                    "mode": params.get("mode", ["auto"])[0]
+                    "mode": params.get("mode", ["stream-one"])[0],
+                    "extra": { "xmux": { "maxConcurrency": "16-32", "hKeepAlivePeriod": 0 } }
                 }
             elif network == "ws":
                 outbound["streamSettings"]["wsSettings"] = {
@@ -93,7 +99,8 @@ class LinkToOutboundConverter:
             password = parsed.username
             host = parsed.hostname
             port = parsed.port or 443
-            if not password or not host: return None
+            if not password or not host:
+                return None
             
             params = parse_qs(parsed.query)
             sni = params.get("sni", params.get("host", [host]))[0]
@@ -107,9 +114,9 @@ class LinkToOutboundConverter:
                     "security": "tls",
                     "hysteriaSettings": {"version": 2, "auth": password},
                     "tlsSettings": {"serverName": sni, "alpn": ["h3"]},
-                    "sockopt": {"tcpFastOpen": True}
+                    "sockopt": { "tcpFastOpen": True, "tcpcongestion": "bbr" }
                 },
-                "mux": {"enabled": True, "concurrency": 16}
+                "mux": { "enabled": True, "concurrency": 16 }
             }
         except Exception:
             return None

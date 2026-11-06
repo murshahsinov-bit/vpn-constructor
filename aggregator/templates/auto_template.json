@@ -1,7 +1,15 @@
 {
   "log": { "loglevel": "warning" },
   "dns": {
-    "servers": ["1.1.1.1", "8.8.8.8"]
+    "hosts": { "domain:ntc.party": "127.0.0.1" },
+    "servers": [
+      {
+        "address": "77.88.8.8",
+        "domains": ["geosite:category-ru", "domain:yandex.ru", "domain:vk.com", "domain:mail.ru", "domain:gosuslugi.ru", "domain:nalog.ru"]
+      },
+      "1.1.1.1",
+      "8.8.8.8"
+    ]
   },
   "inbounds": [
     {
@@ -17,19 +25,20 @@
   "routing": {
     "domainStrategy": "IPIfNonMatch",
     "rules": [
-      { "type": "field", "ip": ["geoip:private", "geoip:ru"], "outboundTag": "direct" },
-      { "type": "field", "domain": ["geosite:category-ru", "geosite:private"], "outboundTag": "direct" },
-      {
-        "type": "field",
-        "network": "tcp,udp",
-        "balancerTag": "auto-balancer"
-      }
+      { "type": "field", "ip": ["geoip:private"], "outboundTag": "direct" },
+      { "type": "field", "domain": ["geosite:private", "domain:local"], "outboundTag": "direct" },
+      { "type": "field", "ip": ["geoip:ru"], "outboundTag": "direct" },
+      { "type": "field", "domain": ["geosite:category-ru"], "outboundTag": "direct" },
+      { "type": "field", "network": "tcp,udp", "balancerTag": "auto-balancer" }
     ],
     "balancers": [
       {
         "tag": "auto-balancer",
         "selector": ["proxy-"],
-        "strategy": { "type": "leastLoad", "settings": { "expected": 2, "maxRTT": "1500ms", "tolerance": 0.4 } },
+        "strategy": {
+          "type": "leastLoad",
+          "settings": { "expected": 2, "maxRTT": "1500ms", "tolerance": 0.4 }
+        },
         "fallbackTag": "direct"
       }
     ]
@@ -37,13 +46,14 @@
   "burstObservatory": {
     "subjectSelector": ["proxy-"],
     "pingConfig": {
-      "destination": "https://www.gstatic.com/generate_204",
-      "interval": "30s",
-      "sampling": 3,
-      "timeout": "5s",
+      "destination": "http://speed.cloudflare.com/__down?bytes=1000000",
+      "connectivity": "http://www.gstatic.com/generate_204",
+      "interval": "1m",
+      "sampling": 2,
+      "timeout": "10s",
       "httpMethod": "HEAD"
     }
   },
-  "meta": { "serverDescription": "🤖 Умный Авто" },
+  "meta": { "serverDescription": "🤖 Умный Авто (Обход DPI)" },
   "stats": {}
 }
