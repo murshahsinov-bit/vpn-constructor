@@ -3,7 +3,11 @@
     { "name": "igareck_black_mobile", "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt", "enabled": true },
     { "name": "0xradikal_verified", "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/verified/configs_base64.txt", "enabled": true, "format": "base64" },
     { "name": "hiddify_xhttp", "url": "https://raw.githubusercontent.com/lanopivijo93782-ops/hiddify-vless-xhttp-parser/main/sub/subscription.txt", "enabled": true },
-    { "name": "mahdibland_aggregator", "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.txt", "enabled": true, "format": "base64" }
+    { "name": "nexus_vless", "url": "https://raw.githubusercontent.com/ninjastrikers/Nexus-nodes/main/configs/vless.txt", "enabled": true },
+    { "name": "sevcator_vless", "url": "https://raw.githubusercontent.com/sevcator/5ubscrpt10n/main/protocols/vl.txt", "enabled": true },
+    { "name": "gribi_vless", "url": "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/1.txt", "enabled": true },
+    { "name": "v2rayroot_vless", "url": "https://raw.githubusercontent.com/V2RayRoot/V2RayConfig/main/Config/vless.txt", "enabled": true },
+    { "name": "nikita29a_mirror1", "url": "https://raw.githubusercontent.com/nikita29a/FreeProxyList/main/mirror/1.txt", "enabled": true }
   ],
   "whitelist": [
     { "name": "igareck_sni_whitelist", "url": "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/Vless-Reality-White-Lists-Rus-Mobile.txt", "enabled": true },
