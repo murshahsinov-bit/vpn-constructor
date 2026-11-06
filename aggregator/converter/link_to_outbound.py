@@ -20,7 +20,11 @@ class LinkToOutboundConverter:
                     "vnext": [{
                         "address": host,
                         "port": port,
-                        "users": [{"id": uuid, "encryption": params.get("encryption", ["none"])[0], "flow": params.get("flow", [""])[0]}]
+                        "users": [{
+                            "id": uuid,
+                            "encryption": params.get("encryption", ["none"])[0],
+                            "flow": params.get("flow", [""])[0]
+                        }]
                     }]
                 },
                 "streamSettings": {
@@ -31,18 +35,18 @@ class LinkToOutboundConverter:
                         "tcpMss": 1440,
                         "tcpcongestion": "bbr",
                         "domainStrategy": "UseIP"
-                    },
-                    "fragment": {
-                        "packets": "tlshello",
-                        "length": "100-200",
-                        "interval": "10-20"
                     }
                 },
                 "mux": {"enabled": True, "concurrency": 16}
             }
 
             security = outbound["streamSettings"]["security"]
+            encryption = params.get("encryption", ["none"])[0]
             sni = params.get("sni", params.get("host", [host]))[0]
+
+            # БЛОКИРУЕМ НЕБЕЗОПАСНЫЕ СЕРВЕРЫ (без TLS/Reality и без шифрования)
+            if security == "none" and encryption == "none":
+                return None
             
             if security == "tls":
                 outbound["streamSettings"]["tlsSettings"] = {
@@ -51,7 +55,8 @@ class LinkToOutboundConverter:
                 }
             elif security == "reality":
                 pbk = params.get("pbk", params.get("publicKey", [""]))[0]
-                if not pbk: return None
+                if not pbk:
+                    return None
                 
                 outbound["streamSettings"]["realitySettings"] = {
                     "serverName": sni,
@@ -86,7 +91,8 @@ class LinkToOutboundConverter:
             password = parsed.username
             host = parsed.hostname
             port = parsed.port or 443
-            if not password or not host: return None
+            if not password or not host:
+                return None
             
             params = parse_qs(parsed.query)
             sni = params.get("sni", params.get("host", [host]))[0]
