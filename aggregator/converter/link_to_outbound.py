@@ -14,8 +14,10 @@ class LinkToOutboundConverter:
 
             params = parse_qs(parsed.query)
             security_type = params.get("security", ["none"])[0].lower()
-            
-            if security_type not in ["tls", "reality"]:
+            encryption_type = params.get("encryption", ["none"])[0].lower()
+
+            # ЖЕСТКИЙ ФИЛЬТР: отсекаем всё, что не TLS/Reality и без шифрования
+            if security_type not in ["tls", "reality"] and encryption_type == "none":
                 return None
 
             outbound = {
@@ -55,7 +57,6 @@ class LinkToOutboundConverter:
                 pbk = params.get("pbk", params.get("publicKey", [""]))[0]
                 sid = params.get("sid", [""])[0]
                 
-                # СТРОГАЯ ПРОВЕРКА: Если нет pbk или shortId — выкидываем сервер
                 if not pbk or not sid:
                     return None
                 
