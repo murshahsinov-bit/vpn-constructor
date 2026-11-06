@@ -20,38 +20,34 @@ class LinkToOutboundConverter:
                     "vnext": [{
                         "address": host,
                         "port": port,
-                        "users": [{
-                            "id": uuid,
-                            "encryption": params.get("encryption", ["none"])[0],
-                            "flow": params.get("flow", [""])[0]
-                        }]
+                        "users": [{"id": uuid, "encryption": params.get("encryption", ["none"])[0], "flow": params.get("flow", [""])[0]}]
                     }]
                 },
                 "streamSettings": {
                     "network": params.get("type", ["tcp"])[0],
                     "security": params.get("security", ["none"])[0],
-                    "sockopt": {"tcpFastOpen": True, "tcpMaxSeg": 1440, "tcpNoDelay": True}
+                    "sockopt": {"tcpFastOpen": True}
                 },
-                "mux": {"enabled": True, "concurrency": 16, "xudpConcurrency": 8}
+                "mux": {"enabled": True, "concurrency": 16}
             }
 
             security = outbound["streamSettings"]["security"]
+            sni = params.get("sni", params.get("host", [host]))[0]
+            
             if security == "tls":
-                sni = params.get("sni", [""])[0]
                 outbound["streamSettings"]["tlsSettings"] = {
-                    "serverName": sni if sni else host,
-                    "fingerprint": params.get("fp", ["firefox"])[0]
+                    "serverName": sni,
+                    "fingerprint": params.get("fp", ["chrome"])[0]
                 }
             elif security == "reality":
                 pbk = params.get("pbk", params.get("publicKey", [""]))[0]
-                sni = params.get("sni", [""])[0]
-                if not pbk or not sni:
-                    return None
+                if not pbk: return None # Без ключа REALITY не работает
+                
                 outbound["streamSettings"]["realitySettings"] = {
                     "serverName": sni,
                     "publicKey": pbk,
                     "shortId": params.get("sid", [""])[0],
-                    "fingerprint": params.get("fp", ["firefox"])[0]
+                    "fingerprint": params.get("fp", ["chrome"])[0]
                 }
 
             network = outbound["streamSettings"]["network"]
@@ -59,7 +55,7 @@ class LinkToOutboundConverter:
                 outbound["streamSettings"]["xhttpSettings"] = {
                     "path": unquote(params.get("path", ["/"])[0]),
                     "host": params.get("host", [""])[0],
-                    "mode": params.get("mode", ["stream-one"])[0]
+                    "mode": params.get("mode", ["auto"])[0]
                 }
             elif network == "ws":
                 outbound["streamSettings"]["wsSettings"] = {
@@ -80,9 +76,11 @@ class LinkToOutboundConverter:
             password = parsed.username
             host = parsed.hostname
             port = parsed.port or 443
-            if not password or not host:
-                return None
+            if not password or not host: return None
+            
             params = parse_qs(parsed.query)
+            sni = params.get("sni", params.get("host", [host]))[0]
+            
             return {
                 "tag": "proxy-hy2",
                 "protocol": "hysteria",
@@ -91,8 +89,7 @@ class LinkToOutboundConverter:
                     "network": "hysteria",
                     "security": "tls",
                     "hysteriaSettings": {"version": 2, "auth": password},
-                    "tlsSettings": {"serverName": params.get("sni", [host])[0], "alpn": ["h3"]},
-                    "sockopt": {"tcpFastOpen": True}
+                    "tlsSettings": {"serverName": sni, "alpn": ["h3"]}
                 },
                 "mux": {"enabled": True, "concurrency": 16}
             }

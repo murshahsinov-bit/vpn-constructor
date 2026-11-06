@@ -7,11 +7,8 @@ import base64
 
 from aggregator.sources.loader import SourceLoader
 from aggregator.fetcher.downloader import ConfigDownloader
-from aggregator.parsers.vless import parse_vless_uri
-from aggregator.parsers.hysteria2 import parse_hysteria2_uri
 from aggregator.converter.link_to_outbound import LinkToOutboundConverter
 from aggregator.filter.deduplicator import Deduplicator
-from aggregator.filter.scorer import ConfigScorer
 from aggregator.health.checker import HealthChecker
 from aggregator.formatter.to_json import build_subscription, save_config
 
@@ -19,21 +16,25 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 async def process_mode(mode: str, config: dict):
-    logger.info(f"🚀 Начинаю сборку режима: {mode}")
+    print(f"\n=== ЗАПУСК СБОРКИ ДЛЯ РЕЖИМА: {mode} ===")
     
     loader = SourceLoader()
     urls = loader.get_urls(mode)
     if not urls:
+        print(f"❌ Нет источников для {mode}")
         return
 
     async with ConfigDownloader() as downloader:
         raw_texts = await downloader.fetch_many(urls)
     
+    print(f"📥 Успешно скачано файлов: {len(raw_texts)} из {len(urls)}")
+    
     converter = LinkToOutboundConverter()
     parsed_outbounds = []
+    total_lines = 0
     
     for url, text in raw_texts.items():
-        # Пытаемся расшифровать Base64 (для некоторых источников)
+        # Пытаемся расшифровать Base64
         try:
             decoded = base64.b64decode(text).decode('utf-8')
             if "://" in decoded:
@@ -41,60 +42,52 @@ async def process_mode(mode: str, config: dict):
         except Exception:
             pass
 
-        for line in text.splitlines():
+        lines = text.splitlines()
+        total_lines += len(lines)
+        
+        for line in lines:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
             
-            if line.startswith("vless://") or line.startswith("hysteria2://") or line.startswith("hy2://"):
+            if line.startswith(("vless://", "hysteria2://", "hy2://")):
                 outbound = converter.convert(line)
                 if outbound:
                     parsed_outbounds.append(outbound)
     
-    logger.info(f"🔍 Спарсено {len(parsed_outbounds)} серверов")
-    unique_outbounds = Deduplicator.deduplicate(parsed_outbounds)
-    logger.info(f"🧹 После удаления дубликатов осталось {len(unique_outbounds)}")
+    print(f"📄 Всего строк скачано: {total_lines}")
+    print(f"🔍 Успешно спарсено серверов: {len(parsed_outbounds)}")
     
-    # Для "Авто" режима мы НЕ проверяем серверы на GitHub, 
-    # чтобы не отсеять те, что работают в РФ. INCY проверит их сам.
+    unique_outbounds = Deduplicator.deduplicate(parsed_outbounds)
+    print(f"🧹 После удаления дубликатов: {len(unique_outbounds)}")
+    
+    # Для "Авто" не проверяем на сервере, отдаем как есть
     if mode == "auto":
         alive_outbounds = unique_outbounds
-        logger.info("⏩ Пропускаем health_check для режима auto (собираем кладбище)")
+        print("⏩ Пропускаем health_check для auto")
     else:
-        checker = HealthChecker(
-            timeout=config['aggregator']['health_check']['timeout_seconds'],
-            concurrency=config['aggregator']['health_check']['concurrency']
-        )
+        checker = HealthChecker(timeout=5.0, concurrency=50)
         alive_outbounds = await checker.check_many(unique_outbounds)
-    
-    scored_outbounds = ConfigScorer.sort_by_score(alive_outbounds)
+        print(f"💓 Живых серверов: {len(alive_outbounds)}")
     
     max_servers = config['aggregator']['max_servers_per_subscription']
-    final_outbounds = scored_outbounds[:max_servers]
+    final_outbounds = alive_outbounds[:max_servers]
+    print(f"✅ Итоговое количество в файле: {len(final_outbounds)}")
     
     template_path = os.path.join(config['paths']['templates_dir'], f"{mode}_template.json")
-    if not os.path.exists(template_path):
-        logger.error(f"Шаблон не найден: {template_path}")
-        return
-        
     final_config = build_subscription(final_outbounds, template_path)
     
     output_path = os.path.join(config['paths']['output_dir'], f"{mode}.json")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     save_config(final_config, output_path)
-    logger.info(f"💾 Сохранено: {output_path} (серверов: {len(final_outbounds)})")
+    print(f"💾 Сохранено: {output_path}")
 
 async def main():
     with open("aggregator/config.yaml", "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
         
-    modes = config['aggregator']['modes']
-    logger.info(f"Запуск агрегатора для режимов: {modes}")
-    
-    for mode in modes:
+    for mode in config['aggregator']['modes']:
         await process_mode(mode, config)
-    
-    logger.info("🏁 Работа агрегатора завершена.")
 
 if __name__ == "__main__":
     asyncio.run(main())
