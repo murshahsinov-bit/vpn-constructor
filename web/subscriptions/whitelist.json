@@ -50,7 +50,15 @@
         "network": "tcp",
         "security": "tls",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "ripelever.net",
@@ -84,7 +92,15 @@
         "network": "xhttp",
         "security": "tls",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "static.bakarova-top.ru",
@@ -123,7 +139,15 @@
         "network": "ws",
         "security": "tls",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "marshalltmp.top",
@@ -163,7 +187,15 @@
         "network": "ws",
         "security": "tls",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "lorettmay.top",
@@ -203,7 +235,15 @@
         "network": "tcp",
         "security": "reality",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "us2.cloudvienta.com",
@@ -239,7 +279,15 @@
         "network": "raw",
         "security": "reality",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "de2.frnet.space",
@@ -275,7 +323,15 @@
         "network": "raw",
         "security": "reality",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "music.yandex.ru",
@@ -311,7 +367,15 @@
         "network": "raw",
         "security": "reality",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -347,7 +411,15 @@
         "network": "raw",
         "security": "reality",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -383,7 +455,15 @@
         "network": "raw",
         "security": "reality",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -399,6 +479,50 @@
     },
     {
       "tag": "wl-proxy-11",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "185.86.145.216",
+            "port": 32944,
+            "users": [
+              {
+                "id": "ff117e7f-90a5-4aa7-b692-390a658fcd03",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "raw",
+        "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "realitySettings": {
+          "serverName": "passport.yandex.ru",
+          "publicKey": "Te3ZcFFTilb6_j4hdotSvXaRYBzGuNiRxuBh8n1NezU",
+          "shortId": "91d2d3db690f4b59",
+          "fingerprint": "firefox"
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-12",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -419,7 +543,15 @@
         "network": "raw",
         "security": "reality",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -434,7 +566,7 @@
       }
     },
     {
-      "tag": "wl-proxy-12",
+      "tag": "wl-proxy-13",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -455,7 +587,15 @@
         "network": "ws",
         "security": "tls",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "d.nehtar.ru",
@@ -474,7 +614,7 @@
       }
     },
     {
-      "tag": "wl-proxy-13",
+      "tag": "wl-proxy-14",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -495,7 +635,15 @@
         "network": "raw",
         "security": "reality",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "passport.yandex.ru",
@@ -510,7 +658,7 @@
       }
     },
     {
-      "tag": "wl-proxy-14",
+      "tag": "wl-proxy-15",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -531,7 +679,15 @@
         "network": "grpc",
         "security": "tls",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "tlsSettings": {
           "serverName": "ce3fp598gr.j.cloudfront.hls.edgehls.net",
@@ -547,7 +703,7 @@
       }
     },
     {
-      "tag": "wl-proxy-15",
+      "tag": "wl-proxy-16",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -568,7 +724,15 @@
         "network": "raw",
         "security": "reality",
         "sockopt": {
-          "tcpFastOpen": true
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
         },
         "realitySettings": {
           "serverName": "api-maps.yandex.ru",
@@ -646,7 +810,8 @@
           "wl-proxy-12",
           "wl-proxy-13",
           "wl-proxy-14",
-          "wl-proxy-15"
+          "wl-proxy-15",
+          "wl-proxy-16"
         ],
         "strategy": {
           "type": "leastPing"
@@ -671,7 +836,8 @@
       "wl-proxy-12",
       "wl-proxy-13",
       "wl-proxy-14",
-      "wl-proxy-15"
+      "wl-proxy-15",
+      "wl-proxy-16"
     ],
     "pingConfig": {
       "destination": "http://cp.cloudflare.com/generate_204",
