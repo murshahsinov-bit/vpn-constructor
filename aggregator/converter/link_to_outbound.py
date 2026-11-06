@@ -13,11 +13,8 @@ class LinkToOutboundConverter:
                 return None
 
             params = parse_qs(parsed.query)
-            
-            # Приводим security к нижнему регистру
             security_type = params.get("security", ["none"])[0].lower()
             
-            # ЖЕСТКИЙ ФИЛЬТР: Если это не TLS и не Reality — выкидываем сразу
             if security_type not in ["tls", "reality"]:
                 return None
 
@@ -56,12 +53,16 @@ class LinkToOutboundConverter:
                 }
             elif security_type == "reality":
                 pbk = params.get("pbk", params.get("publicKey", [""]))[0]
-                if not pbk: return None
+                sid = params.get("sid", [""])[0]
+                
+                # СТРОГАЯ ПРОВЕРКА: Если нет pbk или shortId — выкидываем сервер
+                if not pbk or not sid:
+                    return None
                 
                 outbound["streamSettings"]["realitySettings"] = {
                     "serverName": sni,
                     "publicKey": pbk,
-                    "shortId": params.get("sid", [""])[0],
+                    "shortId": sid,
                     "fingerprint": params.get("fp", ["chrome"])[0]
                 }
 
