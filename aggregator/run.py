@@ -1,3 +1,20 @@
+import asyncio
+import yaml
+import logging
+import os
+import base64
+
+from aggregator.sources.loader import SourceLoader
+from aggregator.fetcher.downloader import ConfigDownloader
+from aggregator.converter.link_to_outbound import LinkToOutboundConverter
+from aggregator.filter.deduplicator import Deduplicator
+from aggregator.health.checker import HealthChecker
+from aggregator.formatter.to_json import build_subscription, save_config
+from aggregator.formatter.to_txt import generate_txt
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 async def process_mode(mode: str, config: dict):
     logger.info(f"=== ЗАПУСК СБОРКИ ДЛЯ РЕЖИМА: {mode} ===")
     
@@ -31,9 +48,8 @@ async def process_mode(mode: str, config: dict):
                 if outbound:
                     # ЖЕСТКАЯ ПРОВЕРКА: оставляем только TLS и Reality
                     security = outbound.get("streamSettings", {}).get("security", "none")
-                    
                     if security not in ["tls", "reality"]:
-                        continue # Пропускаем всё, что не TLS/Reality
+                        continue 
                         
                     parsed_outbounds.append(outbound)
                     raw_valid_links.append(line)
@@ -68,3 +84,14 @@ async def process_mode(mode: str, config: dict):
     output_txt = os.path.join(config['paths']['output_dir'], f"{mode}_all.txt")
     with open(output_txt, "w", encoding="utf-8") as f:
         f.write(txt_content)
+
+async def main():
+    with open("aggregator/config.yaml", "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+        
+    for mode in config['aggregator']['modes']:
+        await process_mode(mode, config)
+
+# ВОТ ЭТИ ДВЕ СТРОЧКИ САМЫЕ ВАЖНЫЕ! БЕЗ НИХ СКРИПТ ПРОСТО ЗАКРЫВАЕТСЯ.
+if __name__ == "__main__":
+    asyncio.run(main())
