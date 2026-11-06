@@ -48,11 +48,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "141.193.213.20",
-            "port": 8443,
+            "address": "104.16.10.100",
+            "port": 443,
             "users": [
               {
-                "id": "29c3dd6b-b164-40ca-a0d5-f06aca52a8b2",
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
                 "encryption": "none",
                 "flow": ""
               }
@@ -76,7 +76,7 @@
         },
         "tlsSettings": {
           "serverName": "u.srilankangrill.online",
-          "fingerprint": "safari"
+          "fingerprint": "chrome"
         },
         "wsSettings": {
           "path": "/",
@@ -93,6 +93,55 @@
     },
     {
       "tag": "proxy-2",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.16.10.103",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "chrome"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-3",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -125,7 +174,7 @@
         },
         "tlsSettings": {
           "serverName": "u.srilankangrill.online",
-          "fingerprint": "safari"
+          "fingerprint": "chrome"
         },
         "wsSettings": {
           "path": "/",
@@ -141,7 +190,7 @@
       }
     },
     {
-      "tag": "proxy-3",
+      "tag": "proxy-4",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -174,7 +223,7 @@
         },
         "tlsSettings": {
           "serverName": "u.srilankangrill.online",
-          "fingerprint": "firefox"
+          "fingerprint": "chrome"
         },
         "wsSettings": {
           "path": "/",
@@ -190,12 +239,12 @@
       }
     },
     {
-      "tag": "proxy-4",
+      "tag": "proxy-5",
       "protocol": "vless",
       "settings": {
         "vnext": [
           {
-            "address": "104.18.26.90",
+            "address": "104.16.10.116",
             "port": 443,
             "users": [
               {
@@ -223,7 +272,7 @@
         },
         "tlsSettings": {
           "serverName": "u.srilankangrill.online",
-          "fingerprint": "android"
+          "fingerprint": "chrome"
         },
         "wsSettings": {
           "path": "/",
@@ -239,12 +288,61 @@
       }
     },
     {
-      "tag": "proxy-5",
+      "tag": "proxy-6",
       "protocol": "vless",
       "settings": {
         "vnext": [
           {
-            "address": "104.19.32.166",
+            "address": "104.16.10.117",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "ios"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-7",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.16.10.189",
             "port": 443,
             "users": [
               {
@@ -288,7 +386,546 @@
       }
     },
     {
-      "tag": "proxy-6",
+      "tag": "proxy-8",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.16.10.198",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "chrome"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-9",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.16.10.234",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "chrome"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-10",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.16.10.235",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "firefox"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-11",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.16.10.2",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "ios"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-12",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.16.111.193",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "chrome"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-13",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.16.156.227",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "safari"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-14",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.16.3.98",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "firefox"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-15",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.17.117.137",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "chrome"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-16",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.18.26.90",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "chrome"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-17",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.19.178.244",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "android"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-18",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "104.19.32.166",
+            "port": 443,
+            "users": [
+              {
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "chrome"
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {
+            "Host": "u.srilankangrill.online"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "proxy-19",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -321,7 +958,7 @@
         },
         "tlsSettings": {
           "serverName": "u.srilankangrill.online",
-          "fingerprint": "firefox"
+          "fingerprint": "chrome"
         },
         "wsSettings": {
           "path": "/",
@@ -337,12 +974,12 @@
       }
     },
     {
-      "tag": "proxy-7",
+      "tag": "proxy-20",
       "protocol": "vless",
       "settings": {
         "vnext": [
           {
-            "address": "104.21.70.228",
+            "address": "104.21.5.75",
             "port": 443,
             "users": [
               {
@@ -386,16 +1023,16 @@
       }
     },
     {
-      "tag": "proxy-8",
+      "tag": "proxy-21",
       "protocol": "vless",
       "settings": {
         "vnext": [
           {
-            "address": "www.agahiya.ir",
+            "address": "104.21.60.109",
             "port": 443,
             "users": [
               {
-                "id": "57e089a8-0cd1-48d0-b572-105c4804f6b8",
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
                 "encryption": "none",
                 "flow": ""
               }
@@ -418,62 +1055,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "soliconf-gghosin4-cell.dormhost.app",
-          "fingerprint": "firefox"
-        },
-        "wsSettings": {
-          "path": "/jx-y8179aild6rsmj",
-          "headers": {
-            "Host": "soliconf-gghosin4-cell.dormhost.app"
-          }
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-9",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "www.farahghanizadeh.ir",
-            "port": 443,
-            "users": [
-              {
-                "id": "57e089a8-0cd1-48d0-b572-105c4804f6b8",
-                "encryption": "none",
-                "flow": ""
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "ws",
-        "security": "tls",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "tlsSettings": {
-          "serverName": "soliconf-gghosin4-cell.dormhost.app",
+          "serverName": "u.srilankangrill.online",
           "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/jx-y8179aild6rsmj",
+          "path": "/",
           "headers": {
-            "Host": "soliconf-gghosin4-cell.dormhost.app"
+            "Host": "u.srilankangrill.online"
           }
         }
       },
@@ -484,16 +1072,16 @@
       }
     },
     {
-      "tag": "proxy-10",
+      "tag": "proxy-22",
       "protocol": "vless",
       "settings": {
         "vnext": [
           {
-            "address": "www.sarzaminaryan.ir",
+            "address": "104.21.70.228",
             "port": 443,
             "users": [
               {
-                "id": "57e089a8-0cd1-48d0-b572-105c4804f6b8",
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
                 "encryption": "none",
                 "flow": ""
               }
@@ -516,13 +1104,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "soliconf-gghosin4-cell.dormhost.app",
-          "fingerprint": "firefox"
+          "serverName": "u.srilankangrill.online",
+          "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/jx-y8179aild6rsmj",
+          "path": "/",
           "headers": {
-            "Host": "soliconf-gghosin4-cell.dormhost.app"
+            "Host": "u.srilankangrill.online"
           }
         }
       },
@@ -533,16 +1121,16 @@
       }
     },
     {
-      "tag": "proxy-11",
+      "tag": "proxy-23",
       "protocol": "vless",
       "settings": {
         "vnext": [
           {
-            "address": "mao.kipfelmao.de5.net",
+            "address": "104.21.89.41",
             "port": 443,
             "users": [
               {
-                "id": "30610baf-4645-4c7b-9a22-0d0a0a79eab5",
+                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
                 "encryption": "none",
                 "flow": ""
               }
@@ -565,13 +1153,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "mao.kipfelmao.de5.net",
+          "serverName": "u.srilankangrill.online",
           "fingerprint": "safari"
         },
         "wsSettings": {
-          "path": "/api/v1/guests/profiles/5de14443985f/",
+          "path": "/",
           "headers": {
-            "Host": "mao.kipfelmao.de5.net"
+            "Host": "u.srilankangrill.online"
           }
         }
       },
@@ -582,7 +1170,7 @@
       }
     },
     {
-      "tag": "proxy-12",
+      "tag": "proxy-24",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -631,7 +1219,7 @@
       }
     },
     {
-      "tag": "proxy-13",
+      "tag": "proxy-25",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -680,7 +1268,7 @@
       }
     },
     {
-      "tag": "proxy-14",
+      "tag": "proxy-26",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -729,7 +1317,7 @@
       }
     },
     {
-      "tag": "proxy-15",
+      "tag": "proxy-27",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -762,7 +1350,7 @@
         },
         "tlsSettings": {
           "serverName": "fast.145779.xyz",
-          "fingerprint": "chrome"
+          "fingerprint": "safari"
         },
         "wsSettings": {
           "path": "/ws-tesla",
@@ -778,7 +1366,7 @@
       }
     },
     {
-      "tag": "proxy-16",
+      "tag": "proxy-28",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -827,7 +1415,7 @@
       }
     },
     {
-      "tag": "proxy-17",
+      "tag": "proxy-29",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -865,7 +1453,7 @@
         "wsSettings": {
           "path": "/ws-tesla",
           "headers": {
-            "Host": "fast.145779.xyz"
+            "Host": ""
           }
         }
       },
@@ -876,275 +1464,7 @@
       }
     },
     {
-      "tag": "proxy-18",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "67.220.73.204",
-            "port": 18662,
-            "users": [
-              {
-                "id": "814bd064-544d-4255-a070-5705c03f6da9",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "www.apple.com",
-          "publicKey": "k2hPp0tTW0Da-HK94wYpSCLbuK44LfGqC2MSJIM1Ti0",
-          "shortId": "48050fab",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-19",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "108.61.119.63",
-            "port": 18580,
-            "users": [
-              {
-                "id": "e9a8144e-5237-488a-afb1-9ca3d8d54c80",
-                "encryption": "none",
-                "flow": ""
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "tls",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "tlsSettings": {
-          "serverName": "us007.zestapp778.com",
-          "fingerprint": "chrome"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-20",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "67.220.73.204",
-            "port": 16016,
-            "users": [
-              {
-                "id": "814bd064-544d-4255-a070-5705c03f6da9",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "www.apple.com",
-          "publicKey": "k2hPp0tTW0Da-HK94wYpSCLbuK44LfGqC2MSJIM1Ti0",
-          "shortId": "48050fab",
-          "fingerprint": "chrome"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-21",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "195.211.98.43",
-            "port": 443,
-            "users": [
-              {
-                "id": "1b4b11d5-4c2d-4533-9a55-636757cdee94",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "www.cloudflare.com",
-          "publicKey": "xPnpkXu5qfwIArlHKvJsqKJnGdGbJK1tT2GzWMyLohA",
-          "shortId": "9c56fddf237e8eaf",
-          "fingerprint": "chrome"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-22",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "185.95.231.156",
-            "port": 443,
-            "users": [
-              {
-                "id": "1f8cf47a-b66a-4916-979f-26edfcf44eea",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "www.apple.com",
-          "publicKey": "8eXftARun6KH38UZhuqIfPR1VF2DLS9RMBZEnF5k6To",
-          "shortId": "a3a578ab",
-          "fingerprint": "chrome"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-23",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "81.19.140.181",
-            "port": 443,
-            "users": [
-              {
-                "id": "db80088c-32a1-4cb8-a907-0f3cb7844152",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "ca1.japancase.site",
-          "publicKey": "zN5buqMK95hn0mv3vKlfoOAi99ehuvP73cUuyNbZNWc",
-          "shortId": "dbd6b473c7038dd5",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-24",
+      "tag": "proxy-30",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -1179,277 +1499,7 @@
           "serverName": "gateway.icloud.com",
           "publicKey": "H3R3BUAl7thrIZsznTbb-eRREIjQOH2f3WO0oTN7OGY",
           "shortId": "a0e2a6074c6456b0",
-          "fingerprint": "random"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-25",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "169.40.42.168",
-            "port": 443,
-            "users": [
-              {
-                "id": "d65cc14c-f53f-4fe2-b262-97856601319c",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "yahoo.com",
-          "publicKey": "e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg",
-          "shortId": "c39cc7310a",
-          "fingerprint": "random"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-26",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "169.40.42.202",
-            "port": 443,
-            "users": [
-              {
-                "id": "d65cc14c-f53f-4fe2-b262-97856601319c",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "yahoo.com",
-          "publicKey": "e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg",
-          "shortId": "c39cc7310a",
           "fingerprint": "chrome"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-27",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "169.40.42.89",
-            "port": 443,
-            "users": [
-              {
-                "id": "d65cc14c-f53f-4fe2-b262-97856601319c",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "yahoo.com",
-          "publicKey": "e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg",
-          "shortId": "c39cc7310a",
-          "fingerprint": "ios"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-28",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "66.70.179.198",
-            "port": 2053,
-            "users": [
-              {
-                "id": "dc620cd6-a9d8-4a0f-8f18-006b895db77e",
-                "encryption": "none",
-                "flow": ""
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "raw",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "www.cloudflare.com",
-          "publicKey": "k4l6TxwkBbx9DhZAFpByq5rfCWFSgyOex3f_eFe9CWU",
-          "shortId": "83f8317a948bb769",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-29",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "167.17.69.171",
-            "port": 443,
-            "users": [
-              {
-                "id": "00144519-7e0d-476b-8d28-435576af9262",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "www.cloudflare.com",
-          "publicKey": "ALT8hIGeZEhi0sQFbXP_ntBg8Xo-v7i0YCLrqTnBxRk",
-          "shortId": "0990d22f",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "proxy-30",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "169.40.42.231",
-            "port": 443,
-            "users": [
-              {
-                "id": "d65cc14c-f53f-4fe2-b262-97856601319c",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "yahoo.com",
-          "publicKey": "e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg",
-          "shortId": "c39cc7310a",
-          "fingerprint": "ios"
         }
       },
       "mux": {
