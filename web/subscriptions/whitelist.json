@@ -2,6 +2,12 @@
   "log": {
     "loglevel": "warning"
   },
+  "dns": {
+    "servers": [
+      "77.88.8.8",
+      "1.1.1.1"
+    ]
+  },
   "inbounds": [
     {
       "tag": "socks-in",
@@ -10,6 +16,14 @@
       "listen": "127.0.0.1",
       "settings": {
         "udp": true
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls",
+          "quic"
+        ]
       }
     }
   ],
@@ -985,14 +999,6 @@
       }
     },
     {
-      "tag": "proxy-24",
-      "protocol": "freedom"
-    },
-    {
-      "tag": "proxy-25",
-      "protocol": "blackhole"
-    },
-    {
       "tag": "direct",
       "protocol": "freedom"
     },
@@ -1004,6 +1010,26 @@
   "routing": {
     "domainStrategy": "IPIfNonMatch",
     "rules": [
+      {
+        "type": "field",
+        "ip": [
+          "8.8.8.8",
+          "1.1.1.1"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "geosite:category-ru",
+          "geosite:private"
+        ],
+        "ip": [
+          "geoip:ru",
+          "geoip:private"
+        ],
+        "outboundTag": "direct"
+      },
       {
         "type": "field",
         "network": "tcp,udp",
@@ -1036,9 +1062,7 @@
           "proxy-20",
           "proxy-21",
           "proxy-22",
-          "proxy-23",
-          "proxy-24",
-          "proxy-25"
+          "proxy-23"
         ],
         "strategy": {
           "type": "leastLoad",
@@ -1076,13 +1100,11 @@
       "proxy-20",
       "proxy-21",
       "proxy-22",
-      "proxy-23",
-      "proxy-24",
-      "proxy-25"
+      "proxy-23"
     ],
     "pingConfig": {
       "destination": "http://www.gstatic.com/generate_204",
-      "connectivity": "",
+      "connectivity": "http://www.gstatic.com/generate_204",
       "interval": "30s",
       "sampling": 2,
       "timeout": "5s",
