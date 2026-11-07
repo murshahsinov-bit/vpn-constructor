@@ -71,11 +71,19 @@ class LinkToOutboundConverter:
 
             network = outbound["streamSettings"]["network"]
             if network == "xhttp":
+                # ИСПРАВЛЕНИЕ: используем только maxConnections, maxConcurrency = 0
                 outbound["streamSettings"]["xhttpSettings"] = {
                     "path": unquote(params.get("path", ["/"])[0]),
                     "host": params.get("host", [""])[0],
                     "mode": "stream-one",
-                    "extra": {"xmux": {"maxConcurrency": "16-32", "maxConnections": 1, "hKeepAlivePeriod": 0}}
+                    "extra": {
+                        "xmux": {
+                            "maxConnections": "6",
+                            "maxConcurrency": "0",
+                            "cMaxReuseTimes": 0,
+                            "hKeepAlivePeriod": 0
+                        }
+                    }
                 }
             elif network == "ws":
                 outbound["streamSettings"]["wsSettings"] = {
