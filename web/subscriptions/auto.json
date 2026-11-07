@@ -48,11 +48,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.10.100",
+            "address": "172.66.44.133",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "2cf94f4d-9d5b-49ca-81a3-ddc0529a2dac",
                 "encryption": "none",
                 "flow": ""
               }
@@ -75,13 +75,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
+          "serverName": "web-tomcat.pages.dev",
           "fingerprint": "chrome"
         },
         "wsSettings": {
           "path": "/",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "web-tomcat.pages.dev"
           }
         }
       },
@@ -97,11 +97,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.10.103",
+            "address": "172.66.47.123",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "2cf94f4d-9d5b-49ca-81a3-ddc0529a2dac",
                 "encryption": "none",
                 "flow": ""
               }
@@ -124,13 +124,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
+          "serverName": "web-tomcat.pages.dev",
           "fingerprint": "chrome"
         },
         "wsSettings": {
           "path": "/",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "web-tomcat.pages.dev"
           }
         }
       },
@@ -146,11 +146,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.10.104",
+            "address": "web-tomcat.pages.dev",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "2cf94f4d-9d5b-49ca-81a3-ddc0529a2dac",
                 "encryption": "none",
                 "flow": ""
               }
@@ -173,13 +173,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
+          "serverName": "web-tomcat.pages.dev",
           "fingerprint": "chrome"
         },
         "wsSettings": {
           "path": "/",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "web-tomcat.pages.dev"
           }
         }
       },
@@ -195,11 +195,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.10.10",
+            "address": "88.216.67.54",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "50414e45-4c5f-5a45-5553-47be357e54da",
                 "encryption": "none",
                 "flow": ""
               }
@@ -222,13 +222,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
+          "serverName": "52z4vtewuass.game4090taking.workers.dev",
           "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/stream/PANEL_ZEUS/47be357e54da/loc-0",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "52z4vtewuass.game4090taking.workers.dev"
           }
         }
       },
@@ -244,11 +244,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.10.116",
-            "port": 443,
+            "address": "104.18.151.231",
+            "port": 2053,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "eaf76557-2219-4799-8171-d7020adfefd0",
                 "encryption": "none",
                 "flow": ""
               }
@@ -271,13 +271,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "chrome"
+          "serverName": "twilight-frost-15b0.yigom67484.workers.dev",
+          "fingerprint": "ios"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/ws",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "twilight-frost-15b0.yigom67484.workers.dev"
           }
         }
       },
@@ -293,11 +293,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.10.117",
+            "address": "104.18.151.231",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "eaf76557-2219-4799-8171-d7020adfefd0",
                 "encryption": "none",
                 "flow": ""
               }
@@ -320,13 +320,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "ios"
+          "serverName": "workers.jijew83195.workers.dev",
+          "fingerprint": "firefox"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/ws",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "workers.jijew83195.workers.dev"
           }
         }
       },
@@ -342,11 +342,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.10.189",
-            "port": 443,
+            "address": "104.21.58.37",
+            "port": 2053,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "c83f15bf-1817-4ec8-a19f-6393d226434c",
                 "encryption": "none",
                 "flow": ""
               }
@@ -369,13 +369,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "qq"
+          "serverName": "fast.145779.xyz",
+          "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/ws-tesla",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "fast.145779.xyz"
           }
         }
       },
@@ -391,11 +391,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.10.198",
-            "port": 443,
+            "address": "172.67.199.126",
+            "port": 2053,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "c83f15bf-1817-4ec8-a19f-6393d226434c",
                 "encryption": "none",
                 "flow": ""
               }
@@ -418,13 +418,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "chrome"
+          "serverName": "fast.145779.xyz",
+          "fingerprint": "ios"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/ws-tesla",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "fast.145779.xyz"
           }
         }
       },
@@ -440,11 +440,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.10.234",
-            "port": 443,
+            "address": "fast.145779.xyz",
+            "port": 2053,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "c83f15bf-1817-4ec8-a19f-6393d226434c",
                 "encryption": "none",
                 "flow": ""
               }
@@ -467,13 +467,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
+          "serverName": "fast.145779.xyz",
           "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/ws-tesla",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "fast.145779.xyz"
           }
         }
       },
@@ -489,11 +489,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.10.235",
+            "address": "104.21.108.4",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "fa45096d-bed0-ad80-c773-23c300000018",
                 "encryption": "none",
                 "flow": ""
               }
@@ -516,13 +516,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "firefox"
+          "serverName": "xo3ubk-c97eql-n2d4a9.shoameni17.workers.dev",
+          "fingerprint": "chrome"
         },
         "wsSettings": {
           "path": "/",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "xo3ubk-c97eql-n2d4a9.shoameni17.workers.dev"
           }
         }
       },
@@ -538,11 +538,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.10.2",
+            "address": "172.67.209.13",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "fa45096d-bed0-ad80-c773-23c30000001b",
                 "encryption": "none",
                 "flow": ""
               }
@@ -565,13 +565,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "ios"
+          "serverName": "xo3ubk-c97eql-n2d4a9.shoameni17.workers.dev",
+          "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/sync",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "xo3ubk-c97eql-n2d4a9.shoameni17.workers.dev"
           }
         }
       },
@@ -587,11 +587,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.111.193",
+            "address": "188.114.96.9",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "2e305ebe-f6e6-4689-b32f-cd04ab5ff541",
                 "encryption": "none",
                 "flow": ""
               }
@@ -614,13 +614,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
+          "serverName": "IdB8ONMVbntuYT5t7t6cEJfw8vLrb.paGEs.DeV",
           "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/vl/9yvcoLdzdOXLUYfH7r5gwJhu1CHrj",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "idb8onmvbntuyt5t7t6cejfw8vlrb.pages.dev"
           }
         }
       },
@@ -636,11 +636,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.156.227",
+            "address": "chatgpt.com",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "64726966-0000-4000-8000-740000000000",
                 "encryption": "none",
                 "flow": ""
               }
@@ -663,13 +663,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "safari"
+          "serverName": "parsa-panel-dy55x.railway1385-2a46.workers.dev",
+          "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/drift",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "parsa-panel-dy55x.railway1385-2a46.workers.dev"
           }
         }
       },
@@ -685,11 +685,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.16.3.98",
+            "address": "104.25.5.52",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "93fa8bdb-9cca-4a3e-8355-b7c12e4f595e",
                 "encryption": "none",
                 "flow": ""
               }
@@ -712,13 +712,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "firefox"
+          "serverName": "fornewiran.ade-1000.workers.dev",
+          "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/vl/yLWNcuUuw1jlJpkDhGy?ed",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "fornewiran.ade-1000.workers.dev"
           }
         }
       },
@@ -734,11 +734,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.17.117.137",
+            "address": "172.66.44.124",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "b2f2f9f2-1864-48ea-839b-22815faff1f1",
                 "encryption": "none",
                 "flow": ""
               }
@@ -761,13 +761,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "chrome"
+          "serverName": "stf839dvvyog9d2qa4-b8z6ahgn7b7qi.pages.dev",
+          "fingerprint": "firefox"
         },
         "wsSettings": {
           "path": "/",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "stf839dvvyog9d2qa4-b8z6ahgn7b7qi.pages.dev"
           }
         }
       },
@@ -783,11 +783,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.18.26.90",
+            "address": "188.114.97.6",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "b2f2f9f2-1864-48ea-839b-22815faff1f1",
                 "encryption": "none",
                 "flow": ""
               }
@@ -810,13 +810,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "chrome"
+          "serverName": "stf839dvvyog9d2qa4-b8z6ahgn7b7qi.pages.dev",
+          "fingerprint": "firefox"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/9BozNyvQ8VdRvsYX?ed=2560fp=unsafe",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "stf839dvvyog9d2qa4-b8z6ahgn7b7qi.pages.dev"
           }
         }
       },
@@ -832,11 +832,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.19.178.244",
+            "address": "stf839dvvyog9d2qa4-b8z6ahgn7b7qi.pages.dev",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "b2f2f9f2-1864-48ea-839b-22815faff1f1",
                 "encryption": "none",
                 "flow": ""
               }
@@ -859,13 +859,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "android"
+          "serverName": "stf839dvvyog9d2qa4-b8z6ahgn7b7qi.pages.dev",
+          "fingerprint": "chrome"
         },
         "wsSettings": {
           "path": "/",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": ""
           }
         }
       },
@@ -881,11 +881,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.19.32.166",
-            "port": 443,
+            "address": "courses.mftplus.qzz.io",
+            "port": 2096,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "b9ede7a5-5b4b-4aee-ac37-2c307e587e47",
                 "encryption": "none",
                 "flow": ""
               }
@@ -908,13 +908,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
+          "serverName": "courses.mftplus.qzz.io",
           "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/eyJqdW5rIjoidVkzQm1ROUg4dyIsInByb3RvY29sIjoidmwiLCJtb2RlIjoicHJveHlpcCIsInBhbmVsSVBzIjpbXX0",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": ""
           }
         }
       },
@@ -930,11 +930,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.21.236.63",
-            "port": 443,
+            "address": "172.66.44.124",
+            "port": 8443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "b2f2f9f2-1864-48ea-839b-22815faff1f1",
                 "encryption": "none",
                 "flow": ""
               }
@@ -957,13 +957,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "chrome"
+          "serverName": "stf839dvvyog9d2qa4-b8z6ahgn7b7qi.pages.dev",
+          "fingerprint": "firefox"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/9BozNyvQ8VdRvsYX?ed=2560fp=randomized",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "stf839dvvyog9d2qa4-b8z6ahgn7b7qi.pages.dev"
           }
         }
       },
@@ -979,11 +979,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.21.5.75",
+            "address": "kclx.eu.org",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "0575005f-0ba9-4d6d-85e0-4a6a8cbafc1b",
                 "encryption": "none",
                 "flow": ""
               }
@@ -1006,13 +1006,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "firefox"
+          "serverName": "kclx.eu.org",
+          "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/154.16.10.34-8080",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "kclx.eu.org"
           }
         }
       },
@@ -1028,11 +1028,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.21.60.109",
+            "address": "liang92.dpdns.org",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "0aab6adc-104c-4339-8d25-09755ffe2cbd",
                 "encryption": "none",
                 "flow": ""
               }
@@ -1055,13 +1055,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
+          "serverName": "liang92.dpdns.org",
           "fingerprint": "chrome"
         },
         "wsSettings": {
           "path": "/",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": ""
           }
         }
       },
@@ -1077,11 +1077,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.21.70.228",
+            "address": "14f7f5f0.mrbl69black.pages.dev",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "0d5a2112-789f-4755-88e6-61a1a8f8067b",
                 "encryption": "none",
                 "flow": ""
               }
@@ -1104,13 +1104,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
+          "serverName": "14F7F5f0.mRBL69BlaCK.paGES.DeV",
           "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/I0IHonn0TGa2xaOO?ed=2560",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": ""
           }
         }
       },
@@ -1126,11 +1126,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.21.89.41",
+            "address": "wangcai.cf.877774.xyz",
             "port": 443,
             "users": [
               {
-                "id": "b8d8a5b0-867f-4491-b4e4-30edc04bb10e",
+                "id": "16e80f38-e97e-4b14-ba89-77d87a3e637f",
                 "encryption": "none",
                 "flow": ""
               }
@@ -1153,13 +1153,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "u.srilankangrill.online",
-          "fingerprint": "safari"
+          "serverName": "ex3r.qzz.io",
+          "fingerprint": "firefox"
         },
         "wsSettings": {
-          "path": "/",
+          "path": "/sg-orcl",
           "headers": {
-            "Host": "u.srilankangrill.online"
+            "Host": "ex3r.qzz.io"
           }
         }
       },
@@ -1175,11 +1175,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.21.58.37",
-            "port": 2053,
+            "address": "172.67.78.150",
+            "port": 2083,
             "users": [
               {
-                "id": "c83f15bf-1817-4ec8-a19f-6393d226434c",
+                "id": "24916ad0-847d-4522-9e17-f4347dee57fd",
                 "encryption": "none",
                 "flow": ""
               }
@@ -1202,13 +1202,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "fast.145779.xyz",
-          "fingerprint": "android"
+          "serverName": "kv.074167.xyz",
+          "fingerprint": "firefox"
         },
         "wsSettings": {
-          "path": "/ws-tesla",
+          "path": "/?ed=2560fp=random",
           "headers": {
-            "Host": "fast.145779.xyz"
+            "Host": "kv.074167.xyz"
           }
         }
       },
@@ -1224,11 +1224,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "172.67.199.126",
-            "port": 2053,
+            "address": "188.114.97.3",
+            "port": 443,
             "users": [
               {
-                "id": "c83f15bf-1817-4ec8-a19f-6393d226434c",
+                "id": "27135ee3-0829-4dbc-ae3e-b70e86e5d510",
                 "encryption": "none",
                 "flow": ""
               }
@@ -1251,13 +1251,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "fast.145779.xyz",
-          "fingerprint": "firefox"
+          "serverName": "63yw55ibrgt8rswbfnmhapuzux4p29favnxxslbjbnmqjzz7efh95h3nfdsfdsf.d2ha6.workers.Dev",
+          "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/ws-tesla",
+          "path": "Telegram+channel+:+@pandavpntc",
           "headers": {
-            "Host": "fast.145779.xyz"
+            "Host": "63yw55ibrgt8rswbfnmhapuzux4p29favnxxslbjbnmqjzz7efh95h3nfdsfdsf.d2ha6.workers.Dev"
           }
         }
       },
@@ -1273,11 +1273,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "fast.145779.xyz",
-            "port": 2053,
+            "address": "188.114.97.9",
+            "port": 443,
             "users": [
               {
-                "id": "c83f15bf-1817-4ec8-a19f-6393d226434c",
+                "id": "27135ee3-0829-4dbc-ae3e-b70e86e5d510",
                 "encryption": "none",
                 "flow": ""
               }
@@ -1300,13 +1300,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "fast.145779.xyz",
-          "fingerprint": "firefox"
+          "serverName": "63yw55ibrgt8rswbfnmhapuzux4p29favnxxslbjbnmqjzz7efh95h3nfdsfdsf.d2ha6.workers.Dev",
+          "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/ws-tesla",
+          "path": "Telegram+channel+:+@pandavpntc",
           "headers": {
-            "Host": ""
+            "Host": "63yw55ibrgt8rswbfnmhapuzux4p29favnxxslbjbnmqjzz7efh95h3nfdsfdsf.d2ha6.workers.Dev"
           }
         }
       },
@@ -1322,11 +1322,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "104.21.58.37",
-            "port": 2053,
+            "address": "172.67.160.192",
+            "port": 443,
             "users": [
               {
-                "id": "e3149c82-00f6-4227-b2c0-b78f1dd81279",
+                "id": "2bcfbfba-b446-4ad5-93ad-72af9e008f61",
                 "encryption": "none",
                 "flow": ""
               }
@@ -1349,13 +1349,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "fast.145779.xyz",
-          "fingerprint": "safari"
+          "serverName": "nuclear.us.kg",
+          "fingerprint": "chrome"
         },
         "wsSettings": {
-          "path": "/ws-tesla",
+          "path": "/free/1.226.227.169:50001",
           "headers": {
-            "Host": "fast.145779.xyz"
+            "Host": "nuclear.us.kg"
           }
         }
       },
@@ -1371,11 +1371,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "172.67.199.126",
-            "port": 2053,
+            "address": "nuclear.us.kg",
+            "port": 443,
             "users": [
               {
-                "id": "e3149c82-00f6-4227-b2c0-b78f1dd81279",
+                "id": "2bcfbfba-b446-4ad5-93ad-72af9e008f61",
                 "encryption": "none",
                 "flow": ""
               }
@@ -1398,13 +1398,13 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "fast.145779.xyz",
-          "fingerprint": "ios"
+          "serverName": "nuclear.us.kg",
+          "fingerprint": "firefox"
         },
         "wsSettings": {
-          "path": "/ws-tesla",
+          "path": "/free/103.101.153.32:443",
           "headers": {
-            "Host": "fast.145779.xyz"
+            "Host": "nuclear.us.kg"
           }
         }
       },
@@ -1420,11 +1420,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "fast.145779.xyz",
-            "port": 2053,
+            "address": "cfnode-11ivy8.pages.dev",
+            "port": 443,
             "users": [
               {
-                "id": "e3149c82-00f6-4227-b2c0-b78f1dd81279",
+                "id": "2ea2719c-23e1-4cde-b192-c8652d55d9e5",
                 "encryption": "none",
                 "flow": ""
               }
@@ -1447,11 +1447,11 @@
           "interval": "10-20"
         },
         "tlsSettings": {
-          "serverName": "fast.145779.xyz",
+          "serverName": "cfnode-11ivy8.pages.dev",
           "fingerprint": "firefox"
         },
         "wsSettings": {
-          "path": "/ws-tesla",
+          "path": "/",
           "headers": {
             "Host": ""
           }
@@ -1469,21 +1469,21 @@
       "settings": {
         "vnext": [
           {
-            "address": "195.123.235.183",
+            "address": "k9-85j.pages.dev",
             "port": 443,
             "users": [
               {
-                "id": "c14ec728-3eca-4750-87fc-fd1e6aeb81d5",
+                "id": "3dc83518-4002-485e-a066-d3bbcaaa2b2e",
                 "encryption": "none",
-                "flow": "xtls-rprx-vision"
+                "flow": ""
               }
             ]
           }
         ]
       },
       "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
+        "network": "ws",
+        "security": "tls",
         "sockopt": {
           "tcpFastOpen": true,
           "tcpMss": 1440,
@@ -1495,11 +1495,15 @@
           "length": "100-200",
           "interval": "10-20"
         },
-        "realitySettings": {
-          "serverName": "gateway.icloud.com",
-          "publicKey": "H3R3BUAl7thrIZsznTbb-eRREIjQOH2f3WO0oTN7OGY",
-          "shortId": "a0e2a6074c6456b0",
+        "tlsSettings": {
+          "serverName": "K9-85J.paGEs.Dev",
           "fingerprint": "chrome"
+        },
+        "wsSettings": {
+          "path": "/1WWzkWgNslKTcceU?ed=2560",
+          "headers": {
+            "Host": "K9-85J.paGEs.Dev"
+          }
         }
       },
       "mux": {

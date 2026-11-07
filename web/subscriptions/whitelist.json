@@ -34,6 +34,95 @@
       "settings": {
         "vnext": [
           {
+            "address": "168.113.128.70",
+            "port": 20105,
+            "users": [
+              {
+                "id": "9aff658c-1f80-4c82-9213-48ca26996142",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "ripelever.net",
+          "fingerprint": "chrome"
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-2",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "189.74.118.9",
+            "port": 443,
+            "users": [
+              {
+                "id": "7585e2a8-42a5-45b2-b706-3189938f90d0",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "grpc",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "api.mediapolden.cc",
+          "fingerprint": "qq"
+        },
+        "grpcSettings": {
+          "serviceName": "r7Kp4mN9tQ2v"
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-3",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
             "address": "147.45.153.134",
             "port": 443,
             "users": [
@@ -62,7 +151,7 @@
         },
         "tlsSettings": {
           "serverName": "renderer-bridge-2-133.mirra.now",
-          "fingerprint": "edge"
+          "fingerprint": "chrome"
         },
         "grpcSettings": {
           "serviceName": "VideoRenderer"
@@ -75,7 +164,7 @@
       }
     },
     {
-      "tag": "wl-proxy-2",
+      "tag": "wl-proxy-4",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -108,7 +197,7 @@
         },
         "tlsSettings": {
           "serverName": "renderer-bridge-2-133.mirra.now",
-          "fingerprint": "firefox"
+          "fingerprint": "qq"
         },
         "grpcSettings": {
           "serviceName": "VideoRenderer"
@@ -121,7 +210,112 @@
       }
     },
     {
-      "tag": "wl-proxy-3",
+      "tag": "wl-proxy-5",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "83.171.241.174",
+            "port": 443,
+            "users": [
+              {
+                "id": "747db87a-0cf6-4ea7-ae6b-3293afe2cef6",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "xhttp",
+        "security": "reality",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "realitySettings": {
+          "serverName": "be5faex.de9.h1clayd.click",
+          "publicKey": "yO4py2ltxx3eqzeTeNUZvNvTClHAIf8vWT1BJtVEgRg",
+          "shortId": "bead219b05a63ae6",
+          "fingerprint": "chrome"
+        },
+        "xhttpSettings": {
+          "path": "/fcbe41be11cb",
+          "host": "",
+          "mode": "stream-one",
+          "extra": {
+            "xmux": {
+              "maxConcurrency": "16-32",
+              "hKeepAlivePeriod": 0
+            }
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-6",
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "31.12.75.64",
+            "port": 443,
+            "users": [
+              {
+                "id": "50414e45-4c5f-5a45-5553-15038a30cbef",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "sockopt": {
+          "tcpFastOpen": true,
+          "tcpMss": 1440,
+          "tcpcongestion": "bbr",
+          "domainStrategy": "UseIP"
+        },
+        "fragment": {
+          "packets": "tlshello",
+          "length": "100-200",
+          "interval": "10-20"
+        },
+        "tlsSettings": {
+          "serverName": "oizs5zecux0s.pouriayy1.workers.dev",
+          "fingerprint": "safari"
+        },
+        "wsSettings": {
+          "path": "/stream/PANEL_ZEUS/15038a30cbef/loc-0fp=unsafe",
+          "headers": {
+            "Host": "oizs5zecux0s.pouriayy1.workers.dev"
+          }
+        }
+      },
+      "mux": {
+        "enabled": true,
+        "concurrency": 16,
+        "xudpConcurrency": 16
+      }
+    },
+    {
+      "tag": "wl-proxy-7",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -170,152 +364,7 @@
       }
     },
     {
-      "tag": "wl-proxy-4",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "ea0gmd8p.mtrxnet.click",
-            "port": 53898,
-            "users": [
-              {
-                "id": "bb190cdb-82ae-4212-b6cd-8ae9e6b768dd",
-                "encryption": "none",
-                "flow": "xtls-rprx-vision"
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "tcp",
-        "security": "reality",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "realitySettings": {
-          "serverName": "ea0gmd8p.mtrxnet.click",
-          "publicKey": "aV_BHCeZ30y4-5rpUIHaWHMYAgogLsw4AE06Rw2X4WE",
-          "shortId": "e202a94ad1711af2",
-          "fingerprint": "firefox"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-5",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "95.143.188.113",
-            "port": 443,
-            "users": [
-              {
-                "id": "c47159bb-2c15-440d-b239-8594d7e7efbb",
-                "encryption": "none",
-                "flow": ""
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "grpc",
-        "security": "tls",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "tlsSettings": {
-          "serverName": "jagamsrxd6.j.cloudfront.hls.vodcdn-edge.net",
-          "fingerprint": "safari"
-        },
-        "grpcSettings": {
-          "serviceName": "sync.v1"
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-6",
-      "protocol": "vless",
-      "settings": {
-        "vnext": [
-          {
-            "address": "188.72.103.4",
-            "port": 443,
-            "users": [
-              {
-                "id": "00a560f4-035e-48eb-b698-6f6be0b5e477",
-                "encryption": "none",
-                "flow": ""
-              }
-            ]
-          }
-        ]
-      },
-      "streamSettings": {
-        "network": "xhttp",
-        "security": "tls",
-        "sockopt": {
-          "tcpFastOpen": true,
-          "tcpMss": 1440,
-          "tcpcongestion": "bbr",
-          "domainStrategy": "UseIP"
-        },
-        "fragment": {
-          "packets": "tlshello",
-          "length": "100-200",
-          "interval": "10-20"
-        },
-        "tlsSettings": {
-          "serverName": "decdn2.bota7.com",
-          "fingerprint": "chrome"
-        },
-        "xhttpSettings": {
-          "path": "/api/v4/lop/",
-          "host": "decdn2.bota7.com",
-          "mode": "packet-up",
-          "extra": {
-            "xmux": {
-              "maxConcurrency": "16-32",
-              "hKeepAlivePeriod": 0
-            }
-          }
-        }
-      },
-      "mux": {
-        "enabled": true,
-        "concurrency": 16,
-        "xudpConcurrency": 16
-      }
-    },
-    {
-      "tag": "wl-proxy-7",
+      "tag": "wl-proxy-8",
       "protocol": "vless",
       "settings": {
         "vnext": [
@@ -415,7 +464,8 @@
           "wl-proxy-4",
           "wl-proxy-5",
           "wl-proxy-6",
-          "wl-proxy-7"
+          "wl-proxy-7",
+          "wl-proxy-8"
         ],
         "strategy": {
           "type": "leastPing"
@@ -432,7 +482,8 @@
       "wl-proxy-4",
       "wl-proxy-5",
       "wl-proxy-6",
-      "wl-proxy-7"
+      "wl-proxy-7",
+      "wl-proxy-8"
     ],
     "pingConfig": {
       "destination": "http://cp.cloudflare.com/generate_204",
