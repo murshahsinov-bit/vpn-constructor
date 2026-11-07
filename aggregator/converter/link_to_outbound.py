@@ -48,28 +48,25 @@ class LinkToOutboundConverter:
                         "interval": "10-20"
                     }
                 },
-                "mux": { "enabled": True, "concurrency": 16, "xudpConcurrency": 16 }
+                "mux": {"enabled": True, "concurrency": 16, "xudpConcurrency": 16}
             }
 
             sni = params.get("sni", params.get("host", [host]))[0]
-
             if security_type == "tls":
                 outbound["streamSettings"]["tlsSettings"] = {
                     "serverName": sni,
-                    "fingerprint": params.get("fp", ["firefox"])[0]
+                    "fingerprint": "firefox"
                 }
             elif security_type == "reality":
                 pbk = params.get("pbk", params.get("publicKey", [""]))[0]
                 sid = params.get("sid", [""])[0]
-                
                 if not pbk or not sid:
                     return None
-                
                 outbound["streamSettings"]["realitySettings"] = {
                     "serverName": sni,
                     "publicKey": pbk,
                     "shortId": sid,
-                    "fingerprint": params.get("fp", ["firefox"])[0]
+                    "fingerprint": "firefox"
                 }
 
             network = outbound["streamSettings"]["network"]
@@ -77,8 +74,8 @@ class LinkToOutboundConverter:
                 outbound["streamSettings"]["xhttpSettings"] = {
                     "path": unquote(params.get("path", ["/"])[0]),
                     "host": params.get("host", [""])[0],
-                    "mode": params.get("mode", ["stream-one"])[0],
-                    "extra": { "xmux": { "maxConcurrency": "16-32", "hKeepAlivePeriod": 0 } }
+                    "mode": "stream-one",
+                    "extra": {"xmux": {"maxConcurrency": "16-32", "maxConnections": 1, "hKeepAlivePeriod": 0}}
                 }
             elif network == "ws":
                 outbound["streamSettings"]["wsSettings"] = {
@@ -101,10 +98,7 @@ class LinkToOutboundConverter:
             port = parsed.port or 443
             if not password or not host:
                 return None
-            
             params = parse_qs(parsed.query)
-            sni = params.get("sni", params.get("host", [host]))[0]
-            
             return {
                 "tag": "proxy-hy2",
                 "protocol": "hysteria",
@@ -113,10 +107,10 @@ class LinkToOutboundConverter:
                     "network": "hysteria",
                     "security": "tls",
                     "hysteriaSettings": {"version": 2, "auth": password},
-                    "tlsSettings": {"serverName": sni, "alpn": ["h3"]},
-                    "sockopt": { "tcpFastOpen": True, "tcpcongestion": "bbr" }
+                    "tlsSettings": {"serverName": params.get("sni", [host])[0], "alpn": ["h3"]},
+                    "sockopt": {"tcpFastOpen": True, "tcpcongestion": "bbr"}
                 },
-                "mux": { "enabled": True, "concurrency": 16 }
+                "mux": {"enabled": True, "concurrency": 16}
             }
         except Exception:
             return None

@@ -11,7 +11,7 @@ def build_subscription(outbounds: list, template_path: str) -> dict:
             if sni.endswith((".ru", ".ir", ".cn")) or sni in ["microsoft.com", "apple.com", "icloud.com"]:
                 continue
             safe_outbounds.append(ob)
-    
+
     prefix = "wl-proxy-" if "whitelist" in template_path else "proxy-"
     for i, ob in enumerate(safe_outbounds):
         ob["tag"] = f"{prefix}{i+1}"
