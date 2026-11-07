@@ -12,6 +12,15 @@ __pycache__/
 *.sqlite3
 *.db-journal
 
+# Локальные данные manager.py (имена клиентов, токены, ссылки)
+clients.json
+stats.txt
+
+# Артефакты для ZIP-деплоя на Netrun (не публиковать в Git)
+netrun_worker/clients.json
+netrun_worker/auto.json
+netrun_worker/__pycache__/
+
 # Логи и бэкапы
 logs/
 backups/

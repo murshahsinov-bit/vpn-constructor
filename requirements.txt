@@ -1,17 +1,10 @@
-# Telegram Bot
-aiogram==3.31.0
-pydantic==2.12.5
-pydantic-settings==2.13.1
+# Зависимости агрегатора конфигов.
+# manager.py использует только стандартную библиотеку Python и не требует pip install.
 
-# База данных
-SQLAlchemy==2.0.48
-aiosqlite==0.22.1
-
-# HTTP-клиенты и парсинг
+# HTTP-клиент и загрузка источников
 aiohttp==3.13.2
 requests==2.32.5
-python-dotenv==1.1.1
 
-# Утилиты
+# Конфигурация и .env
 PyYAML==6.0.2
-aiohttp-socks==0.10.1
+python-dotenv==1.1.1

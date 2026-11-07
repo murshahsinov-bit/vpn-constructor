@@ -62,9 +62,7 @@ def setup_logging(
     root_logger.addHandler(error_handler)
 
     # Подавляем слишком болтливые логи от сторонних библиотек
-    logging.getLogger("aiogram").setLevel(logging.WARNING)
     logging.getLogger("aiohttp").setLevel(logging.WARNING)
-    logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
 
     root_logger.info("✅ Система логирования успешно инициализирована.")
 
