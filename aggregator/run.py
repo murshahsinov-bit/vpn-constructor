@@ -61,23 +61,48 @@ async def process_mode(mode: str, config: dict):
     
     logger.info(f"🧹 Уникальных серверов: {len(unique_outbounds)}")
     
-    if mode == "auto":
-        alive_outbounds = unique_outbounds
-    else:
-        checker = HealthChecker(timeout=5.0, concurrency=50)
-        alive_outbounds = await checker.check_many(unique_outbounds)
-    
     max_servers = config['aggregator']['max_servers_per_subscription']
-    final_outbounds = alive_outbounds[:max_servers]
     final_raw_links = unique_raw_links[:max_servers]
+    max_json_outbounds = int(config['aggregator'].get('json_max_outbounds', 1))
+
+    # Проверяем TCP-доступность в обоих режимах: в JSON теперь попадает
+    # один сервер, и он должен быть живым, иначе подписка бесполезна.
+    # Идём пачками и останавливаемся, как только набрали нужное количество.
+    health_cfg = config['aggregator'].get('health_check', {})
+    checker = HealthChecker(
+        timeout=float(health_cfg.get('timeout_seconds', 5.0)),
+        concurrency=int(health_cfg.get('concurrency', 50)),
+    )
+    batch_size = max(1, int(health_cfg.get('batch_size', 200)))
+    needed = max(1, max_json_outbounds)
+    alive_outbounds = []
+    checked = 0
+
+    for start in range(0, len(unique_outbounds), batch_size):
+        batch = unique_outbounds[start:start + batch_size]
+        checked += len(batch)
+        alive_outbounds.extend(await checker.check_many(batch))
+        if len(alive_outbounds) >= needed:
+            break
+
+    logger.info(f"🔎 Проверено {checked} из {len(unique_outbounds)}, живых: {len(alive_outbounds)}")
     
-    # 1. Сохраняем JSON
+    # 1. Сохраняем JSON.
+    # В JSON берём все живые outbounds, а не только первые max_servers:
+    # build_subscription сам отфильтрует hysteria/xhttp и оставит
+    # не более json_max_outbounds совместимых VLESS-серверов.
     template_path = os.path.join(config['paths']['templates_dir'], f"{mode}_template.json")
-    final_config = build_subscription(final_outbounds, template_path)
-    
+    final_config = None
+    try:
+        final_config = build_subscription(alive_outbounds, template_path, max_json_outbounds)
+    except ValueError as exc:
+        logger.error(f"❌ JSON для режима {mode} не собран: {exc}")
+        logger.error("Старый JSON оставлен без изменений; TXT-подписка будет обновлена.")
+
     output_json = os.path.join(config['paths']['output_dir'], f"{mode}.json")
     os.makedirs(os.path.dirname(output_json), exist_ok=True)
-    save_config(final_config, output_json)
+    if final_config is not None:
+        save_config(final_config, output_json)
     
     # 2. Сохраняем TXT
     txt_content = generate_txt(final_raw_links)

@@ -144,6 +144,21 @@ python manager.py check --status expired
 
 Netrun-воркер забирает свежий `auto.json` через GitHub API или `CONFIG_URL` и кэширует его на `CACHE_TTL` секунд (по умолчанию 60). Пересобирать контейнер при обновлении конфигов не нужно.
 
+## Мобильные клиенты и совместимость
+
+JSON-подписка (`auto.json`) собирается в максимально консервативном виде:
+
+- только `vless`;
+- только `tls`/`reality`;
+- только `tcp`, `ws`, `grpc`;
+- без `fragment`, `mux`, `sockopt`, `xhttp`, `hysteria`;
+- без `balancers`, `burstObservatory` и `geoip`/`geosite`;
+- один сервер в JSON (`json_max_outbounds: 1`).
+
+Это совместимо с Xray-клиентами, которые умеют импортировать полный JSON: **OneXray** (Android/iOS), **v2rayNG** (через custom config), **FoXray**/Streisand на iOS. Hiddify построен на sing-box и не исполняет Xray JSON — ему нужна ссылочная подписка.
+
+Полный список серверов остаётся в `web/subscriptions/auto_all.txt` и `whitelist_all.txt`: его можно использовать как ссылочную подписку для v2rayNG, Hiddify и Streisand.
+
 ## Переменные Netrun
 
 Задаются в кабинете Netrun, не в `.env`:

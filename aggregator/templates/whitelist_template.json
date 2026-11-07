@@ -1,8 +1,5 @@
 {
   "log": { "loglevel": "warning" },
-  "dns": {
-    "servers": ["77.88.8.8", "1.1.1.1"]
-  },
   "inbounds": [
     {
       "tag": "socks-in",
@@ -10,37 +7,12 @@
       "listen": "127.0.0.1",
       "protocol": "socks",
       "settings": { "udp": true },
-      "sniffing": { "enabled": true, "destOverride": ["http", "tls", "quic"] }
+      "sniffing": { "enabled": true, "destOverride": ["http", "tls"] }
     }
   ],
   "outbounds": [],
   "routing": {
-    "domainStrategy": "IPIfNonMatch",
-    "rules": [
-      { "type": "field", "ip": ["geoip:private"], "outboundTag": "direct" },
-      { "type": "field", "domain": ["geosite:private"], "outboundTag": "direct" },
-      { "type": "field", "ip": ["geoip:ru"], "outboundTag": "direct" },
-      { "type": "field", "domain": ["geosite:category-ru"], "outboundTag": "direct" },
-      { "type": "field", "network": "tcp,udp", "balancerTag": "whitelist-balancer" }
-    ],
-    "balancers": [
-      {
-        "tag": "whitelist-balancer",
-        "selector": ["wl-proxy-"],
-        "strategy": { "type": "leastPing" },
-        "fallbackTag": "direct"
-      }
-    ]
-  },
-  "burstObservatory": {
-    "subjectSelector": ["wl-proxy-"],
-    "pingConfig": {
-      "destination": "http://cp.cloudflare.com/generate_204",
-      "interval": "30s",
-      "sampling": 2,
-      "timeout": "5s"
-    }
-  },
-  "meta": { "serverDescription": "🛡️ Обход Белых Списков" },
-  "stats": {}
+    "domainStrategy": "AsIs",
+    "rules": []
+  }
 }

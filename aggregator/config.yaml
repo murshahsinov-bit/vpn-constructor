@@ -3,12 +3,20 @@ aggregator:
     - auto
     - whitelist
   
-  # 30 серверов — золотая середина для стабильности и скорости
+  # Сколько серверов оставлять в TXT-подписке (share-ссылки)
   max_servers_per_subscription: 30
+
+  # Сколько VLESS-серверов класть в JSON. 1 — максимальная совместимость
+  # с мобильными ядрами; для выбора сервера используйте TXT-подписку.
+  json_max_outbounds: 1
   
   health_check:
     timeout_seconds: 5.0
     concurrency: 50
+    # Проверяем пачками и останавливаемся, как только набрали
+    # json_max_outbounds живых серверов. Это сильно экономит время
+    # GitHub Actions на больших списках источников.
+    batch_size: 200
 
   scoring:
     min_score_to_keep: 0

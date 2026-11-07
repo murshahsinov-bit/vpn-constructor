@@ -1,7 +1,24 @@
-import json
+import logging
 from urllib.parse import urlparse, parse_qs, unquote
 
+logger = logging.getLogger(__name__)
+
+# Транспорты, которые стабильно понимают мобильные Xray-ядра (v2rayNG, OneXray, INCY и т.п.).
+# xhttp / httpupgrade / h2 / quic / kcp сознательно исключены: их поддержка зависит от версии ядра.
+SUPPORTED_NETWORKS = {"tcp", "ws", "grpc"}
+SUPPORTED_SECURITY = {"tls", "reality"}
+SUPPORTED_FINGERPRINTS = {"chrome", "firefox", "safari", "ios", "android", "edge"}
+
+
 class LinkToOutboundConverter:
+    """
+    Преобразует share-ссылки в outbound-объекты Xray.
+
+    Для JSON-подписки генерируется только минимальный набор полей:
+    protocol/settings/streamSettings. Всё, что зависит от версии ядра
+    (fragment, mux, sockopt, xhttp, hysteria), в JSON не попадает.
+    """
+
     @staticmethod
     def parse_vless(link: str) -> dict:
         try:
@@ -14,91 +31,95 @@ class LinkToOutboundConverter:
 
             params = parse_qs(parsed.query)
             security_type = params.get("security", ["none"])[0].lower()
+            network = params.get("type", ["tcp"])[0].lower()
+            # Новые ядра пишут type=raw вместо tcp; старые raw не понимают.
+            if network == "raw":
+                network = "tcp"
             encryption_type = params.get("encryption", ["none"])[0].lower()
 
-            if security_type not in ["tls", "reality"] and encryption_type == "none":
+            # Только TLS/Reality: без них конфиг бессмысленен и небезопасен.
+            if security_type not in SUPPORTED_SECURITY:
+                return None
+            if encryption_type not in ("", "none"):
+                return None
+            if network not in SUPPORTED_NETWORKS:
                 return None
 
-            outbound = {
+            sni = (params.get("sni", [""])[0] or params.get("host", [""])[0] or host).strip()
+            fingerprint = (params.get("fp", ["chrome"])[0] or "chrome").lower()
+            if fingerprint not in SUPPORTED_FINGERPRINTS:
+                fingerprint = "chrome"
+
+            user = {
+                "id": uuid,
+                "encryption": "none",
+            }
+
+            # flow (xtls-rprx-vision) допустим только для TCP.
+            # С ws/grpc Xray падает с ошибкой конфигурации.
+            flow = params.get("flow", [""])[0].strip()
+            if flow and network == "tcp":
+                user["flow"] = flow
+
+            stream_settings = {
+                "network": network,
+                "security": security_type,
+            }
+
+            if security_type == "tls":
+                stream_settings["tlsSettings"] = {
+                    "serverName": sni,
+                    "fingerprint": fingerprint,
+                }
+            else:  # reality
+                public_key = params.get("pbk", params.get("publicKey", [""]))[0]
+                short_id = params.get("sid", [""])[0]  # пустой shortId допустим
+                if not public_key:
+                    return None
+                stream_settings["realitySettings"] = {
+                    "serverName": sni,
+                    "publicKey": public_key,
+                    "shortId": short_id,
+                    "fingerprint": fingerprint,
+                }
+
+            if network == "ws":
+                path = unquote(params.get("path", ["/"])[0]) or "/"
+                ws_settings = {"path": path}
+                host_header = params.get("host", [""])[0]
+                if host_header:
+                    ws_settings["headers"] = {"Host": host_header}
+                stream_settings["wsSettings"] = ws_settings
+            elif network == "grpc":
+                stream_settings["grpcSettings"] = {
+                    "serviceName": params.get("serviceName", [""])[0],
+                }
+            # Для tcp дополнительных настроек не требуется.
+
+            return {
                 "tag": "proxy",
                 "protocol": "vless",
                 "settings": {
                     "vnext": [{
                         "address": host,
                         "port": port,
-                        "users": [{
-                            "id": uuid,
-                            "encryption": params.get("encryption", ["none"])[0],
-                            "flow": params.get("flow", [""])[0]
-                        }]
+                        "users": [user],
                     }]
                 },
-                "streamSettings": {
-                    "network": params.get("type", ["tcp"])[0],
-                    "security": security_type,
-                    "sockopt": {
-                        "tcpFastOpen": True,
-                        "tcpMss": 1440,
-                        "tcpcongestion": "bbr",
-                        "domainStrategy": "UseIP"
-                    },
-                    "fragment": {
-                        "packets": "tlshello",
-                        "length": "100-200",
-                        "interval": "10-20"
-                    }
-                },
-                "mux": {"enabled": True, "concurrency": 16, "xudpConcurrency": 16}
+                "streamSettings": stream_settings,
             }
-
-            sni = params.get("sni", params.get("host", [host]))[0]
-            if security_type == "tls":
-                outbound["streamSettings"]["tlsSettings"] = {
-                    "serverName": sni,
-                    "fingerprint": "firefox"
-                }
-            elif security_type == "reality":
-                pbk = params.get("pbk", params.get("publicKey", [""]))[0]
-                sid = params.get("sid", [""])[0]
-                if not pbk or not sid:
-                    return None
-                outbound["streamSettings"]["realitySettings"] = {
-                    "serverName": sni,
-                    "publicKey": pbk,
-                    "shortId": sid,
-                    "fingerprint": "firefox"
-                }
-
-            network = outbound["streamSettings"]["network"]
-            if network == "xhttp":
-                # ИСПРАВЛЕНИЕ: используем только maxConnections, maxConcurrency = 0
-                outbound["streamSettings"]["xhttpSettings"] = {
-                    "path": unquote(params.get("path", ["/"])[0]),
-                    "host": params.get("host", [""])[0],
-                    "mode": "stream-one",
-                    "extra": {
-                        "xmux": {
-                            "maxConnections": "6",
-                            "maxConcurrency": "0",
-                            "cMaxReuseTimes": 0,
-                            "hKeepAlivePeriod": 0
-                        }
-                    }
-                }
-            elif network == "ws":
-                outbound["streamSettings"]["wsSettings"] = {
-                    "path": unquote(params.get("path", ["/"])[0]),
-                    "headers": {"Host": params.get("host", [""])[0]}
-                }
-            elif network == "grpc":
-                outbound["streamSettings"]["grpcSettings"] = {"serviceName": params.get("serviceName", [""])[0]}
-
-            return outbound
-        except Exception:
+        except Exception as exc:
+            logger.debug("Не удалось разобрать VLESS-ссылку: %s", exc)
             return None
 
     @staticmethod
     def parse_hysteria2(link: str) -> dict:
+        """
+        Hysteria2 остаётся для TXT-подписки и health-check.
+
+        В JSON Xray-core этот outbound не поддерживает, поэтому
+        build_subscription() отфильтровывает protocol != vless.
+        """
         try:
             parsed = urlparse(link)
             password = parsed.username
@@ -115,10 +136,8 @@ class LinkToOutboundConverter:
                     "network": "hysteria",
                     "security": "tls",
                     "hysteriaSettings": {"version": 2, "auth": password},
-                    "tlsSettings": {"serverName": params.get("sni", [host])[0], "alpn": ["h3"]},
-                    "sockopt": {"tcpFastOpen": True, "tcpcongestion": "bbr"}
+                    "tlsSettings": {"serverName": params.get("sni", [host])[0]},
                 },
-                "mux": {"enabled": True, "concurrency": 16}
             }
         except Exception:
             return None
