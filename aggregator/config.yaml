@@ -6,9 +6,17 @@ aggregator:
   # Сколько серверов оставлять в TXT-подписке (share-ссылки)
   max_servers_per_subscription: 30
 
-  # Сколько лучших серверов класть в JSON-подписку.
+  # Сколько лучших СЕРВЕРОВ класть в JSON-подписку auto.
   # Отбор идёт по задержке: сначала самые быстрые и живые.
+  # Если сервер поддерживает XHTTP и TCP, он даёт два outbound:
+  # proxy-xhttp-N и proxy-tcp-N.
   json_max_outbounds: 30
+
+  # Пробовать второй транспорт (XHTTP ↔ TCP+Vision) для лучших серверов.
+  # Гипотеза проверяется через xray-knife и попадает в JSON только если
+  # реально работает. Так сервер с обоими транспортами даёт два outbound.
+  synthesize_alternate_profiles: true
+  synthesis_candidates: 60
 
   # Проверка реальной задержки через Xray-core (xray-knife).
   latency_check:
@@ -18,6 +26,9 @@ aggregator:
     timeout_ms: 10000             # таймаут одного HTTP-теста
     max_delay_ms: 8000            # серверы медленнее считаются неудачными
     subprocess_timeout_seconds: 2400
+    # Фрагментация TLS ClientHello при проверке. xray-knife ожидает
+    # packets,length[,interval]; запись 100-200,tlshello тоже принимается.
+    fragment: "tlshello,100-200,10-20"
     # Если xray-knife недоступен/упал — измеряем хотя бы TCP RTT.
     fallback_tcp: true
     fallback_concurrency: 50
@@ -36,9 +47,35 @@ aggregator:
     json_source_prefixes:
       - "igareck_"
     # igareck публикует white-list конфиги как VLESS + TCP + TLS + Vision
-    # (SNI разрешённого домена), а не Reality. Разрешаем их только здесь,
-    # чтобы auto оставался строго Reality+Vision.
+    # (SNI разрешённого домена), а не Reality. Разрешаем их только здесь.
     allow_tls_vision: true
+
+    # В whitelist.json попадают лучшие зарубежные серверы из auto,
+    # но каждый — через цепочку RU relay → зарубежный VPS.
+    targets_from_auto: true
+    json_max_servers: 10
+
+    # RU relay: клиент → RU VPS (Timeweb/VDSina/Selectel,
+    # VLESS Reality SNI=gosuslugi.ru) → зарубежный VPS.
+    # Явную ссылку можно задать здесь или через секрет RU_RELAY_LINK.
+    # Yandex Cloud как relay не используем: его AS блокируется.
+    relay:
+      link: ""
+      require_source_prefixes:
+        - "igareck_"
+      preferred_sni:
+        - "gosuslugi.ru"
+      exclude_sni_suffixes:
+        - "yandex"
+        - "yandexcloud.net"
+        - "cloud.yandex"
+      # false: без relay whitelist.json не перезаписывается.
+      allow_without_relay: false
+      # false: relay выбирается только по реальной проверке (passed/
+      # semi-passed). TCP-fallback проверяет лишь открытый порт и может
+      # дать мёртвый вход в цепочку.
+      allow_tcp_fallback: false
+
     # false: если живых igareck-серверов нет, JSON не перезаписывается.
     # true:  разрешить fallback на остальные whitelist-источники (zieng2).
     fallback_to_any_source: false

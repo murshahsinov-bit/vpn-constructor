@@ -16,6 +16,37 @@ from urllib.parse import urlparse
 logger = logging.getLogger(__name__)
 
 
+def normalize_fragment_spec(spec: str | None) -> str:
+    """
+    Приводит спецификацию фрагментации к формату xray-knife:
+    ``packets,length[,interval]``.
+
+    В задаче используется историческая запись ``100-200,tlshello``.
+    xray-knife v11.5.0 ожидает ``tlshello,100-200,10-20``, поэтому
+    переставляем части, если первая начинается с цифры.
+    """
+    value = str(spec or "").strip()
+    if not value or value.lower() == "off":
+        return ""
+
+    parts = [part.strip() for part in value.split(",") if part.strip()]
+    if not parts:
+        return ""
+
+    if parts[0][0].isdigit() and "tlshello" in parts:
+        parts.remove("tlshello")
+        parts.insert(0, "tlshello")
+
+    if parts[0] != "tlshello":
+        # Неизвестный формат: не рискуем ломать запуск.
+        logger.warning("Неизвестная спецификация фрагментации: %r", spec)
+        return ""
+
+    if len(parts) < 2:
+        return ""
+    return ",".join(parts[:3])
+
+
 @dataclass
 class RankedNode:
     """Сервер, прошедший проверку задержки."""
@@ -70,6 +101,7 @@ class XrayKnifeChecker:
         timeout_ms: int = 10000,
         max_delay_ms: int = 8000,
         subprocess_timeout: int = 2400,
+        fragment: str | None = None,
     ):
         self.binary = (
             binary
@@ -80,6 +112,9 @@ class XrayKnifeChecker:
         self.timeout_ms = max(1000, int(timeout_ms))
         self.max_delay_ms = max(self.timeout_ms, int(max_delay_ms))
         self.subprocess_timeout = max(60, int(subprocess_timeout))
+        self.fragment = normalize_fragment_spec(
+            fragment if fragment is not None else os.getenv("XRAY_KNIFE_FRAGMENT")
+        )
         # True, только если чекер реально отработал и результаты разобраны.
         # Нужно, чтобы отличить «0 живых» от «инструмент не запустился».
         self.last_run_ok = False
@@ -95,7 +130,13 @@ class XrayKnifeChecker:
         if not self.binary:
             return []
 
-        by_identity = {outbound_identity(ob): (ob, link) for ob, link in candidates}
+        # Один сервер может иметь два профиля (XHTTP и TCP) с разными
+        # share-ссылками. Поэтому индексируем по точной ссылке, а identity
+        # оставляем только как резервный ключ.
+        by_link = {link.strip(): (ob, link) for ob, link in candidates}
+        by_identity: dict[tuple[str, int, str], list[tuple[dict, str]]] = {}
+        for ob, link in candidates:
+            by_identity.setdefault(outbound_identity(ob), []).append((ob, link))
 
         with tempfile.TemporaryDirectory(prefix="xray-knife-") as tmp:
             links_path = Path(tmp) / "links.txt"
@@ -120,6 +161,10 @@ class XrayKnifeChecker:
                 "--prescan-workers", "200",
                 "--diagnose=false",
             ]
+            if self.fragment:
+                # Разбиваем TLS ClientHello, чтобы SNI не уходил одним
+                # пакетом: это защищает от SNI-фильтрации ТСПУ.
+                cmd.extend(["--fragment", self.fragment])
 
             logger.info(
                 "xray-knife: проверяю %d серверов, потоков=%d, timeout=%d ms",
@@ -170,7 +215,7 @@ class XrayKnifeChecker:
         if isinstance(raw, dict):
             raw = raw.get("results", [])
 
-        ranked: dict[tuple[str, int, str], RankedNode] = {}
+        ranked: dict[tuple[tuple[str, int, str], str], RankedNode] = {}
         for item in raw:
             if not isinstance(item, dict):
                 continue
@@ -186,14 +231,23 @@ class XrayKnifeChecker:
 
             link = str(item.get("link") or item.get("configLink") or "")
             identity = _identity_from_link(link)
-            match = by_identity.get(identity)
+            match = by_link.get(link.strip())
+            if match is None:
+                # Инструмент мог нормализовать ссылку. Если для сервера
+                # ровно один профиль — используем его; при двух профилях
+                # угадывать нельзя.
+                candidates_for_identity = by_identity.get(identity) or []
+                match = candidates_for_identity[0] if len(candidates_for_identity) == 1 else None
             if match is None:
                 continue
 
-            node = RankedNode(outbound=match[0], link=match[1], delay_ms=delay, status=status)
-            previous = ranked.get(identity)
+            outbound = match[0]
+            profile = str(outbound.get("_profile") or "").strip().lower()
+            node = RankedNode(outbound=outbound, link=match[1], delay_ms=delay, status=status)
+            key = (identity, profile)
+            previous = ranked.get(key)
             if previous is None or node.delay_ms < previous.delay_ms:
-                ranked[identity] = node
+                ranked[key] = node
 
         result = sorted(ranked.values(), key=lambda node: node.delay_ms)
         logger.info("xray-knife: рабочих серверов %d", len(result))
@@ -275,6 +329,7 @@ async def rank_by_latency(
             timeout_ms=int(config.get("timeout_ms", 10000)),
             max_delay_ms=int(config.get("max_delay_ms", 8000)),
             subprocess_timeout=int(config.get("subprocess_timeout_seconds", 2400)),
+            fragment=config.get("fragment"),
         )
         if checker.available:
             ranked = checker.rank(candidates)

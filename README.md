@@ -1,6 +1,6 @@
 # VPN-Конструктор
 
-Бесплатная сборка VPN-подписок: GitHub Actions раз в час собирает открытые VLESS/Reality-конфиги, проверяет реальную задержку через Xray-core и оставляет только **топ-30 живых серверов**. Небольшой Python-сервис на **Netrun** проверяет персональный токен и только после этого отдаёт `auto.json`.
+Бесплатная сборка VPN-подписок: GitHub Actions раз в час собирает открытые VLESS-конфиги, проверяет реальную задержку через Xray-core и оставляет только **топ-30 живых серверов**. Каждый сервер может отдаваться двумя профилями: **XHTTP + Reality** (Android/desktop) и **TCP + Reality + Vision + fragment** (iOS). Для обхода белых списков есть отдельный `whitelist.json` с цепочкой **RU relay → зарубежный VPS**. Небольшой Python-сервис на **Netrun** проверяет персональный токен и только после этого отдаёт подписку.
 
 Telegram-бота нет. Управление клиентами — локальный `manager.py` на стандартной библиотеке Python.
 
@@ -140,12 +140,13 @@ python manager.py check --status expired
 
 `.github/workflows/aggregator.yml` запускается раз в час и вручную:
 
-1. ставит Python-зависимости и Go 1.25;
+1. ставит Python-зависимости и Go 1.27;
 2. собирает `xray-knife` из исходников (`go install ...@v11.5.0`);
 3. проверяет, из какой страны идёт запуск, и предупреждает, если это не РФ;
-4. запускает `python -m aggregator.run`: парсинг → дедупликация → реальный
-   HTTP-тест через Xray-core с конкурентностью 50 → сортировка по задержке →
-   топ-30 в `auto.json` / `whitelist.json`;
+4. запускает `python -m aggregator.run`: парсинг XHTTP/TCP → дедупликация →
+   реальный HTTP-тест через Xray-core с конкурентностью 50 и фрагментацией
+   TLS ClientHello → сортировка по задержке → топ-30 в `auto.json` и топ-10
+   в `whitelist.json` через RU relay;
 5. коммитит изменения из `web/subscriptions/` в `main`.
 
 Таймаут job — 45 минут. Cron — `0 * * * *`: частая массовая проверка прокси
@@ -175,6 +176,20 @@ Netrun-воркер забирает свежий `auto.json` через GitHub 
 где запущен workflow. Это лучше, чем ничего, но не гарантирует скорость
 именно из России.
 
+### RU relay для whitelist
+
+`whitelist.json` собирает цепочку «клиент → RU VPS → зарубежный VPS».
+Ссылка на RU relay задаётся секретом `RU_RELAY_LINK`:
+
+```text
+vless://<UUID>@<RU_IP>:443?security=reality&sni=gosuslugi.ru&pbk=<PUBLIC_KEY>&sid=<SHORT_ID>&type=tcp&flow=xtls-rprx-vision
+```
+
+Требования: Timeweb/VDSina/Selectel, Reality + Vision, порт 443,
+SNI `gosuslugi.ru`. Yandex Cloud не используем: его AS блокируется.
+Если секрет не задан, workflow попробует выбрать живой igareck-узел; если
+и его нет, `whitelist.json` не перезаписывается.
+
 ### Обновление топ-30
 
 Топ пересобирается при каждом запуске workflow. Вручную:
@@ -188,35 +203,49 @@ python -m aggregator.run
 
 ## Мобильные клиенты и совместимость
 
-JSON-подписка (`auto.json`) собирается строго в одном формате:
+JSON-подписка (`auto.json`) собирается из двух профилей:
 
-- только `vless`;
-- только `tcp`;
-- только `security: "reality"`;
-- только `flow: "xtls-rprx-vision"` (Reality Vision);
-- `realitySettings` всегда содержит `serverName`, `publicKey`, `shortId` и `fingerprint: "chrome"`;
-- без `fragment`, `mux`, `sockopt`, `xhttp`, `hysteria`, `ws`, `grpc`;
-- без `balancers`, `burstObservatory` и `geoip`/`geosite`;
+- `proxy-xhttp-N` — XHTTP + Reality (для Cloudflare CDN допускается XHTTP + TLS):
+  `network: "xhttp"`, `security: "reality"`, `xhttpSettings.mode: "stream-one"`,
+  `flow: ""`;
+- `proxy-tcp-N` — TCP + Reality + Vision:
+  `network: "tcp"`, `security: "reality"`, `flow: "xtls-rprx-vision"`,
+  `fragment: {packets: "tlshello", length: "100-200", interval: "10-20"}`;
+- `fingerprint: "firefox"` во всех профилях;
+- без `ws`, `mux`, `sockopt`, `balancers`, `burstObservatory`, `geoip:ru`,
+  `geosite:category-ru`;
 - до 30 серверов (`json_max_outbounds: 30`), отсортированных по задержке.
+  У сервера с двумя рабочими транспортами будет два outbound с одним `N`.
 
-Whitelist-режим (`whitelist.json`) использует те же правила, но:
+Второй профиль для лучших серверов проверяется реально: если сервер не
+поднял XHTTP/TCP на том же порту, xray-knife его отбросит. В JSON попадают
+только подтверждённые профили.
 
-- в JSON попадают только серверы из источников `igareck_*`;
-- источники `igareck` публикуют white-list конфиги как VLESS + TCP + TLS +
-  Vision (SNI разрешённого домена), поэтому для whitelist разрешён
-  `security: "tls"` (управляется `whitelist.allow_tls_vision`);
-- если живых igareck-серверов нет, JSON **не перезаписывается** мёртвыми
-  узлами; в логе будет ошибка, а TXT соберётся из проверенных ссылок;
+Whitelist-режим (`whitelist.json`) использует те же профили, но:
+
+- это лучшие зарубежные серверы из auto (до 10), каждый — через цепочку
+  **RU relay → зарубежный VPS**;
+- RU relay — VLESS Reality на Timeweb/VDSina/Selectel с SNI `gosuslugi.ru`
+  (Yandex Cloud не используем: его AS блокируется); ссылка задаётся
+  секретом `RU_RELAY_LINK` или автоматически выбирается из igareck;
+- в JSON у целевых outbound есть `streamSettings.sockopt.dialerProxy =
+  "wl-relay"`, сам `wl-relay` идёт напрямую;
+- `security: "tls"` разрешён для whitelist-режима
+  (`whitelist.allow_tls_vision`);
+- если живого relay нет, `whitelist.json` **не перезаписывается**;
 - в `routing.rules` нет `geoip:ru` и `geosite:category-ru`: весь трафик идёт
   в туннель, а не напрямую.
 
 Такой JSON отдаётся с `Content-Type: application/json` и содержит полный
-Xray-конфиг с секциями `inbounds` и `outbounds`. Его понимают **Happ** и
-**INCY** (Xray-core, Android/iOS), а также OneXray и v2rayNG (custom config).
+Xray-конфиг с секциями `inbounds` и `outbounds`. Его понимают **Happ**,
+**INCY** и **v2RayTun** (Xray-core, Android/iOS), а также OneXray и v2rayNG
+(custom config).
 
-WS + TLS, gRPC и XHTTP намеренно исключены из auto: в 2026 ТСПУ в России
-блокирует их по TLS-отпечатку и характеру трафика. Reality Vision
-маскируется под обычный TLS к чужому домену и неотличим от браузера.
+Почему это работает в 2026: XHTTP маскирует поток под обычный HTTP,
+Reality подставляет настоящий TLS чужого домена, Vision убирает
+TLS-in-TLS, фрагментация не отдаёт SNI одним пакетом, а `firefox`
+совпадает с массовым браузерным JA3/JA4. WS + TLS и gRPC по-прежнему
+исключены: ТСПУ детектирует их по характеру трафика.
 
 Полный список серверов остаётся в `web/subscriptions/auto_all.txt` и
 `whitelist_all.txt` — как резервная ссылочная подписка.
@@ -224,29 +253,37 @@ WS + TLS, gRPC и XHTTP намеренно исключены из auto: в 2026
 ## Как проверить, что в JSON попали лучшие серверы
 
 ```bash
-# 1. Посмотреть лог отбора: задержки и источники
-python -m aggregator.run 2>&1 | Select-String "Топ-|ms  "
+# 1. Посмотреть лог отбора: задержки, профили и источники
+python -m aggregator.run 2>&1 | Select-String "Живых|ms  |второй профиль"
 
 # 2. Проверить структуру auto.json
 python - <<'PY'
 import json
 cfg = json.load(open("web/subscriptions/auto.json", encoding="utf-8"))
 servers = [o for o in cfg["outbounds"] if o["protocol"] == "vless"]
-print("серверов:", len(servers))
-for o in servers[:5]:
+print("профилей:", len(servers))
+for o in servers[:8]:
     u = o["settings"]["vnext"][0]
-    print(u["address"], u["port"], o["streamSettings"]["security"],
-          o["settings"]["vnext"][0]["users"][0]["flow"])
-assert len(servers) <= 30
-assert all(o["streamSettings"]["network"] == "tcp" for o in servers)
-assert all(o["streamSettings"]["security"] == "reality" for o in servers)
-assert all(o["settings"]["vnext"][0]["users"][0]["flow"] == "xtls-rprx-vision" for o in servers)
+    s = o["streamSettings"]
+    print(o["tag"], u["address"], u["port"], s["network"], s["security"],
+          o["settings"]["vnext"][0]["users"][0]["flow"],
+          o.get("fragment", {}).get("packets"))
+text = json.dumps(cfg, ensure_ascii=False).lower()
+for bad in ('"ws"', '"mux"', '"sockopt"', '"balancers"', "geoip:ru", "geosite:category-ru"):
+    assert bad not in text, bad
+assert all(o["streamSettings"]["network"] in ("xhttp", "tcp") for o in servers)
 PY
 
-# 3. Перепроверить топ вручную через xray-knife
+# 3. Перепроверить топ вручную через xray-knife с фрагментацией
 xray-knife http -f web/subscriptions/auto_all.txt -t 50 -o check.json \
-  -x json --sort --timeout 10000 --mdelay 8000 --prescan --diagnose=false
+  -x json --sort --timeout 10000 --mdelay 8000 --prescan --diagnose=false \
+  --fragment 100-200,tlshello
 ```
+
+`xray-knife` принимает фрагментацию в формате `packets,length[,interval]`.
+Запись `100-200,tlshello` из задачи нормализуется в
+`tlshello,100-200` (см. `normalize_fragment_spec`) и передаётся ядру
+именно в таком виде.
 
 В `check.json` успешные серверы имеют `status: "passed"` или
 `"semi-passed"` и положительный `delay`. Именно они попадают в топ-30.

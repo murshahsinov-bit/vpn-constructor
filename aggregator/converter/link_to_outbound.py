@@ -1,54 +1,105 @@
+import json
 import logging
 from urllib.parse import parse_qs, unquote, urlparse
 
 logger = logging.getLogger(__name__)
 
-# Единственная комбинация, которая в 2026 стабильно проходит ТСПУ
-# и одинаково работает в Happ и INCY (Xray-core, Android/iOS):
-#     VLESS + TCP + Reality + Vision (flow=xtls-rprx-vision)
-#
-# WS + TLS, gRPC, XHTTP, Hysteria и прочее отбрасываются ещё на этапе
-# парсинга, поэтому в JSON-подписку они физически не попадают.
-REQUIRED_NETWORK = "tcp"
-REQUIRED_SECURITY = "reality"
-REQUIRED_FLOW = "xtls-rprx-vision"
+# Профили, которые попадают в JSON-подписку.
+#   xhttp — XHTTP + Reality/TLS, основной профиль для Android и десктопа.
+#   tcp   — TCP + Reality/TLS + Vision, резервный профиль для iOS и старых ядер.
+PROFILE_XHTTP = "xhttp"
+PROFILE_TCP = "tcp"
+SUPPORTED_PROFILES = {PROFILE_XHTTP, PROFILE_TCP}
 
-# fingerprint в Reality должен быть реалистичным TLS-отпечатком.
-# Пустое значение заменяем на chrome.
-SUPPORTED_FINGERPRINTS = {"chrome", "firefox", "safari", "ios", "android", "edge"}
+VISION_FLOW = "xtls-rprx-vision"
+DEFAULT_FINGERPRINT = "firefox"
+
+# Фрагментация TLS ClientHello. Только для TCP-профилей: XHTTP уже
+# разбивает поток на HTTP-запросы, и лишняя фрагментация ему не нужна.
+TCP_FRAGMENT = {
+    "packets": "tlshello",
+    "length": "100-200",
+    "interval": "10-20",
+}
+
+# XHTTP-режимы, которые понимает Xray-core. Клиентский mode не обязан
+# совпадать с серверным: сервер XHTTP принимает все режимы.
+XHTTP_MODES = {"auto", "packet-up", "stream-up", "stream-one"}
+SUPPORTED_FINGERPRINTS = {
+    "chrome", "firefox", "safari", "ios", "android", "edge",
+    "random", "randomized",
+}
+
+
+def _first(params: dict, *names: str, default: str = "") -> str:
+    """Возвращает первый непустой параметр из списка альтернативных имён."""
+    for name in names:
+        values = params.get(name)
+        if values:
+            value = str(values[0] or "").strip()
+            if value:
+                return value
+    return default
+
+
+def _decode_repeatedly(value: str, rounds: int = 3) -> str:
+    """Источники иногда кодируют path/host/alpn дважды."""
+    decoded = value
+    for _ in range(rounds):
+        new_value = unquote(decoded)
+        if new_value == decoded:
+            break
+        decoded = new_value
+    return decoded
+
+
+def _parse_bool(value: str, default: bool = False) -> bool:
+    value = str(value or "").strip().lower()
+    if not value:
+        return default
+    return value in ("1", "true", "yes", "on")
 
 
 class LinkToOutboundConverter:
     """
     Преобразует share-ссылки в outbound-объекты Xray.
 
-    Для JSON-подписки auto допускается только:
-      - protocol=vless
-      - network=tcp (новые ядра пишут type=raw)
-      - security=reality с непустым pbk
-      - flow=xtls-rprx-vision
+    Поддерживаются VLESS с транспортами tcp/xhttp и security reality/tls.
+    WS/gRPC/hysteria в JSON не попадают: для них нет безопасного профиля,
+    который одинаково работает в Happ/INCY и проходит ТСПУ.
 
-    Для whitelist-режима можно включить allow_tls_vision: источники
-    igareck публикуют white-list конфиги как VLESS + TCP + TLS + Vision
-    (SNI разрешённого домена), и такие серверы тоже годны для обхода
-    белых списков. Reality остаётся приоритетным.
+    Правила:
+      * XHTTP + Reality       -> профиль ``xhttp``, flow пустой;
+      * XHTTP + TLS           -> профиль ``xhttp`` (Cloudflare/CDN);
+      * TCP + Reality + Vision-> профиль ``tcp``, flow=xtls-rprx-vision;
+      * TCP + TLS + Vision    -> только whitelist (allow_tls_vision);
+      * fingerprint всегда firefox;
+      * fragment добавляется только TCP-профилю.
 
-    fragment, mux, sockopt, wsSettings, grpcSettings и прочие расширения
-    не генерируются вовсе: мобильные ядра их либо не понимают, либо
-    ведут себя непредсказуемо.
+    Никакие mux/sockopt/wsSettings/grpcSettings не генерируются.
     """
 
-    def __init__(self, allow_tls_vision: bool = False):
+    def __init__(
+        self,
+        allow_tls_vision: bool = False,
+        allow_xhttp_tls: bool = True,
+    ):
         self.allow_tls_vision = bool(allow_tls_vision)
+        # XHTTP поверх TLS — это штатный режим Cloudflare CDN.
+        self.allow_xhttp_tls = bool(allow_xhttp_tls)
 
-    def _allowed_security(self) -> set[str]:
-        allowed = {REQUIRED_SECURITY}
+    def _allowed_security(self, profile: str) -> set[str]:
+        allowed = {"reality"}
+        if profile == PROFILE_XHTTP and self.allow_xhttp_tls:
+            allowed.add("tls")
         if self.allow_tls_vision:
             allowed.add("tls")
         return allowed
 
     def parse_vless(self, link: str) -> dict | None:
         try:
+            # Некоторые источники отдают HTML-экранированные &amp; в query.
+            link = link.strip().replace("&amp;", "&")
             parsed = urlparse(link)
             uuid = parsed.username
             host = parsed.hostname
@@ -58,88 +109,132 @@ class LinkToOutboundConverter:
 
             # Заглушки из некоторых источников (0.0.0.0, localhost) и
             # нулевые UUID — не серверы, их нельзя отдавать клиентам.
-            if host.strip().lower() in {"0.0.0.0", "::", "[::]", "127.0.0.1", "localhost"}:
+            if host.strip().lower() in {
+                "0.0.0.0", "::", "[::]", "127.0.0.1", "localhost",
+            }:
                 return None
             if not str(uuid).replace("0", "").replace("-", ""):
                 return None
 
-            params = parse_qs(parsed.query)
+            params = parse_qs(parsed.query, keep_blank_values=True)
 
-            security_type = (params.get("security", [""])[0] or "").strip().lower()
-            network = (params.get("type", ["tcp"])[0] or "tcp").strip().lower()
-            # Новые ядра пишут type=raw вместо tcp; старые raw не понимают.
+            security_type = _first(params, "security").lower()
+            network = _first(params, "type", "network", default="tcp").lower()
+            # Новые ядра пишут type=raw вместо tcp.
             if network == "raw":
                 network = "tcp"
-            flow = (params.get("flow", [""])[0] or "").strip()
-            encryption_type = (params.get("encryption", ["none"])[0] or "none").strip().lower()
+            flow = _first(params, "flow")
+            encryption_type = _first(params, "encryption", default="none").lower()
 
-            # --- Жёсткий фильтр: только TCP + Vision + Reality (или TLS) ---
-            if security_type not in self._allowed_security():
-                return None
-            if network != REQUIRED_NETWORK:
-                return None
-            if flow != REQUIRED_FLOW:
-                return None
             if encryption_type not in ("", "none"):
                 return None
 
-            public_key = (params.get("pbk", params.get("publicKey", [""]))[0] or "").strip()
-            if security_type == REQUIRED_SECURITY and not public_key:
+            # WS/gRPC и прочие транспорты осознанно не поддерживаются.
+            if network == "ws":
+                logger.debug("WS-конфиг пропущен: ТСПУ детектирует WebSocket")
+                return None
+            if network not in SUPPORTED_PROFILES:
+                return None
+
+            profile = PROFILE_XHTTP if network == PROFILE_XHTTP else PROFILE_TCP
+
+            if security_type not in self._allowed_security(profile):
+                return None
+
+            # Для TCP без Vision это обычный VLESS; для XHTTP flow не нужен.
+            if profile == PROFILE_TCP and flow != VISION_FLOW:
+                return None
+            if profile == PROFILE_XHTTP:
+                flow = ""
+
+            public_key = _first(params, "pbk", "publicKey")
+            if security_type == "reality" and not public_key:
                 # Reality без publicKey нерабочий.
                 return None
 
             sni = (
-                (params.get("sni", [""])[0] or "").strip()
-                or (params.get("host", [""])[0] or "").strip()
+                _first(params, "sni", "peer")
+                or _first(params, "host")
                 or host
             )
-            short_id = (params.get("sid", [""])[0] or "").strip()  # пустой shortId допустим
+            short_id = _first(params, "sid", "shortId")
+            spider_x = _first(params, "spx", "spiderX")
 
-            fingerprint = (params.get("fp", ["chrome"])[0] or "chrome").strip().lower()
-            if fingerprint not in SUPPORTED_FINGERPRINTS:
-                fingerprint = "chrome"
+            # Требование проекта: везде firefox. Параметр fp из источника
+            # игнорируется, чтобы не отдавать chrome/safari, которые ТСПУ
+            # уже научился выделять по JA3/JA4.
+            fingerprint = DEFAULT_FINGERPRINT
+            source_fp = _first(params, "fp").lower()
+            if source_fp and source_fp not in SUPPORTED_FINGERPRINTS:
+                logger.debug("Неизвестный fingerprint %r, использую firefox", source_fp)
 
-            stream_settings = {
-                "network": REQUIRED_NETWORK,
+            stream_settings: dict = {
+                "network": profile,
                 "security": security_type,
             }
 
-            if security_type == REQUIRED_SECURITY:
-                stream_settings["realitySettings"] = {
+            if security_type == "reality":
+                reality_settings = {
                     "serverName": sni,
                     "publicKey": public_key,
                     "shortId": short_id,
                     "fingerprint": fingerprint,
                 }
+                if spider_x:
+                    reality_settings["spiderX"] = spider_x
+                stream_settings["realitySettings"] = reality_settings
             else:
-                # igareck WHITE-*: обычный TLS на SNI из белого списка.
-                alpn_raw = (params.get("alpn", [""])[0] or "").strip()
-                alpn = []
-                if alpn_raw:
-                    # Источники иногда кодируют alpn дважды: h2%252Chttp%252F1.1.
-                    for _ in range(2):
-                        decoded = unquote(alpn_raw)
-                        if decoded == alpn_raw:
-                            break
-                        alpn_raw = decoded
-                    alpn = [item.strip() for item in alpn_raw.split(",") if item.strip()]
+                alpn_raw = _decode_repeatedly(_first(params, "alpn")).strip()
+                alpn = [
+                    item.strip()
+                    for item in alpn_raw.split(",")
+                    if item.strip()
+                ]
                 tls_settings = {
                     "serverName": sni,
                     "fingerprint": fingerprint,
-                    "allowInsecure": False,
+                    "allowInsecure": _parse_bool(_first(params, "allowInsecure", "insecure")),
                 }
                 if alpn:
                     tls_settings["alpn"] = alpn
                 stream_settings["tlsSettings"] = tls_settings
 
-            # Vision включается только через flow у пользователя.
+            if profile == PROFILE_XHTTP:
+                path = _decode_repeatedly(_first(params, "path")) or "/"
+                xhttp_host = _decode_repeatedly(_first(params, "host"))
+                mode = _first(params, "mode", default="stream-one").lower()
+                if mode not in XHTTP_MODES:
+                    mode = "stream-one"
+                # Требование проекта — stream-one. Сервер XHTTP принимает
+                # этот режим независимо от значения mode в share-ссылке.
+                mode = "stream-one"
+
+                xhttp_settings: dict = {"mode": mode, "path": path}
+                if xhttp_host:
+                    xhttp_settings["host"] = xhttp_host
+
+                extra_raw = _first(params, "extra")
+                if extra_raw:
+                    try:
+                        extra = json.loads(_decode_repeatedly(extra_raw))
+                        if isinstance(extra, dict):
+                            # mode задаём отдельно; остальные поля (например,
+                            # xPaddingBytes) сохраняем.
+                            extra.pop("mode", None)
+                            if extra:
+                                xhttp_settings["extra"] = extra
+                    except (TypeError, ValueError, json.JSONDecodeError):
+                        logger.debug("Не удалось разобрать xhttp extra=%r", extra_raw)
+
+                stream_settings["xhttpSettings"] = xhttp_settings
+
             user = {
                 "id": uuid,
                 "encryption": "none",
-                "flow": REQUIRED_FLOW,
+                "flow": flow,
             }
 
-            return {
+            outbound = {
                 "tag": "proxy",
                 "protocol": "vless",
                 "settings": {
@@ -150,7 +245,19 @@ class LinkToOutboundConverter:
                     }]
                 },
                 "streamSettings": stream_settings,
+                # Служебные поля нужны пайплайну, в JSON они не попадут.
+                "_profile": profile,
+                "_network": profile,
+                "_security": security_type,
+                "_flow": flow,
             }
+
+            if profile == PROFILE_TCP:
+                # Фрагментация только для TCP: режем TLS ClientHello так,
+                # чтобы SNI не попадал в первый пакет.
+                outbound["fragment"] = dict(TCP_FRAGMENT)
+
+            return outbound
         except Exception as exc:
             logger.debug("Не удалось разобрать VLESS-ссылку: %s", exc)
             return None

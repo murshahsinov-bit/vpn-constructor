@@ -26,6 +26,18 @@ jobs:
     runs-on: ${{ vars.RU_RUNNER_LABELS != '' && fromJSON(vars.RU_RUNNER_LABELS) || 'ubuntu-latest' }}
     timeout-minutes: 45
 
+    env:
+      # RU VPS для whitelist-цепочки:
+      # клиент → RU relay (Timeweb/VDSina/Selectel, Reality SNI=gosuslugi.ru)
+      # → зарубежный VPS. Ссылка хранится в Secrets и не попадает в логи.
+      RU_RELAY_LINK: ${{ secrets.RU_RELAY_LINK }}
+      # Дополнительный SOCKS5-профиль (например, Yandex Cloud Functions).
+      YANDEX_FUNCTIONS_SOCKS: ${{ secrets.YANDEX_FUNCTIONS_SOCKS }}
+      # xray-knife ждёт packets,length[,interval]. Историческая запись
+      # 100-200,tlshello тоже принимается: normalize_fragment_spec()
+      # переставит части в правильный порядок.
+      XRAY_KNIFE_FRAGMENT: "100-200,tlshello,10-20"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,18 +49,19 @@ jobs:
           cache: 'pip'
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements.txt pytest
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25.x'
+          # xray-knife v11.5.0 требует Go 1.27 (go.mod).
+          go-version: '1.27.x'
           cache: false
 
       - name: Install xray-knife
         run: |
           # v11.5.0 — проверенная версия: встраивает Xray-core, отдельный
-          # бинарник ядра не нужен. Формат JSON: link/status/delay/ip.
+          # бинарник ядра не нужен. Поддерживает --fragment для TLS ClientHello.
           go install github.com/lilendian0x00/xray-knife/v11@v11.5.0
           echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
           "$(go env GOPATH)/bin/xray-knife" --help > /dev/null
@@ -62,12 +75,79 @@ jobs:
           if [ "$COUNTRY" != "RU" ]; then
             echo "::warning::Проверка идёт не из России ($COUNTRY). Пинг будет измерен из дата-центра GitHub. Для реального RU-отбора задайте RU_RUNNER_LABELS и self-hosted runner."
           fi
+          if [ -z "$RU_RELAY_LINK" ]; then
+            echo "::warning::RU_RELAY_LINK не задан. whitelist.json не будет перезаписан без RU relay (igareck-узлы могут дать relay автоматически)."
+          fi
+
+      - name: Run tests
+        run: python -m pytest -q
 
       - name: Run Aggregator
         env:
           XRAY_KNIFE_BIN: xray-knife
           SKIP_LATENCY: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_latency == true && '1' || '0' }}
         run: python -m aggregator.run
+
+      - name: Validate subscriptions
+        run: |
+          python - <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          auto_path = pathlib.Path("web/subscriptions/auto.json")
+          wl_path = pathlib.Path("web/subscriptions/whitelist.json")
+          if not auto_path.exists():
+              sys.exit("auto.json не создан")
+
+          auto = json.loads(auto_path.read_text(encoding="utf-8"))
+          auto_text = json.dumps(auto, ensure_ascii=False).lower()
+          forbidden = [
+              '"ws"', '"mux"', '"sockopt"', '"balancers"',
+              '"burstobservatory"', "geoip:ru", "geosite:category-ru",
+          ]
+          for marker in forbidden:
+              if marker in auto_text:
+                  sys.exit(f"auto.json содержит запрещённый маркер: {marker}")
+
+          profiles = [o for o in auto.get("outbounds", []) if o.get("protocol") == "vless"]
+          if not profiles:
+              sys.exit("auto.json не содержит VLESS-профилей")
+          for ob in profiles:
+              stream = ob.get("streamSettings") or {}
+              if stream.get("network") not in ("xhttp", "tcp"):
+                  sys.exit(f"auto.json: недопустимый network у {ob.get('tag')}")
+              if stream.get("security") not in ("reality", "tls"):
+                  sys.exit(f"auto.json: недопустимый security у {ob.get('tag')}")
+              reality = stream.get("realitySettings") or {}
+              tls = stream.get("tlsSettings") or {}
+              fp = reality.get("fingerprint") or tls.get("fingerprint")
+              if fp != "firefox":
+                  sys.exit(f"auto.json: fingerprint != firefox у {ob.get('tag')}")
+          print(f"auto.json OK: {len(profiles)} профилей")
+
+          if not wl_path.exists():
+              print("::warning::whitelist.json отсутствует")
+              raise SystemExit(0)
+
+          wl = json.loads(wl_path.read_text(encoding="utf-8"))
+          wl_text = json.dumps(wl, ensure_ascii=False).lower()
+          for marker in ("geoip:ru", "geosite:category-ru"):
+              if marker in wl_text:
+                  sys.exit(f"whitelist.json содержит запрещённый маркер: {marker}")
+
+          relay = [o for o in wl.get("outbounds", []) if o.get("tag") == "wl-relay"]
+          chained = [
+              o for o in wl.get("outbounds", [])
+              if ((o.get("streamSettings") or {}).get("sockopt") or {}).get("dialerProxy") == "wl-relay"
+          ]
+          if relay:
+              if not chained:
+                  sys.exit("whitelist.json: wl-relay есть, но цепочек dialerProxy нет")
+              print(f"whitelist.json OK: wl-relay + {len(chained)} цепочек")
+          else:
+              print("::warning::whitelist.json без wl-relay (RU_RELAY_LINK не задан)")
+          PY
 
       - name: Commit and Push if Changed
         run: |
