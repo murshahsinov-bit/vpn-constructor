@@ -65,6 +65,10 @@ aggregator:
         - "igareck_"
       preferred_sni:
         - "gosuslugi.ru"
+      # true: fallback-relay выбирается только среди узлов с preferred_sni.
+      # Для whitelist это принципиально: иначе первый прыжок идёт на
+      # домен, которого нет в белом списке оператора.
+      require_preferred_sni: true
       exclude_sni_suffixes:
         - "yandex"
         - "yandexcloud.net"

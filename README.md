@@ -295,16 +295,40 @@ xray-knife http -f web/subscriptions/auto_all.txt -t 50 -o check.json \
 
 | Переменная | Назначение |
 |---|---|
-| `GITHUB_REPO` | `USER/REPO`, откуда читать `auto.json` |
+| `GITHUB_REPO` | `USER/REPO`, откуда читать подписки |
 | `GITHUB_BRANCH` | Ветка, по умолчанию `main` |
 | `CONFIG_PATH` | `web/subscriptions/auto.json` |
+| `SUBSCRIPTIONS_DIR` | Каталог остальных файлов, по умолчанию `web/subscriptions` |
 | `GITHUB_TOKEN` | Read-only токен для приватного репозитория |
 | `CLIENTS_JSON` | JSON или base64(JSON) вместо файла клиентов |
 | `CLIENTS_FILE` | Путь к файлу, например `/data/clients.json` |
 | `AUTO_FILE` | Локальный резервный `auto.json` |
-| `CONFIG_URL` | Прямой URL подписки |
+| `WHITELIST_FILE` | Локальный резервный `whitelist.json` |
+| `AUTO_TXT_FILE`, `AUTO_HAPP_TXT_FILE` | Локальные резервные TXT-подписки |
+| `WHITELIST_TXT_FILE`, `WHITELIST_HAPP_TXT_FILE` | Локальные whitelist TXT |
+| `CONFIG_URL` | Прямой URL `auto.json` |
+| `PROFILE_TITLE` | Имя подписки, максимум 25 символов |
+| `PROFILE_UPDATE_INTERVAL` | Автообновление в часах |
+| `SUBSCRIPTION_TOTAL_BYTES` | Лимит трафика для `subscription-userinfo` |
+| `SUPPORT_URL`, `PROFILE_WEB_PAGE_URL` | Необязательные ссылки в клиенте |
+| `HIDE_URL`, `SUBSCRIPTION_ALWAYS_HWID_ENABLE`, `NO_LIMIT_XHTTP_ENABLED` | Happ-переключатели (`1`/`0`) |
+| `SUB_EXPIRE_DAYS`, `SUB_EXPIRE_BUTTON_LINK`, `SUB_EXPIRE_TEXT` | Баннер окончания подписки |
+| `WEBRTC_SOCKS5` | SOCKS5-адрес для `/sub/webrtc.txt` |
 | `CACHE_TTL` | Время кэша в секундах |
 | `PORT` | Netrun задаёт сам |
+
+Маршруты воркера:
+
+```text
+/sub/auto.json          /sub/whitelist.json
+/sub/auto.txt           /sub/whitelist.txt          (INCY)
+/sub/auto_happ.txt      /sub/whitelist_happ.txt     (Happ)
+/sub/webrtc.txt
+```
+
+Все маршруты требуют `?token=<TOKEN>` и отдают заголовки `profile-title`,
+`profile-update-interval`, `subscription-userinfo`, `hide-url` и другие
+Happ/INCY-параметры.
 
 ## Ограничения
 

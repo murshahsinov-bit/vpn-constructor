@@ -149,6 +149,27 @@ jobs:
               print("::warning::whitelist.json без wl-relay (RU_RELAY_LINK не задан)")
           PY
 
+      - name: Validate TXT subscriptions
+        run: |
+          python - <<'PY'
+          import pathlib
+          import sys
+
+          required = {
+              "auto_all.txt": "fragmentPackets=tlshello",
+              "auto_all_happ.txt": "fragment=100-200,10-20,tlshello",
+          }
+          for name, marker in required.items():
+              path = pathlib.Path("web/subscriptions") / name
+              if not path.exists():
+                  print(f"::warning::{name} отсутствует")
+                  continue
+              text = path.read_text(encoding="utf-8")
+              if marker not in text:
+                  sys.exit(f"{name}: нет ожидаемой фрагментации {marker}")
+              print(f"{name} OK: {len(text.splitlines())} ссылок")
+          PY
+
       - name: Commit and Push if Changed
         run: |
           git config user.name "github-actions[bot]"

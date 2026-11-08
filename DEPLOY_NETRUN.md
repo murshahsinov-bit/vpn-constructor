@@ -75,13 +75,19 @@ cd ..
 
 | Переменная | Значение | Зачем |
 |---|---|---|
-| `GITHUB_REPO` | `USER/REPO` | Откуда брать `auto.json` |
+| `GITHUB_REPO` | `USER/REPO` | Откуда брать подписки |
 | `GITHUB_BRANCH` | `main` | Ветка репозитория |
-| `CONFIG_PATH` | `web/subscriptions/auto.json` | Путь к подписке |
+| `CONFIG_PATH` | `web/subscriptions/auto.json` | Путь к `auto.json` |
+| `SUBSCRIPTIONS_DIR` | `web/subscriptions` | Путь к TXT/whitelist |
 | `GITHUB_TOKEN` | fine-grained PAT | Нужен для приватного репозитория; права **Contents: Read-only** |
 | `CLIENTS_JSON` | JSON или base64(JSON) | Альтернатива файлу `clients.json` |
-| `CACHE_TTL` | `60` | Сколько секунд кэшировать `auto.json` |
+| `CACHE_TTL` | `60` | Сколько секунд кэшировать файлы подписки |
 | `CONFIG_URL` | прямой URL | Необязательно; если не хотите использовать GitHub API |
+| `PROFILE_TITLE` | `VPN Constructor` | Имя подписки (<=25 символов) |
+| `SUBSCRIPTION_TOTAL_BYTES` | `107374182400` | Лимит трафика в `subscription-userinfo` |
+| `SUPPORT_URL` | `https://t.me/...` | Кнопка поддержки |
+| `SUB_EXPIRE_BUTTON_LINK` | `https://t.me/your_bot` | Кнопка «Продлить» |
+| `WEBRTC_SOCKS5` | `socks5://...` | Адрес для `/sub/webrtc.txt` |
 | `PORT` | не задавайте | Netrun подставит сам; запасное значение — 8080 |
 
 `SUB_SECRET_KEY` в Netrun не нужен: токены уже сгенерированы `manager.py`.

@@ -3,6 +3,7 @@ import json
 import pytest
 
 from aggregator.formatter.to_json import build_subscription
+from aggregator.run import _ycf_outbound
 
 
 def make_reality(address: str = "1.1.1.1", user_id: str = "uuid1") -> dict:
@@ -196,6 +197,91 @@ def test_auto_json_has_no_forbidden_junk():
         '"burstObservatory"', "geoip:ru", "geosite:category-ru",
     ):
         assert forbidden not in serialized
+
+
+def test_ycf_extra_outbound_does_not_replace_reality(monkeypatch):
+    monkeypatch.setenv(
+        "YANDEX_FUNCTIONS_SOCKS", "socks5://user:pass@203.0.113.9:1080"
+    )
+    extra = _ycf_outbound()
+    assert extra is not None
+    assert extra["tag"] == "proxy-ycf-1"
+
+    config = build_subscription(
+        [make_xhttp_reality()],
+        "aggregator/templates/auto_template.json",
+        30,
+        extra_outbounds=[extra],
+    )
+    outbounds = {ob["tag"]: ob for ob in config["outbounds"]}
+
+    assert "proxy-xhttp-1" in outbounds
+    assert outbounds["proxy-xhttp-1"]["protocol"] == "vless"
+    assert outbounds["proxy-ycf-1"]["protocol"] == "socks"
+    assert outbounds["proxy-ycf-1"]["settings"]["servers"][0]["address"] == "203.0.113.9"
+
+
+def test_cloudflare_xhttp_keeps_cdn_host_and_sni():
+    outbound = {
+        "protocol": "vless",
+        "settings": {
+            "vnext": [{
+                "address": "203.0.113.77",
+                "port": 443,
+                "users": [{"id": "uuid-cf", "flow": ""}],
+            }]
+        },
+        "streamSettings": {
+            "network": "xhttp",
+            "security": "tls",
+            "tlsSettings": {"serverName": "cdn.example.com"},
+            "xhttpSettings": {
+                "mode": "packet-up",
+                "path": "/cdn",
+                "host": "cdn.example.com",
+            },
+        },
+    }
+
+    config = build_subscription(
+        [outbound], "aggregator/templates/auto_template.json", 30
+    )
+    server = config["outbounds"][0]
+    stream = server["streamSettings"]
+
+    assert stream["network"] == "xhttp"
+    assert stream["security"] == "tls"
+    assert stream["xhttpSettings"]["mode"] == "stream-one"
+    assert stream["xhttpSettings"]["host"] == "cdn.example.com"
+    assert stream["tlsSettings"]["serverName"] == "cdn.example.com"
+    assert stream["tlsSettings"]["fingerprint"] == "firefox"
+
+
+def test_cloudflare_xhttp_host_falls_back_to_sni():
+    outbound = {
+        "protocol": "vless",
+        "settings": {
+            "vnext": [{
+                "address": "203.0.113.78",
+                "port": 443,
+                "users": [{"id": "uuid-cf2", "flow": ""}],
+            }]
+        },
+        "streamSettings": {
+            "network": "xhttp",
+            "security": "tls",
+            "tlsSettings": {"serverName": "cdn.example.com"},
+            "xhttpSettings": {"mode": "stream-one", "path": "/cdn"},
+        },
+    }
+
+    config = build_subscription(
+        [outbound], "aggregator/templates/auto_template.json", 30
+    )
+    stream = config["outbounds"][0]["streamSettings"]
+
+    assert stream["xhttpSettings"]["host"] == "cdn.example.com"
+    assert stream["tlsSettings"]["serverName"] == "cdn.example.com"
 
 
 def test_whitelist_relay_chain():

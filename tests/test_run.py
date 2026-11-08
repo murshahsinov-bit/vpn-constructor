@@ -3,7 +3,9 @@ from aggregator.run import (
     _alternate_variant,
     _outbound_to_link,
     _relay_from_records,
+    _write_txt,
 )
+from urllib.parse import parse_qs, urlsplit
 
 
 def make_xhttp(uuid: str = "uuid-1") -> dict:
@@ -20,7 +22,7 @@ def make_xhttp(uuid: str = "uuid-1") -> dict:
             "network": "xhttp",
             "security": "reality",
             "realitySettings": {
-                "serverName": "download.example.com",
+                "serverName": "gosuslugi.ru",
                 "publicKey": "pbk",
                 "shortId": "sid",
             },
@@ -100,3 +102,42 @@ def test_relay_rejects_yandex_sni_and_host():
     )
     relay, _identity, _link = _relay_from_records([record], {})
     assert relay is None
+
+
+def test_relay_requires_preferred_sni_by_default():
+    record = make_record("passed")
+    record.variants["xhttp"]["streamSettings"]["realitySettings"]["serverName"] = (
+        "download.example.com"
+    )
+
+    relay, _identity, _link = _relay_from_records([record], {})
+    assert relay is None
+
+    relay, identity, _link = _relay_from_records(
+        [record], {"require_preferred_sni": False}
+    )
+    assert relay is not None
+    assert identity == record.identity
+
+
+def test_write_txt_creates_incy_and_happ_variants(tmp_path):
+    link = (
+        "vless://uuid@198.51.100.7:443?encryption=none&flow=xtls-rprx-vision"
+        "&security=reality&sni=example.com&type=tcp#Germany"
+    )
+    config = {"paths": {"output_dir": str(tmp_path)}}
+
+    _write_txt("auto", [link], config)
+
+    incy_file = tmp_path / "auto_all.txt"
+    happ_file = tmp_path / "auto_all_happ.txt"
+    assert incy_file.exists()
+    assert happ_file.exists()
+
+    incy_query = parse_qs(urlsplit(incy_file.read_text(encoding="utf-8")).query)
+    happ_query = parse_qs(urlsplit(happ_file.read_text(encoding="utf-8")).query)
+
+    assert incy_query["fragmentPackets"] == ["tlshello"]
+    assert happ_query["fragment"] == ["100-200,10-20,tlshello"]
+    assert "fragment" not in incy_query
+    assert "fragmentPackets" not in happ_query

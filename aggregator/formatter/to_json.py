@@ -238,6 +238,11 @@ def _compact_outbound(
             "path": str(source_xhttp.get("path") or "/"),
         }
         host = str(source_xhttp.get("host", "")).strip()
+        if not host and security == "tls":
+            # У XHTTP за CDN Host обычно совпадает с SNI. Если источник
+            # не передал host, подставляем serverName, чтобы запрос попал
+            # на нужный виртуальный хост Cloudflare/Fastly.
+            host = str((stream.get("tlsSettings") or {}).get("serverName", "")).strip()
         if host:
             xhttp_settings["host"] = host
         extra = source_xhttp.get("extra")

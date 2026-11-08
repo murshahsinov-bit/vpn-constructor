@@ -373,7 +373,7 @@ def refresh_client_links(clients: list[dict], base_url: str) -> None:
 
 def sync_netrun_bundle(clients: list[dict]) -> tuple[Path, bool]:
     """
-    Создаёт netrun_worker/clients.json и копию auto.json для ZIP-архива.
+    Создаёт netrun_worker/clients.json и копии JSON/TXT-подписок для ZIP.
 
     Возвращает (путь к clients.json, скопирован ли auto.json).
     """
@@ -402,6 +402,29 @@ def sync_netrun_bundle(clients: list[dict]) -> tuple[Path, bool]:
         except OSError as exc:
             print(
                 paint(f"⚠️  Не удалось скопировать auto.json в netrun_worker: {exc}", C.YELLOW),
+                file=sys.stderr,
+            )
+
+    # TXT/Happ-варианты и whitelist нужны воркеру как локальный fallback,
+    # если GitHub/CONFIG_URL временно недоступны.
+    for bundle_name in (
+        "auto_all.txt",
+        "auto_all_happ.txt",
+        "whitelist.json",
+        "whitelist_all.txt",
+        "whitelist_all_happ.txt",
+    ):
+        source = UPSTREAM_AUTO_FILE.parent / bundle_name
+        if not source.exists():
+            continue
+        try:
+            shutil.copy2(source, NETRUN_DIR / bundle_name)
+        except OSError as exc:
+            print(
+                paint(
+                    f"⚠️  Не удалось скопировать {bundle_name} в netrun_worker: {exc}",
+                    C.YELLOW,
+                ),
                 file=sys.stderr,
             )
 

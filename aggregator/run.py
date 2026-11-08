@@ -484,6 +484,10 @@ def _relay_from_records(
         for item in (relay_config.get("preferred_sni") or ["gosuslugi.ru"])
         if str(item).strip()
     ]
+    # Для входа в whitelist-цепочку SNI должен быть из белого списка
+    # оператора. Если preferred_sni задан, остальные узлы не подходят:
+    # это не «красивый бонус», а условие прохождения первого прыжка.
+    require_preferred = bool(relay_config.get("require_preferred_sni", True))
     excluded_sni = [
         str(item).strip().lower()
         for item in (relay_config.get("exclude_sni_suffixes") or [
@@ -517,7 +521,12 @@ def _relay_from_records(
             host = outbound_identity(outbound)[0].lower()
             if any(marker in sni or marker in host for marker in excluded_sni):
                 continue
-            preferred = 0 if any(marker in sni for marker in preferred_sni) else 1
+            matches_preferred = any(
+                marker in sni or marker in host for marker in preferred_sni
+            )
+            if require_preferred and preferred_sni and not matches_preferred:
+                continue
+            preferred = 0 if matches_preferred else 1
             security_rank = 0 if _security(outbound) == "reality" else 1
             source_rank = 0 if _has_source_prefix(record, prefixes) else 1
             score = (preferred, security_rank, source_rank, record.delays[profile])
@@ -544,12 +553,24 @@ def _relay_from_records(
 
 
 def _write_txt(mode: str, links: list[str], config: dict) -> None:
-    txt_content = generate_txt(links)
-    output_txt = os.path.join(config['paths']['output_dir'], f"{mode}_all.txt")
-    os.makedirs(os.path.dirname(output_txt), exist_ok=True)
-    with open(output_txt, "w", encoding="utf-8") as file:
-        file.write(txt_content)
-    logger.info("💾 %s: %d ссылок", output_txt, len(links))
+    """
+    Пишет два TXT-варианта одного режима.
+
+    INCY и Happ используют разный синтаксис фрагментации в share-ссылке,
+    поэтому ``auto_all.txt``/``whitelist_all.txt`` — для INCY, а
+    ``*_all_happ.txt`` — для Happ.
+    """
+    output_dir = config['paths']['output_dir']
+    os.makedirs(output_dir, exist_ok=True)
+
+    for client, suffix in (("incy", ""), ("happ", "_happ")):
+        txt_content = generate_txt(links, client=client)
+        output_txt = os.path.join(output_dir, f"{mode}_all{suffix}.txt")
+        with open(output_txt, "w", encoding="utf-8") as file:
+            file.write(txt_content)
+        logger.info(
+            "💾 %s: %d ссылок (%s)", output_txt, len(links), client
+        )
 
 
 async def _collect(mode: str, config: dict, allow_tls_vision: bool = False) -> list[ServerRecord]:
@@ -750,6 +771,15 @@ async def _process_whitelist(
         )
         return
 
+    if relay_outbound is None and not bool(whitelist_cfg.get("allow_without_relay", False)):
+        logger.error(
+            "Whitelist: RU relay не найден. Задайте RU_RELAY_LINK (VLESS Reality "
+            "SNI=gosuslugi.ru на Timeweb/VDSina/Selectel) или живой igareck-узел. "
+            "whitelist.json и whitelist_all*.txt оставлены прежними, чтобы не "
+            "отдавать клиентам конфиг без обхода белых списков."
+        )
+        return
+
     target_links = _txt_links(targets, max_json)
     if relay_link:
         _write_txt("whitelist", [relay_link] + target_links, config)
@@ -757,17 +787,8 @@ async def _process_whitelist(
         _write_txt("whitelist", _txt_links(whitelist_records, max_servers), config)
     else:
         logger.warning(
-            "Whitelist: проверенных ссылок нет, whitelist_all.txt оставлен прежним"
+            "Whitelist: проверенных ссылок нет, whitelist_all*.txt оставлены прежними"
         )
-
-    if relay_outbound is None and not bool(whitelist_cfg.get("allow_without_relay", False)):
-        logger.error(
-            "Whitelist: RU relay не найден. Задайте RU_RELAY_LINK (VLESS Reality "
-            "SNI=gosuslugi.ru на Timeweb/VDSina/Selectel) или живой igareck-узел. "
-            "whitelist.json оставлен прежним, чтобы не отдавать клиентам "
-            "конфиг без обхода белых списков."
-        )
-        return
 
     entries = _builder_entries(targets, max_json)
     template_path = os.path.join(config['paths']['templates_dir'], "whitelist_template.json")
