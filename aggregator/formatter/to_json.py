@@ -234,7 +234,10 @@ def build_subscription(
         config = json.load(file)
 
     # Убираем всё, что ломает мобильные ядра или требует geo-баз.
-    for key in ("burstObservatory", "stats", "meta", "dns"):
+    for key in (
+        "burstObservatory", "observatory", "stats", "meta", "dns",
+        "mux", "fragment", "sockopt", "balancers",
+    ):
         config.pop(key, None)
 
     config["outbounds"] = safe_outbounds + [
