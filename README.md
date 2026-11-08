@@ -18,8 +18,8 @@ Telegram-бота нет. Управление клиентами — локал
                                                               │ GitHub API / CONFIG_URL
                                                               v
 ┌─────────────────────┐     token + дата      ┌──────────────────────────────┐
-│ Клиент (v2rayNG,     │ ───────────────────> │ Netrun worker (Docker)       │
-│ Hiddify, INCY...)    │  /sub/auto.json       │ Flask + gunicorn, порт 8080  │
+│ Клиент (Happ,        │ ───────────────────> │ Netrun worker (Docker)       │
+│ INCY, OneXray)       │  /sub/auto.json       │ Flask + gunicorn, порт 8080  │
 │                     │ <─────────────────── │ проверка clients.json         │
 └─────────────────────┘  200 JSON или 403     └──────────────────────────────┘
                                                               ^
@@ -146,18 +146,27 @@ Netrun-воркер забирает свежий `auto.json` через GitHub 
 
 ## Мобильные клиенты и совместимость
 
-JSON-подписка (`auto.json`) собирается в максимально консервативном виде:
+JSON-подписка (`auto.json`) собирается строго в одном формате:
 
 - только `vless`;
-- только `tls`/`reality`;
-- только `tcp`, `ws`, `grpc`;
-- без `fragment`, `mux`, `sockopt`, `xhttp`, `hysteria`;
+- только `tcp`;
+- только `security: "reality"`;
+- только `flow: "xtls-rprx-vision"` (Reality Vision);
+- `realitySettings` всегда содержит `serverName`, `publicKey`, `shortId` и `fingerprint: "chrome"`;
+- без `fragment`, `mux`, `sockopt`, `xhttp`, `hysteria`, `ws`, `grpc`;
 - без `balancers`, `burstObservatory` и `geoip`/`geosite`;
 - один сервер в JSON (`json_max_outbounds: 1`).
 
-Это совместимо с Xray-клиентами, которые умеют импортировать полный JSON: **OneXray** (Android/iOS), **v2rayNG** (через custom config), **FoXray**/Streisand на iOS. Hiddify построен на sing-box и не исполняет Xray JSON — ему нужна ссылочная подписка.
+Такой JSON отдаётся с `Content-Type: application/json` и содержит полный
+Xray-конфиг с секциями `inbounds` и `outbounds`. Его понимают **Happ** и
+**INCY** (Xray-core, Android/iOS), а также OneXray и v2rayNG (custom config).
 
-Полный список серверов остаётся в `web/subscriptions/auto_all.txt` и `whitelist_all.txt`: его можно использовать как ссылочную подписку для v2rayNG, Hiddify и Streisand.
+WS + TLS, gRPC и XHTTP намеренно исключены: в 2026 ТСПУ в России
+блокирует их по TLS-отпечатку и характеру трафика. Reality Vision
+маскируется под обычный TLS к чужому домену и неотличим от браузера.
+
+Полный список серверов остаётся в `web/subscriptions/auto_all.txt` и
+`whitelist_all.txt` — как резервная ссылочная подписка.
 
 ## Переменные Netrun
 

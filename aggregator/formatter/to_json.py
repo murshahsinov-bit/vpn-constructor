@@ -3,11 +3,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Максимально совместимый набор: мобильные Xray-ядра стабильно понимают
-# только VLESS + TLS/Reality на tcp/ws/grpc. Всё остальное отсекается.
+# В JSON-подписку попадает только одна связка:
+#     VLESS + TCP + Reality + Vision (flow=xtls-rprx-vision)
+# Это то, что стабильно работает в Happ и INCY на Android и iOS.
 SUPPORTED_PROTOCOLS = {"vless"}
-SUPPORTED_SECURITY = {"tls", "reality"}
-SUPPORTED_NETWORKS = {"tcp", "ws", "grpc"}
+REQUIRED_NETWORK = "tcp"
+REQUIRED_SECURITY = "reality"
+REQUIRED_FLOW = "xtls-rprx-vision"
 
 # Приватные сети задаём явными CIDR, а не geoip:private:
 # так конфиг не зависит от наличия geoip.dat в мобильном клиенте.
@@ -28,27 +30,43 @@ def _get_vnext(outbound: dict) -> dict:
     return vnext[0] if vnext else {}
 
 
-def _is_compatible(outbound: dict) -> bool:
-    """Проверяет, что outbound безопасно отдавать мобильным клиентам."""
+def _get_user(outbound: dict) -> dict:
+    users = _get_vnext(outbound).get("users") or []
+    return users[0] if users else {}
+
+
+def _normalize_network(value) -> str:
+    network = str(value or "tcp").strip().lower()
+    # type=raw — новый alias для tcp; в JSON пишем tcp для совместимости.
+    return "tcp" if network == "raw" else network
+
+
+def is_compatible(outbound: dict) -> bool:
+    """Проверяет, что outbound соответствует Reality + TCP + Vision."""
     if outbound.get("protocol") not in SUPPORTED_PROTOCOLS:
         return False
 
     stream = outbound.get("streamSettings") or {}
-    security = str(stream.get("security", "")).lower()
-    network = str(stream.get("network", "tcp")).lower()
-    if network == "raw":
-        network = "tcp"
+    security = str(stream.get("security", "")).strip().lower()
+    network = _normalize_network(stream.get("network"))
 
-    if security not in SUPPORTED_SECURITY:
+    if security != REQUIRED_SECURITY:
         return False
-    if network not in SUPPORTED_NETWORKS:
+    if network != REQUIRED_NETWORK:
         return False
 
     vnext = _get_vnext(outbound)
-    users = vnext.get("users") or []
-    if not vnext.get("address") or not vnext.get("port") or not users:
+    user = _get_user(outbound)
+    if not vnext.get("address") or not vnext.get("port") or not user.get("id"):
         return False
-    if not users[0].get("id"):
+
+    # Без flow=xtls-rprx-vision это уже не Vision, а обычный VLESS.
+    if str(user.get("flow", "")).strip() != REQUIRED_FLOW:
+        return False
+
+    # Reality без publicKey нерабочий.
+    reality = stream.get("realitySettings") or {}
+    if not str(reality.get("publicKey", "")).strip():
         return False
 
     return True
@@ -56,84 +74,61 @@ def _is_compatible(outbound: dict) -> bool:
 
 def _compact_outbound(outbound: dict) -> dict | None:
     """
-    Оставляет только поля, обязательные для подключения.
+    Собирает outbound заново, оставляя только обязательные поля.
 
-    Убираются fragment, mux, sockopt, xhttpSettings и прочие расширения,
-    которые поддерживаются не всеми версиями Xray.
+    Здесь принудительно выставляются network=tcp, security=reality,
+    fingerprint=chrome и flow=xtls-rprx-vision. Никакие fragment, mux,
+    sockopt, wsSettings, grpcSettings, xhttpSettings не переносятся.
     """
     stream = outbound.get("streamSettings") or {}
-    network = str(stream.get("network", "tcp")).lower()
-    if network == "raw":
-        network = "tcp"
-    security = str(stream.get("security", "")).lower()
-
     vnext = _get_vnext(outbound)
-    user_in = (vnext.get("users") or [{}])[0]
+    user_in = _get_user(outbound)
 
-    user = {
-        "id": str(user_in.get("id", "")).strip(),
-        "encryption": "none",
-    }
-    if not user["id"]:
+    user_id = str(user_in.get("id", "")).strip()
+    if not user_id:
         return None
 
-    # flow допустим только для TCP, иначе ядро падает на валидации.
-    flow = str(user_in.get("flow", "")).strip()
-    if flow and network == "tcp":
-        user["flow"] = flow
+    address = str(vnext.get("address", "")).strip()
+    if not address:
+        return None
+    try:
+        port = int(vnext.get("port", 443))
+    except (TypeError, ValueError):
+        return None
 
-    compact = {
+    reality = stream.get("realitySettings") or {}
+    public_key = str(reality.get("publicKey", "")).strip()
+    if not public_key:
+        return None
+
+    server_name = str(reality.get("serverName", "")).strip() or address
+    short_id = str(reality.get("shortId", "")).strip()
+
+    return {
         "tag": outbound.get("tag", "proxy"),
         "protocol": "vless",
         "settings": {
             "vnext": [{
-                "address": str(vnext.get("address", "")).strip(),
-                "port": int(vnext.get("port", 443)),
-                "users": [user],
+                "address": address,
+                "port": port,
+                "users": [{
+                    "id": user_id,
+                    "encryption": "none",
+                    "flow": REQUIRED_FLOW,
+                }],
             }]
         },
         "streamSettings": {
-            "network": network,
-            "security": security,
+            "network": REQUIRED_NETWORK,
+            "security": REQUIRED_SECURITY,
+            "realitySettings": {
+                "serverName": server_name,
+                "publicKey": public_key,
+                "shortId": short_id,
+                "fingerprint": "chrome",
+            },
         },
     }
-
-    host = compact["settings"]["vnext"][0]["address"]
-
-    if security == "tls":
-        tls = stream.get("tlsSettings") or {}
-        compact["streamSettings"]["tlsSettings"] = {
-            "serverName": tls.get("serverName") or host,
-            "fingerprint": tls.get("fingerprint") or "chrome",
-        }
-    else:  # reality
-        reality = stream.get("realitySettings") or {}
-        public_key = str(reality.get("publicKey", "")).strip()
-        if not public_key:
-            return None
-        compact["streamSettings"]["realitySettings"] = {
-            "serverName": reality.get("serverName") or host,
-            "publicKey": public_key,
-            "shortId": str(reality.get("shortId", "")),
-            "fingerprint": reality.get("fingerprint") or "chrome",
-        }
-
-    if network == "ws":
-        ws = stream.get("wsSettings") or {}
-        ws_settings = {"path": ws.get("path") or "/"}
-        headers = ws.get("headers") or {}
-        host_header = headers.get("Host") or headers.get("host")
-        if host_header:
-            ws_settings["headers"] = {"Host": host_header}
-        compact["streamSettings"]["wsSettings"] = ws_settings
-
-    elif network == "grpc":
-        grpc = stream.get("grpcSettings") or {}
-        compact["streamSettings"]["grpcSettings"] = {
-            "serviceName": grpc.get("serviceName", ""),
-        }
-
-    return compact
 
 
 def _deduplicate(outbounds: list[dict]) -> list[dict]:
@@ -144,8 +139,7 @@ def _deduplicate(outbounds: list[dict]) -> list[dict]:
         identity = (
             str(vnext.get("address", "")),
             str(vnext.get("port", "")),
-            str((vnext.get("users") or [{}])[0].get("id", "")),
-            str(outbound.get("streamSettings", {}).get("network", "")),
+            str(_get_user(outbound).get("id", "")),
         )
         if identity in seen:
             continue
@@ -156,17 +150,18 @@ def _deduplicate(outbounds: list[dict]) -> list[dict]:
 
 def build_subscription(outbounds: list, template_path: str, max_outbounds: int = 1) -> dict:
     """
-    Собирает упрощённый Xray-конфиг.
+    Собирает полный Xray-конфиг (inbounds + outbounds + routing).
 
-    В JSON попадает не более max_outbounds серверов и только VLESS/TLS/Reality.
-    Никаких балансировщиков, burstObservatory, fragment, mux и geo-правил.
+    В JSON попадает не более max_outbounds серверов, и каждый из них —
+    строго VLESS + TCP + Reality + Vision. Никаких балансировщиков,
+    burstObservatory, fragment, mux, sockopt, hysteria и geo-правил.
     Полный список ссылок остаётся в auto_all.txt / whitelist_all.txt.
     """
     limit = max(1, int(max_outbounds))
     safe_outbounds: list[dict] = []
 
     for outbound in outbounds:
-        if not _is_compatible(outbound):
+        if not is_compatible(outbound):
             logger.debug("Пропущен несовместимый outbound: %s", outbound.get("tag"))
             continue
         compact = _compact_outbound(outbound)
@@ -176,7 +171,9 @@ def build_subscription(outbounds: list, template_path: str, max_outbounds: int =
     safe_outbounds = _deduplicate(safe_outbounds)[:limit]
 
     if not safe_outbounds:
-        raise ValueError("Нет совместимых VLESS TLS/Reality-серверов для JSON-подписки")
+        raise ValueError(
+            "Нет серверов VLESS + TCP + Reality + Vision (flow=xtls-rprx-vision)"
+        )
 
     prefix = "wl-proxy-" if "whitelist" in template_path else "proxy-"
     for index, outbound in enumerate(safe_outbounds):
@@ -185,7 +182,7 @@ def build_subscription(outbounds: list, template_path: str, max_outbounds: int =
     with open(template_path, "r", encoding="utf-8") as file:
         config = json.load(file)
 
-    # Убираем всё, что ломает старые мобильные ядра.
+    # Убираем всё, что ломает мобильные ядра или требует geo-баз.
     for key in ("burstObservatory", "stats", "meta", "dns"):
         config.pop(key, None)
 
@@ -194,8 +191,8 @@ def build_subscription(outbounds: list, template_path: str, max_outbounds: int =
         {"tag": "block", "protocol": "blackhole"},
     ]
 
-    # Простое детерминированное правило: локальные сети — напрямую,
-    # всё остальное — через первый outbound (он же default в Xray).
+    # Локальные сети — напрямую, всё остальное — через первый outbound
+    # (в Xray он же default). Никаких geoip/geosite и балансировщиков.
     config["routing"] = {
         "domainStrategy": "AsIs",
         "rules": [

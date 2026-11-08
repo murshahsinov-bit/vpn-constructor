@@ -9,7 +9,7 @@ from aggregator.fetcher.downloader import ConfigDownloader
 from aggregator.converter.link_to_outbound import LinkToOutboundConverter
 from aggregator.filter.deduplicator import Deduplicator
 from aggregator.health.checker import HealthChecker
-from aggregator.formatter.to_json import build_subscription, save_config
+from aggregator.formatter.to_json import build_subscription, is_compatible, save_config
 from aggregator.formatter.to_txt import generate_txt
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -46,11 +46,9 @@ async def process_mode(mode: str, config: dict):
             if line.startswith(("vless://", "hysteria2://", "hy2://")):
                 outbound = converter.convert(line)
                 if outbound:
-                    # ЖЕСТКАЯ ПРОВЕРКА: оставляем только TLS и Reality
-                    security = outbound.get("streamSettings", {}).get("security", "none")
-                    if security not in ["tls", "reality"]:
-                        continue 
-                        
+                    # VLESS уже отфильтрован конвертером до TCP+Reality+Vision.
+                    # Hysteria оставляем только для TXT-подписки: в JSON её
+                    # отбросит build_subscription().
                     parsed_outbounds.append(outbound)
                     raw_valid_links.append(line)
 
@@ -81,16 +79,19 @@ async def process_mode(mode: str, config: dict):
     for start in range(0, len(unique_outbounds), batch_size):
         batch = unique_outbounds[start:start + batch_size]
         checked += len(batch)
-        alive_outbounds.extend(await checker.check_many(batch))
+        alive_outbounds.extend(
+            outbound for outbound in await checker.check_many(batch)
+            if is_compatible(outbound)
+        )
         if len(alive_outbounds) >= needed:
             break
 
     logger.info(f"🔎 Проверено {checked} из {len(unique_outbounds)}, живых: {len(alive_outbounds)}")
     
     # 1. Сохраняем JSON.
-    # В JSON берём все живые outbounds, а не только первые max_servers:
-    # build_subscription сам отфильтрует hysteria/xhttp и оставит
-    # не более json_max_outbounds совместимых VLESS-серверов.
+    # build_subscription() оставит только VLESS + TCP + Reality + Vision
+    # и не более json_max_outbounds серверов. Всё остальное (WS/TLS, hysteria,
+    # xhttp, fragment, mux, балансировщики) в JSON не попадёт.
     template_path = os.path.join(config['paths']['templates_dir'], f"{mode}_template.json")
     final_config = None
     try:

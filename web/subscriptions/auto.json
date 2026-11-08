@@ -27,29 +27,26 @@
       "settings": {
         "vnext": [
           {
-            "address": "mahdroo.ir",
-            "port": 443,
+            "address": "dddz-1-x.473221.xyz",
+            "port": 43115,
             "users": [
               {
-                "id": "bc4a4b66-c3fc-4f91-938e-4d93698c0d43",
-                "encryption": "none"
+                "id": "65ec84f5-0dd4-4582-8b4f-592e50b22116",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
               }
             ]
           }
         ]
       },
       "streamSettings": {
-        "network": "ws",
-        "security": "tls",
-        "tlsSettings": {
-          "serverName": "soli-gghosin4-cell.dormhost.app",
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "serverName": "www.python.org",
+          "publicKey": "lOvD2OqP7J9WEDZ4q5G6Dx7XKt2eAN4CFgcNhPN-EGI",
+          "shortId": "f3a2231b4371",
           "fingerprint": "chrome"
-        },
-        "wsSettings": {
-          "path": "/jx-ge7wex6ki2ixyk",
-          "headers": {
-            "Host": "soli-gghosin4-cell.dormhost.app"
-          }
         }
       }
     },

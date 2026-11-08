@@ -27,28 +27,26 @@
       "settings": {
         "vnext": [
           {
-            "address": "9e72bbg.msk2.h1clayd.click",
-            "port": 443,
+            "address": "185.86.147.143",
+            "port": 7443,
             "users": [
               {
-                "id": "13e6bdfd-d51b-4e57-a40e-b88784cba8bd",
-                "encryption": "none"
+                "id": "512254c1-0659-45b1-89d2-ddb1dfd58528",
+                "encryption": "none",
+                "flow": "xtls-rprx-vision"
               }
             ]
           }
         ]
       },
       "streamSettings": {
-        "network": "grpc",
+        "network": "tcp",
         "security": "reality",
         "realitySettings": {
-          "serverName": "9e72bbg.msk2.h1clayd.click",
-          "publicKey": "0R5QIf2DFXNgISIYDQdoWIdbNoImaJHrwOkc2tzRPyQ",
-          "shortId": "cc07501e28b18687",
+          "serverName": "passport.yandex.ru",
+          "publicKey": "0w339GBhpDiYwa9Wgqu3z3epu8dHAzeYUFXPtvzK8To",
+          "shortId": "190c27ae5f2e4d2c",
           "fingerprint": "chrome"
-        },
-        "grpcSettings": {
-          "serviceName": "93013a569b78"
         }
       }
     },
