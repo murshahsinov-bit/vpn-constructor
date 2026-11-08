@@ -22,15 +22,31 @@ class SourceLoader:
             logger.error(f"Ошибка парсинга JSON в {self.json_path}: {e}")
             return {"auto": [], "whitelist": []}
 
-    def get_urls(self, mode: str) -> List[str]:
-        """Возвращает список URL для заданного режима, отфильтрованный по enabled."""
+    def get_sources(self, mode: str) -> List[Dict[str, Any]]:
+        """
+        Возвращает источники для режима вместе с метаданными:
+        name, url, format. Именно name используется для проверки
+        происхождения серверов в whitelist-режиме.
+        """
         mode = mode.lower().strip()
         sources = self.registry.get(mode, [])
-        
-        urls = []
+
+        result = []
         for source in sources:
-            if source.get("enabled", True):
-                urls.append(source["url"])
-                
-        logger.info(f"Режим '{mode}': загружено {len(urls)} источников.")
-        return urls
+            if not source.get("enabled", True):
+                continue
+            url = source.get("url")
+            if not url:
+                continue
+            result.append({
+                "name": source.get("name") or url,
+                "url": url,
+                "format": (source.get("format") or "text").lower(),
+            })
+
+        logger.info(f"Режим '{mode}': загружено {len(result)} источников.")
+        return result
+
+    def get_urls(self, mode: str) -> List[str]:
+        """Совместимость: только URL для заданного режима."""
+        return [source["url"] for source in self.get_sources(mode)]

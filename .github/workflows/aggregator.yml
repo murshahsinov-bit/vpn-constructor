@@ -2,15 +2,30 @@ name: Update VPN Configs
 
 on:
   schedule:
-    - cron: '*/15 * * * *' # Каждые 15 минут (UTC)
-  workflow_dispatch:      # Кнопка ручного запуска в GitHub
+    # Раз в час: частая массовая проверка прокси повышает риск блокировки аккаунта.
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      skip_latency:
+        description: "Пропустить проверку задержки (быстрая сборка без топа)"
+        type: boolean
+        default: false
 
 permissions:
-  contents: write         # Разрешение на коммит файлов обратно в репозиторий
+  contents: write
+
+concurrency:
+  group: vpn-configs
+  cancel-in-progress: false
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # По умолчанию — GitHub-hosted runner (не Россия).
+    # Для настоящей проверки из РФ задайте repository variable
+    # RU_RUNNER_LABELS='["self-hosted","linux","ru"]' и подключите runner в России.
+    runs-on: ${{ vars.RU_RUNNER_LABELS != '' && fromJSON(vars.RU_RUNNER_LABELS) || 'ubuntu-latest' }}
+    timeout-minutes: 45
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,10 +36,37 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install -r requirements.txt
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.x'
+          cache: false
+
+      - name: Install xray-knife
+        run: |
+          # v11.5.0 — проверенная версия: встраивает Xray-core, отдельный
+          # бинарник ядра не нужен. Формат JSON: link/status/delay/ip.
+          go install github.com/lilendian0x00/xray-knife/v11@v11.5.0
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          "$(go env GOPATH)/bin/xray-knife" --help > /dev/null
+          echo "xray-knife installed from $(go env GOPATH)/bin"
+
+      - name: Show test origin
+        run: |
+          echo "Runner: $RUNNER_NAME ($RUNNER_OS)"
+          COUNTRY=$(curl -fsS --max-time 10 https://ipinfo.io/country || echo "??")
+          echo "Checker country: $COUNTRY"
+          if [ "$COUNTRY" != "RU" ]; then
+            echo "::warning::Проверка идёт не из России ($COUNTRY). Пинг будет измерен из дата-центра GitHub. Для реального RU-отбора задайте RU_RUNNER_LABELS и self-hosted runner."
+          fi
+
       - name: Run Aggregator
+        env:
+          XRAY_KNIFE_BIN: xray-knife
+          SKIP_LATENCY: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_latency == true && '1' || '0' }}
         run: python -m aggregator.run
 
       - name: Commit and Push if Changed
@@ -32,7 +74,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add web/subscriptions/
-          # Проверяем, есть ли изменения, чтобы не спамить коммитами
           if git diff --staged --quiet; then
             echo "Конфиги не изменились, коммит не требуется."
           else

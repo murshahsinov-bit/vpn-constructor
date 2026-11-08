@@ -2,21 +2,46 @@ aggregator:
   modes:
     - auto
     - whitelist
-  
+
   # Сколько серверов оставлять в TXT-подписке (share-ссылки)
   max_servers_per_subscription: 30
 
-  # Сколько VLESS-серверов класть в JSON. 1 — максимальная совместимость
-  # с мобильными ядрами; для выбора сервера используйте TXT-подписку.
-  json_max_outbounds: 1
-  
+  # Сколько лучших серверов класть в JSON-подписку.
+  # Отбор идёт по задержке: сначала самые быстрые и живые.
+  json_max_outbounds: 30
+
+  # Проверка реальной задержки через Xray-core (xray-knife).
+  latency_check:
+    enabled: true
+    binary: "xray-knife"          # можно переопределить через XRAY_KNIFE_BIN
+    threads: 50                   # больше 50 не используем: риск блокировки аккаунта
+    timeout_ms: 10000             # таймаут одного HTTP-теста
+    max_delay_ms: 8000            # серверы медленнее считаются неудачными
+    subprocess_timeout_seconds: 2400
+    # Если xray-knife недоступен/упал — измеряем хотя бы TCP RTT.
+    fallback_tcp: true
+    fallback_concurrency: 50
+    fallback_timeout_seconds: 5.0
+
+  # Резервный TCP health-check (используется только в fallback-режиме)
   health_check:
     timeout_seconds: 5.0
     concurrency: 50
-    # Проверяем пачками и останавливаемся, как только набрали
-    # json_max_outbounds живых серверов. Это сильно экономит время
-    # GitHub Actions на больших списках источников.
-    batch_size: 200
+
+  # Whitelist: в JSON попадают только серверы из источников igareck
+  # (CIDR/SNI), предназначенных для обхода белых списков.
+  # zieng2 остаётся в TXT как резерв.
+  whitelist:
+    require_whitelist_sources: true
+    json_source_prefixes:
+      - "igareck_"
+    # igareck публикует white-list конфиги как VLESS + TCP + TLS + Vision
+    # (SNI разрешённого домена), а не Reality. Разрешаем их только здесь,
+    # чтобы auto оставался строго Reality+Vision.
+    allow_tls_vision: true
+    # false: если живых igareck-серверов нет, JSON не перезаписывается.
+    # true:  разрешить fallback на остальные whitelist-источники (zieng2).
+    fallback_to_any_source: false
 
   scoring:
     min_score_to_keep: 0

@@ -3,10 +3,14 @@
 Подписка отдаёт полный Xray-конфиг:
 
 - `Content-Type: application/json`
-- один сервер **VLESS + TCP + Reality + Vision**
+- до 30 серверов **VLESS + TCP + Reality + Vision**, отсортированных по задержке
 - `flow: "xtls-rprx-vision"`
 - `fingerprint: "chrome"`
 - без `fragment`, `mux`, `sockopt`, `balancer` и geo-правил
+
+В whitelist-подписке (`whitelist.json`) серверы могут быть
+**VLESS + TCP + TLS + Vision**: это штатный формат white-list конфигов
+igareck, где SNI указывает на разрешённый домен.
 
 Ссылка выглядит так:
 
@@ -39,8 +43,8 @@ https://vpn-auth.de1.netrun.io/sub/auto.json?token=<TOKEN>
 4. Разрешите добавление VPN-конфигурации (Face ID / Touch ID / пароль).
 5. Включите переключатель подключения.
 
-Если Happ предлагает несколько профилей — выбирайте тот, у которого в
-названии есть `Reality` или `proxy-1`.
+Если Happ предлагает несколько профилей — выбирайте любой `proxy-1` …
+`proxy-30`: все они уже проверены и отсортированы по задержке.
 
 ---
 
@@ -72,8 +76,10 @@ https://vpn-auth.de1.netrun.io/sub/auto.json?token=<TOKEN>
 
 1. **Проверьте срок токена.** Истёкший токен возвращает `403 forbidden`.
    Откройте ссылку в браузере: должен скачаться JSON, а не `{"error":"forbidden"}`.
-2. **Проверьте, что в профиле ровно один сервер** и у него `network: tcp`,
-   `security: reality`, `flow: xtls-rprx-vision`.
+2. **Проверьте, что в профиле до 30 серверов** и у каждого `network: tcp`,
+   `security: reality` (в whitelist-профиле допускается `tls`),
+   `flow: xtls-rprx-vision`. Серверы идут от самого быстрого к самому
+   медленному, поэтому первый `proxy-1` — лучший.
 3. **Удалите старый профиль** и импортируйте ссылку заново: Happ и INCY
    кэшируют подписку и могут держать прежний WS+TLS-конфиг.
 4. **Отключите другие VPN/Always-on VPN** на время проверки.
@@ -97,7 +103,7 @@ $cfg.outbounds | Where-Object protocol -eq 'vless' |
                          @{n='flow';e={$_.settings.vnext[0].users[0].flow}}
 ```
 
-Ожидаемый результат:
+Ожидаемый результат (первые строки, всего до 30):
 
 ```text
 200
@@ -105,4 +111,7 @@ application/json
 tag      network security flow
 ---      ------- -------- ----
 proxy-1  tcp     reality  xtls-rprx-vision
+proxy-2  tcp     reality  xtls-rprx-vision
+proxy-3  tcp     reality  xtls-rprx-vision
+...
 ```

@@ -1,17 +1,18 @@
 # VPN-Конструктор
 
-Бесплатная сборка VPN-подписок: GitHub Actions собирает открытые VLESS/Reality-конфиги, а небольшой Python-сервис на **Netrun** проверяет персональный токен и только после этого отдаёт `auto.json`.
+Бесплатная сборка VPN-подписок: GitHub Actions раз в час собирает открытые VLESS/Reality-конфиги, проверяет реальную задержку через Xray-core и оставляет только **топ-30 живых серверов**. Небольшой Python-сервис на **Netrun** проверяет персональный токен и только после этого отдаёт `auto.json`.
 
 Telegram-бота нет. Управление клиентами — локальный `manager.py` на стандартной библиотеке Python.
 
 ## Архитектура
 
 ```text
-┌─────────────────────┐      каждые N минут      ┌──────────────────────────┐
+┌─────────────────────┐      каждый час          ┌──────────────────────────┐
 │ Открытые источники  │ ───────────────────────> │ GitHub Actions           │
 │ VLESS / Reality     │                          │ aggregator/run.py        │
-└─────────────────────┘                          └────────────┬─────────────┘
-                                                              │ коммит
+└─────────────────────┘                          │ + xray-knife (latency)   │
+                                                 └────────────┬─────────────┘
+                                                              │ топ-30
                                                               v
                                                    web/subscriptions/auto.json
                                                               │
@@ -55,8 +56,9 @@ Telegram-бота нет. Управление клиентами — локал
 
 ```text
 aggregator/                 # сборщик конфигов
-  sources/sources.json      # источники VLESS/Reality
-  run.py                    # точка входа
+  sources/sources.json      # источники VLESS/Reality (auto + whitelist)
+  health/latency.py         # xray-knife, проверка задержки, TCP-fallback
+  run.py                    # точка входа: парсинг → пинг → топ-30 → JSON/TXT
 web/subscriptions/          # auto.json, whitelist.json, *.txt (результат сборки)
 netrun_worker/
   app.py                    # Flask-воркер с проверкой токена
@@ -136,13 +138,53 @@ python manager.py check --status expired
 
 ## Автоматическая сборка конфигов
 
-`.github/workflows/aggregator.yml` запускается по расписанию и вручную:
+`.github/workflows/aggregator.yml` запускается раз в час и вручную:
 
-1. ставит зависимости;
-2. запускает `python -m aggregator.run`;
-3. коммитит изменения из `web/subscriptions/` в `main`.
+1. ставит Python-зависимости и Go 1.25;
+2. собирает `xray-knife` из исходников (`go install ...@v11.5.0`);
+3. проверяет, из какой страны идёт запуск, и предупреждает, если это не РФ;
+4. запускает `python -m aggregator.run`: парсинг → дедупликация → реальный
+   HTTP-тест через Xray-core с конкурентностью 50 → сортировка по задержке →
+   топ-30 в `auto.json` / `whitelist.json`;
+5. коммитит изменения из `web/subscriptions/` в `main`.
+
+Таймаут job — 45 минут. Cron — `0 * * * *`: частая массовая проверка прокси
+повышает риск блокировки аккаунта GitHub.
 
 Netrun-воркер забирает свежий `auto.json` через GitHub API или `CONFIG_URL` и кэширует его на `CACHE_TTL` секунд (по умолчанию 60). Пересобирать контейнер при обновлении конфигов не нужно.
+
+### Проверка «из России»
+
+`xray-knife` не умеет работать через внешний прокси, поэтому страну проверки
+определяет раннер. GitHub-hosted раннер находится вне РФ, и его пинг — это
+задержка из дата-центра GitHub, а не из России.
+
+Для настоящего RU-отбора:
+
+1. Подключите self-hosted runner в России (Linux).
+2. В настройках репозитория → **Variables** создайте `RU_RUNNER_LABELS`:
+
+   ```json
+   ["self-hosted","linux","ru"]
+   ```
+
+3. Workflow автоматически выберет этот раннер вместо `ubuntu-latest`.
+   Шаг «Show test origin» печатает страну и выдаёт `::warning::`, если это не RU.
+
+Без RU-раннера сборка не падает: топ-30 строится по задержке из той точки,
+где запущен workflow. Это лучше, чем ничего, но не гарантирует скорость
+именно из России.
+
+### Обновление топ-30
+
+Топ пересобирается при каждом запуске workflow. Вручную:
+
+```bash
+python -m aggregator.run
+```
+
+Локально нужен `xray-knife`. Если его нет, включается TCP-fallback (TCP RTT,
+без проверки самого прокси). Быстрая сборка без проверки — `SKIP_LATENCY=1`.
 
 ## Мобильные клиенты и совместимость
 
@@ -155,18 +197,60 @@ JSON-подписка (`auto.json`) собирается строго в одн�
 - `realitySettings` всегда содержит `serverName`, `publicKey`, `shortId` и `fingerprint: "chrome"`;
 - без `fragment`, `mux`, `sockopt`, `xhttp`, `hysteria`, `ws`, `grpc`;
 - без `balancers`, `burstObservatory` и `geoip`/`geosite`;
-- один сервер в JSON (`json_max_outbounds: 1`).
+- до 30 серверов (`json_max_outbounds: 30`), отсортированных по задержке.
+
+Whitelist-режим (`whitelist.json`) использует те же правила, но:
+
+- в JSON попадают только серверы из источников `igareck_*`;
+- источники `igareck` публикуют white-list конфиги как VLESS + TCP + TLS +
+  Vision (SNI разрешённого домена), поэтому для whitelist разрешён
+  `security: "tls"` (управляется `whitelist.allow_tls_vision`);
+- если живых igareck-серверов нет, JSON **не перезаписывается** мёртвыми
+  узлами; в логе будет ошибка, а TXT соберётся из проверенных ссылок;
+- в `routing.rules` нет `geoip:ru` и `geosite:category-ru`: весь трафик идёт
+  в туннель, а не напрямую.
 
 Такой JSON отдаётся с `Content-Type: application/json` и содержит полный
 Xray-конфиг с секциями `inbounds` и `outbounds`. Его понимают **Happ** и
 **INCY** (Xray-core, Android/iOS), а также OneXray и v2rayNG (custom config).
 
-WS + TLS, gRPC и XHTTP намеренно исключены: в 2026 ТСПУ в России
+WS + TLS, gRPC и XHTTP намеренно исключены из auto: в 2026 ТСПУ в России
 блокирует их по TLS-отпечатку и характеру трафика. Reality Vision
 маскируется под обычный TLS к чужому домену и неотличим от браузера.
 
 Полный список серверов остаётся в `web/subscriptions/auto_all.txt` и
 `whitelist_all.txt` — как резервная ссылочная подписка.
+
+## Как проверить, что в JSON попали лучшие серверы
+
+```bash
+# 1. Посмотреть лог отбора: задержки и источники
+python -m aggregator.run 2>&1 | Select-String "Топ-|ms  "
+
+# 2. Проверить структуру auto.json
+python - <<'PY'
+import json
+cfg = json.load(open("web/subscriptions/auto.json", encoding="utf-8"))
+servers = [o for o in cfg["outbounds"] if o["protocol"] == "vless"]
+print("серверов:", len(servers))
+for o in servers[:5]:
+    u = o["settings"]["vnext"][0]
+    print(u["address"], u["port"], o["streamSettings"]["security"],
+          o["settings"]["vnext"][0]["users"][0]["flow"])
+assert len(servers) <= 30
+assert all(o["streamSettings"]["network"] == "tcp" for o in servers)
+assert all(o["streamSettings"]["security"] == "reality" for o in servers)
+assert all(o["settings"]["vnext"][0]["users"][0]["flow"] == "xtls-rprx-vision" for o in servers)
+PY
+
+# 3. Перепроверить топ вручную через xray-knife
+xray-knife http -f web/subscriptions/auto_all.txt -t 50 -o check.json \
+  -x json --sort --timeout 10000 --mdelay 8000 --prescan --diagnose=false
+```
+
+В `check.json` успешные серверы имеют `status: "passed"` или
+`"semi-passed"` и положительный `delay`. Именно они попадают в топ-30.
+
 
 ## Переменные Netrun
 

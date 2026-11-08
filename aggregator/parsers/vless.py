@@ -7,6 +7,10 @@ def parse_vless_uri(uri: str) -> dict | None:
     
     try:
         parsed = urlparse(uri)
+        # Без UUID и адреса ссылка бесполезна: такие строки приходят
+        # из битых источников и не должны попадать в пайплайн.
+        if not parsed.username or not parsed.hostname:
+            return None
         params = parse_qs(parsed.query)
         
         return {

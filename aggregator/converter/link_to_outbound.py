@@ -1,5 +1,5 @@
 import logging
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, unquote, urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -22,25 +22,45 @@ class LinkToOutboundConverter:
     """
     Преобразует share-ссылки в outbound-объекты Xray.
 
-    Для JSON-подписки допускается только:
+    Для JSON-подписки auto допускается только:
       - protocol=vless
       - network=tcp (новые ядра пишут type=raw)
       - security=reality с непустым pbk
       - flow=xtls-rprx-vision
+
+    Для whitelist-режима можно включить allow_tls_vision: источники
+    igareck публикуют white-list конфиги как VLESS + TCP + TLS + Vision
+    (SNI разрешённого домена), и такие серверы тоже годны для обхода
+    белых списков. Reality остаётся приоритетным.
 
     fragment, mux, sockopt, wsSettings, grpcSettings и прочие расширения
     не генерируются вовсе: мобильные ядра их либо не понимают, либо
     ведут себя непредсказуемо.
     """
 
-    @staticmethod
-    def parse_vless(link: str) -> dict | None:
+    def __init__(self, allow_tls_vision: bool = False):
+        self.allow_tls_vision = bool(allow_tls_vision)
+
+    def _allowed_security(self) -> set[str]:
+        allowed = {REQUIRED_SECURITY}
+        if self.allow_tls_vision:
+            allowed.add("tls")
+        return allowed
+
+    def parse_vless(self, link: str) -> dict | None:
         try:
             parsed = urlparse(link)
             uuid = parsed.username
             host = parsed.hostname
             port = parsed.port or 443
             if not uuid or not host:
+                return None
+
+            # Заглушки из некоторых источников (0.0.0.0, localhost) и
+            # нулевые UUID — не серверы, их нельзя отдавать клиентам.
+            if host.strip().lower() in {"0.0.0.0", "::", "[::]", "127.0.0.1", "localhost"}:
+                return None
+            if not str(uuid).replace("0", "").replace("-", ""):
                 return None
 
             params = parse_qs(parsed.query)
@@ -53,8 +73,8 @@ class LinkToOutboundConverter:
             flow = (params.get("flow", [""])[0] or "").strip()
             encryption_type = (params.get("encryption", ["none"])[0] or "none").strip().lower()
 
-            # --- Жёсткий фильтр: только Reality + TCP + Vision ---
-            if security_type != REQUIRED_SECURITY:
+            # --- Жёсткий фильтр: только TCP + Vision + Reality (или TLS) ---
+            if security_type not in self._allowed_security():
                 return None
             if network != REQUIRED_NETWORK:
                 return None
@@ -64,7 +84,8 @@ class LinkToOutboundConverter:
                 return None
 
             public_key = (params.get("pbk", params.get("publicKey", [""]))[0] or "").strip()
-            if not public_key:
+            if security_type == REQUIRED_SECURITY and not public_key:
+                # Reality без publicKey нерабочий.
                 return None
 
             sni = (
@@ -77,6 +98,39 @@ class LinkToOutboundConverter:
             fingerprint = (params.get("fp", ["chrome"])[0] or "chrome").strip().lower()
             if fingerprint not in SUPPORTED_FINGERPRINTS:
                 fingerprint = "chrome"
+
+            stream_settings = {
+                "network": REQUIRED_NETWORK,
+                "security": security_type,
+            }
+
+            if security_type == REQUIRED_SECURITY:
+                stream_settings["realitySettings"] = {
+                    "serverName": sni,
+                    "publicKey": public_key,
+                    "shortId": short_id,
+                    "fingerprint": fingerprint,
+                }
+            else:
+                # igareck WHITE-*: обычный TLS на SNI из белого списка.
+                alpn_raw = (params.get("alpn", [""])[0] or "").strip()
+                alpn = []
+                if alpn_raw:
+                    # Источники иногда кодируют alpn дважды: h2%252Chttp%252F1.1.
+                    for _ in range(2):
+                        decoded = unquote(alpn_raw)
+                        if decoded == alpn_raw:
+                            break
+                        alpn_raw = decoded
+                    alpn = [item.strip() for item in alpn_raw.split(",") if item.strip()]
+                tls_settings = {
+                    "serverName": sni,
+                    "fingerprint": fingerprint,
+                    "allowInsecure": False,
+                }
+                if alpn:
+                    tls_settings["alpn"] = alpn
+                stream_settings["tlsSettings"] = tls_settings
 
             # Vision включается только через flow у пользователя.
             user = {
@@ -95,16 +149,7 @@ class LinkToOutboundConverter:
                         "users": [user],
                     }]
                 },
-                "streamSettings": {
-                    "network": REQUIRED_NETWORK,
-                    "security": REQUIRED_SECURITY,
-                    "realitySettings": {
-                        "serverName": sni,
-                        "publicKey": public_key,
-                        "shortId": short_id,
-                        "fingerprint": fingerprint,
-                    },
-                },
+                "streamSettings": stream_settings,
             }
         except Exception as exc:
             logger.debug("Не удалось разобрать VLESS-ссылку: %s", exc)

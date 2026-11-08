@@ -24,6 +24,10 @@ PRIVATE_CIDRS = [
     "fe80::/10",
 ]
 
+# В whitelist-режиме весь трафик должен идти в туннель.
+# Эти маркеры не должны встречаться в routing вообще.
+FORBIDDEN_ROUTING_MARKERS = ("geoip:ru", "geosite:category-ru")
+
 
 def _get_vnext(outbound: dict) -> dict:
     vnext = (outbound.get("settings") or {}).get("vnext") or []
@@ -41,8 +45,14 @@ def _normalize_network(value) -> str:
     return "tcp" if network == "raw" else network
 
 
-def is_compatible(outbound: dict) -> bool:
-    """Проверяет, что outbound соответствует Reality + TCP + Vision."""
+def is_compatible(outbound: dict, allow_tls: bool = False) -> bool:
+    """
+    Проверяет, что outbound соответствует TCP + Vision.
+
+    security по умолчанию строго reality. В whitelist-режиме можно
+    разрешить ещё и tls: white-list конфиги igareck используют TLS
+    с SNI разрешённого домена, и это штатный способ обхода.
+    """
     if outbound.get("protocol") not in SUPPORTED_PROTOCOLS:
         return False
 
@@ -50,7 +60,11 @@ def is_compatible(outbound: dict) -> bool:
     security = str(stream.get("security", "")).strip().lower()
     network = _normalize_network(stream.get("network"))
 
-    if security != REQUIRED_SECURITY:
+    allowed_security = {REQUIRED_SECURITY}
+    if allow_tls:
+        allowed_security.add("tls")
+
+    if security not in allowed_security:
         return False
     if network != REQUIRED_NETWORK:
         return False
@@ -64,21 +78,27 @@ def is_compatible(outbound: dict) -> bool:
     if str(user.get("flow", "")).strip() != REQUIRED_FLOW:
         return False
 
-    # Reality без publicKey нерабочий.
-    reality = stream.get("realitySettings") or {}
-    if not str(reality.get("publicKey", "")).strip():
-        return False
+    if security == REQUIRED_SECURITY:
+        # Reality без publicKey нерабочий.
+        reality = stream.get("realitySettings") or {}
+        if not str(reality.get("publicKey", "")).strip():
+            return False
+    else:
+        tls = stream.get("tlsSettings") or {}
+        if not str(tls.get("serverName", "")).strip():
+            return False
 
     return True
 
 
-def _compact_outbound(outbound: dict) -> dict | None:
+def _compact_outbound(outbound: dict, allow_tls: bool = False) -> dict | None:
     """
     Собирает outbound заново, оставляя только обязательные поля.
 
-    Здесь принудительно выставляются network=tcp, security=reality,
-    fingerprint=chrome и flow=xtls-rprx-vision. Никакие fragment, mux,
-    sockopt, wsSettings, grpcSettings, xhttpSettings не переносятся.
+    Здесь принудительно выставляются network=tcp, security из источника
+    (reality, либо tls в whitelist-режиме) и flow=xtls-rprx-vision.
+    Никакие fragment, mux, sockopt, wsSettings, grpcSettings,
+    xhttpSettings не переносятся.
     """
     stream = outbound.get("streamSettings") or {}
     vnext = _get_vnext(outbound)
@@ -96,13 +116,43 @@ def _compact_outbound(outbound: dict) -> dict | None:
     except (TypeError, ValueError):
         return None
 
-    reality = stream.get("realitySettings") or {}
-    public_key = str(reality.get("publicKey", "")).strip()
-    if not public_key:
+    security = str(stream.get("security", "")).strip().lower()
+    if security not in ({REQUIRED_SECURITY, "tls"} if allow_tls else {REQUIRED_SECURITY}):
         return None
 
-    server_name = str(reality.get("serverName", "")).strip() or address
-    short_id = str(reality.get("shortId", "")).strip()
+    stream_settings = {
+        "network": REQUIRED_NETWORK,
+        "security": security,
+    }
+
+    if security == REQUIRED_SECURITY:
+        reality = stream.get("realitySettings") or {}
+        public_key = str(reality.get("publicKey", "")).strip()
+        if not public_key:
+            return None
+        server_name = str(reality.get("serverName", "")).strip() or address
+        short_id = str(reality.get("shortId", "")).strip()
+        stream_settings["realitySettings"] = {
+            "serverName": server_name,
+            "publicKey": public_key,
+            "shortId": short_id,
+            "fingerprint": "chrome",
+        }
+    else:
+        tls = stream.get("tlsSettings") or {}
+        server_name = str(tls.get("serverName", "")).strip()
+        if not server_name:
+            return None
+        fingerprint = str(tls.get("fingerprint", "")).strip().lower() or "chrome"
+        tls_settings = {
+            "serverName": server_name,
+            "fingerprint": fingerprint,
+            "allowInsecure": False,
+        }
+        alpn = tls.get("alpn")
+        if isinstance(alpn, list) and alpn:
+            tls_settings["alpn"] = [str(item) for item in alpn if str(item).strip()]
+        stream_settings["tlsSettings"] = tls_settings
 
     return {
         "tag": outbound.get("tag", "proxy"),
@@ -118,16 +168,7 @@ def _compact_outbound(outbound: dict) -> dict | None:
                 }],
             }]
         },
-        "streamSettings": {
-            "network": REQUIRED_NETWORK,
-            "security": REQUIRED_SECURITY,
-            "realitySettings": {
-                "serverName": server_name,
-                "publicKey": public_key,
-                "shortId": short_id,
-                "fingerprint": "chrome",
-            },
-        },
+        "streamSettings": stream_settings,
     }
 
 
@@ -148,23 +189,33 @@ def _deduplicate(outbounds: list[dict]) -> list[dict]:
     return result
 
 
-def build_subscription(outbounds: list, template_path: str, max_outbounds: int = 1) -> dict:
+def build_subscription(
+    outbounds: list,
+    template_path: str,
+    max_outbounds: int = 30,
+    allow_tls: bool | None = None,
+) -> dict:
     """
     Собирает полный Xray-конфиг (inbounds + outbounds + routing).
 
-    В JSON попадает не более max_outbounds серверов, и каждый из них —
-    строго VLESS + TCP + Reality + Vision. Никаких балансировщиков,
-    burstObservatory, fragment, mux, sockopt, hysteria и geo-правил.
-    Полный список ссылок остаётся в auto_all.txt / whitelist_all.txt.
+    В JSON попадает не более max_outbounds серверов (по умолчанию 30).
+    Для auto каждый сервер — строго VLESS + TCP + Reality + Vision.
+    Для whitelist разрешён ещё и TLS + Vision (white-list конфиги igareck),
+    если allow_tls не выставлен в False явно.
+    Никаких балансировщиков, burstObservatory, fragment, mux, sockopt,
+    hysteria и geo-правил. Полный список ссылок остаётся в TXT.
     """
+    if allow_tls is None:
+        allow_tls = "whitelist" in template_path
+
     limit = max(1, int(max_outbounds))
     safe_outbounds: list[dict] = []
 
     for outbound in outbounds:
-        if not is_compatible(outbound):
+        if not is_compatible(outbound, allow_tls=allow_tls):
             logger.debug("Пропущен несовместимый outbound: %s", outbound.get("tag"))
             continue
-        compact = _compact_outbound(outbound)
+        compact = _compact_outbound(outbound, allow_tls=allow_tls)
         if compact is not None:
             safe_outbounds.append(compact)
 
@@ -203,6 +254,19 @@ def build_subscription(outbounds: list, template_path: str, max_outbounds: int =
             }
         ],
     }
+
+    # Страховка для whitelist-режима: весь трафик должен идти в туннель.
+    # Если шаблон когда-нибудь вернёт geoip:ru/geosite:category-ru —
+    # такие правила вырезаются, а не тихо ломают обход белых списков.
+    if "whitelist" in template_path:
+        clean_rules = []
+        for rule in config["routing"]["rules"]:
+            serialized = json.dumps(rule, ensure_ascii=False).lower()
+            if any(marker in serialized for marker in FORBIDDEN_ROUTING_MARKERS):
+                logger.warning("Whitelist: удалено правило с обходом РФ: %s", rule)
+                continue
+            clean_rules.append(rule)
+        config["routing"]["rules"] = clean_rules
 
     return config
 

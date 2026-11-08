@@ -23,5 +23,6 @@ def test_convert_hysteria2(converter):
     assert outbound["protocol"] == "hysteria"
     assert outbound["settings"]["version"] == 2
     assert outbound["streamSettings"]["hysteriaSettings"]["auth"] == "password123"
-    # Проверяем, что маскировка UDP применилась
-    assert "finalmask" in outbound["streamSettings"]
+    # Hysteria2 остаётся только для TXT-подписки; JSON-сборщик её отбрасывает.
+    assert outbound["streamSettings"]["security"] == "tls"
+    assert outbound["streamSettings"]["tlsSettings"]["serverName"] == "example.com"
