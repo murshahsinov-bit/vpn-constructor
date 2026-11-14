@@ -3,6 +3,7 @@ from aggregator.run import (
     _alternate_variant,
     _outbound_to_link,
     _relay_from_records,
+    _select_records,
     _write_txt,
 )
 from urllib.parse import parse_qs, urlsplit
@@ -141,3 +142,40 @@ def test_write_txt_creates_incy_and_happ_variants(tmp_path):
     assert happ_query["fragment"] == ["100-200,10-20,tlshello"]
     assert "fragment" not in incy_query
     assert "fragmentPackets" not in happ_query
+
+
+def _record(profile: str, address: str, delay: int) -> ServerRecord:
+    outbound = make_xhttp()
+    outbound["streamSettings"]["network"] = profile
+    outbound["_profile"] = profile
+    return ServerRecord(
+        identity=(address, 443, f"uuid-{address}"),
+        variants={profile: outbound},
+        links={profile: f"vless://uuid@{address}:443?type={profile}"},
+        sources={"test"},
+        delays={profile: delay},
+        statuses={profile: "passed"},
+    )
+
+
+def test_select_records_prioritizes_xhttp_and_keeps_tcp_fallback():
+    tcp_fast = _record("tcp", "10.0.0.1", 10)
+    tcp_next = _record("tcp", "10.0.0.2", 20)
+    xhttp_slow = _record("xhttp", "10.0.0.3", 300)
+
+    selected = _select_records([tcp_fast, tcp_next, xhttp_slow], 3, xhttp_share=0.6)
+
+    assert len(selected) == 3
+    assert selected[0].identity[0] == "10.0.0.3", "XHTTP должен идти первым"
+    assert {r.identity[0] for r in selected} == {"10.0.0.1", "10.0.0.2", "10.0.0.3"}
+
+
+def test_select_records_reserves_slots_for_tcp_only():
+    records = [_record("xhttp", f"10.1.0.{i}", i * 10) for i in range(1, 6)]
+    records.append(_record("tcp", "10.2.0.1", 5))
+
+    selected = _select_records(records, 3, xhttp_share=0.6)
+
+    assert len(selected) == 3
+    assert sum(1 for r in selected if "xhttp" in r.alive_profiles) == 2
+    assert sum(1 for r in selected if "xhttp" not in r.alive_profiles) == 1

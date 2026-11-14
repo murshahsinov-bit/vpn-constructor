@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:padding="16dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:visibility="gone"
+        android:textColor="@color/colorDarkGray"
+        android:textSize="16sp"
+
+        android:text="@string/advanced"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/speedtest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:backgroundTint="@color/colorBg"
+        app:backgroundTintMode="add"
+        app:cornerRadius="12dp"
+        android:visibility="gone"
+        app:icon="@drawable/ic_baseline_speed"
+        app:iconGravity="start"
+
+        android:textAlignment="textStart"
+        android:text="@string/speedtest"
+
+        
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginVertical="16dp"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="18dp"
+        >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colorText"
+        android:textSize="16sp"
+
+        android:layout_weight="1"
+
+        android:text="@string/proxyAppAndSites" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/proxymode_help"
+            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            app:icon="@drawable/ic_help_outline_24"
+            style="@style/Widget.Material3.Button.TextButton"
+            />
+
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/proxyToggleButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:checkedButton="@id/filteredSites"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/sitesAll"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            
+            android:lines="1"
+            android:text="@string/sites_all"
+
+            app:cornerRadius="20dp"
+            />
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/not_opened"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+
+            android:ellipsize="none"
+            
+            android:singleLine="true"
+            android:text="@string/external_sites"
+
+            app:cornerRadius="20dp"
+            />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/filteredSites"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            
+            android:lines="1"
+            android:text="@string/filtered_sites"
+
+            app:cornerRadius="16dp"
+            />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="18dp"
+        >
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        
+        android:textSize="16sp"
+        android:textColor="@color/colorText"
+        android:layout_weight="1"
+        android:text="@string/fragment" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fragment_help"
+            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            app:icon="@drawable/ic_help_outline_24"
+            style="@style/Widget.Material3.Button.TextButton"
+            />
+    </LinearLayout>
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/fragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:checkedButton="@id/filteredSites"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fragment_default"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            
+            android:lines="1"
+            android:text="@string/fragment_default"
+            
+            
+            app:cornerRadius="20dp"
+             />
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fragment_random"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+
+            android:ellipsize="none"
+            
+            android:singleLine="true"
+            android:text="@string/fragment_random"
+            
+            
+            app:cornerRadius="20dp"
+             />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fragment_sni"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            
+            android:lines="1"
+            android:text="@string/fragment_sni"
+            
+            
+            app:cornerRadius="16dp"
+             />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+
+
+
+
+
+
+
+
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="18dp"
+        >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        
+        android:textSize="16sp"
+        android:textColor="@color/colorText"
+        android:layout_weight="1"
+        android:text="@string/connection_mode"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/connection_mode_help"
+            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            app:icon="@drawable/ic_help_outline_24"
+            style="@style/Widget.Material3.Button.TextButton"
+            />
+    </LinearLayout>
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/connectToggleButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:singleSelection="true"
+        android:foreground="?android:attr/selectableItemBackground"
+        app:checkedButton="@id/smart">
+
+        <com.google.android.material.button.MaterialButton
+            style="?attr/materialButtonOutlinedStyle"
+            android:id="@+id/smart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:lines="1"
+            android:ellipsize="end"
+            
+            
+            
+            app:cornerRadius="20dp"
+            
+            android:text="@string/smart" />
+
+        <com.google.android.material.button.MaterialButton
+            style="?attr/materialButtonOutlinedStyle"
+            android:id="@+id/loadBalance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:lines="1"
+            android:ellipsize="end"
+
+            
+            
+            
+            app:cornerRadius="20dp"
+            
+            android:text="@string/load_balance" />
+
+        <com.google.android.material.button.MaterialButton
+            style="?attr/materialButtonOutlinedStyle"
+            android:id="@+id/manual"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:lines="1"
+            android:ellipsize="end"
+            
+            
+            
+            app:cornerRadius="20dp"
+            
+            android:text="@string/manual" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+</LinearLayout>

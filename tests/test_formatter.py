@@ -323,3 +323,41 @@ def test_whitelist_relay_chain():
     serialized = json.dumps(config, ensure_ascii=False).lower()
     assert "geoip:ru" not in serialized
     assert "geosite:category-ru" not in serialized
+
+
+def test_reality_with_cloudflare_address_is_rejected():
+    bad = make_xhttp_reality(address="104.16.5.5")
+    with pytest.raises(ValueError, match="Нет серверов"):
+        build_subscription([bad], "aggregator/templates/auto_template.json", 30)
+
+
+def test_reality_with_cdn_sni_is_rejected():
+    bad = make_reality()
+    bad["streamSettings"]["realitySettings"]["serverName"] = "edge.workers.dev"
+    with pytest.raises(ValueError, match="Нет серверов"):
+        build_subscription([bad], "aggregator/templates/auto_template.json", 30)
+
+
+def test_xhttp_tls_over_cdn_survives():
+    outbound = {
+        "protocol": "vless",
+        "settings": {
+            "vnext": [{
+                "address": "104.16.5.5",
+                "port": 443,
+                "users": [{"id": "uuid-cdn", "flow": ""}],
+            }]
+        },
+        "streamSettings": {
+            "network": "xhttp",
+            "security": "tls",
+            "tlsSettings": {"serverName": "cdn.example.com"},
+            "xhttpSettings": {"mode": "stream-one", "path": "/cdn"},
+        },
+    }
+    config = build_subscription(
+        [outbound], "aggregator/templates/auto_template.json", 30
+    )
+    stream = config["outbounds"][0]["streamSettings"]
+    assert stream["security"] == "tls"
+    assert stream["tlsSettings"]["fingerprint"] == "firefox"

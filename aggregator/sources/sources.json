@@ -1,16 +1,16 @@
 {
   "auto": [
     {
-      "name": "0xradikal_verified",
-      "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/verified/configs_base64.txt",
-      "format": "base64",
+      "name": "0xradikal_top100",
+      "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/top100.txt",
+      "note": "TOP-100, уже отсортирован по median delay на стороне источника. Обновляется каждые 15 минут.",
       "enabled": true
     },
     {
-      "name": "soroushmirzaei_reality",
-      "url": "https://raw.githubusercontent.com/soroushmirzaei/telegram-configs-collector/main/protocols/reality",
+      "name": "0xradikal_verified",
+      "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/verified/configs_base64.txt",
       "format": "base64",
-      "note": "Upstream-репозиторий сейчас отдаёт 404; источник пропускается без падения сборки.",
+      "note": "Только проверенные конфиги (base64-подписка).",
       "enabled": true
     },
     {
@@ -21,6 +21,45 @@
     {
       "name": "solispirit_vless",
       "url": "https://raw.githubusercontent.com/SoliSpirit/v2ray-configs/main/Protocols/vless.txt",
+      "enabled": true
+    },
+    {
+      "name": "aliilapro_vless",
+      "url": "https://raw.githubusercontent.com/ALIILAPRO/v2rayNG-Config/main/server.txt",
+      "note": "478 VLESS, 217 Reality, 54 XHTTP на момент аудита. Замена удалённого Epodonios.",
+      "enabled": true
+    },
+    {
+      "name": "ermaozi_vless",
+      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt",
+      "note": "285 VLESS, 21 Reality, 5 XHTTP на момент аудита.",
+      "enabled": true
+    },
+    {
+      "name": "roosterkid_vless",
+      "url": "https://raw.githubusercontent.com/roosterkid/openproxylist/main/V2RAY_RAW.txt",
+      "note": "49 VLESS, 30 Reality. Небольшой, но стабильный фид.",
+      "enabled": true
+    },
+    {
+      "name": "ripaojiedian_freenode",
+      "url": "https://raw.githubusercontent.com/ripaojiedian/freenode/main/sub",
+      "format": "base64",
+      "note": "18 VLESS, 13 Reality.",
+      "enabled": true
+    },
+    {
+      "name": "pawdroid_free_servers",
+      "url": "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub",
+      "format": "base64",
+      "note": "Base64-подписка, небольшая, но регулярно обновляется.",
+      "enabled": true
+    },
+    {
+      "name": "peasoft_nomorewalls",
+      "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.txt",
+      "format": "base64",
+      "note": "249 VLESS в base64.",
       "enabled": true
     }
   ],

@@ -2,6 +2,8 @@ import json
 import logging
 from urllib.parse import parse_qs, unquote, urlparse
 
+from aggregator.filter.cdn import is_cdn_endpoint
+
 logger = logging.getLogger(__name__)
 
 # Профили, которые попадают в JSON-подписку.
@@ -25,9 +27,13 @@ TCP_FRAGMENT = {
 # XHTTP-режимы, которые понимает Xray-core. Клиентский mode не обязан
 # совпадать с серверным: сервер XHTTP принимает все режимы.
 XHTTP_MODES = {"auto", "packet-up", "stream-up", "stream-one"}
+
+# ТСПУ с июня 2026 уверенно выделяет JA3/JA4 Chrome и Safari, поэтому эти
+# отпечатки запрещены. Мы всё равно принудительно пишем firefox, а список
+# ниже нужен, чтобы явно зафиксировать правило и не пропустить регрессию.
+FORBIDDEN_FINGERPRINTS = {"chrome", "safari"}
 SUPPORTED_FINGERPRINTS = {
-    "chrome", "firefox", "safari", "ios", "android", "edge",
-    "random", "randomized",
+    "firefox", "ios", "android", "edge", "random", "randomized",
 }
 
 
@@ -159,6 +165,13 @@ class LinkToOutboundConverter:
             )
             short_id = _first(params, "sid", "shortId")
             spider_x = _first(params, "spx", "spiderX")
+
+            # Reality — протокол точка-точка. Если адрес или SNI указывают
+            # на Cloudflare/Fastly/Akamai, TLS терминируется на CDN, и
+            # Reality-рукопожатие не может работать.
+            if security_type == "reality" and is_cdn_endpoint(host, sni):
+                logger.debug("Reality через CDN отброшен: %s / %s", host, sni)
+                return None
 
             # Требование проекта: везде firefox. Параметр fp из источника
             # игнорируется, чтобы не отдавать chrome/safari, которые ТСПУ

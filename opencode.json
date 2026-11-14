@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "browse": {
+      "command": "C:\\Users\\el\\.local\\bin\\browse.exe",
+      "args": ["mcp"]
+    }
+  }
+}

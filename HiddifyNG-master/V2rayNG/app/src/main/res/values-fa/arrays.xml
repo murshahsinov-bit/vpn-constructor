@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="language_select" translatable="false">
+        <item>🌎‏ auto</item>
+        <item>‏🇮🇷 فارسی</item>
+        <item>‏🇺🇸‏ English</item>
+        <item>‏🇨🇳‏ 中文简体</item>
+        <item>‏🇹🇼‏ 中文繁體</item>
+        <item>‏🇻🇮‏ Tiếng Việt</item>
+        <item>‏🇷🇺‏ Русский</item>
+    </string-array>
+
+    <string-array name="country_select" translatable="false">
+        <item>‏🇮🇷 ایران</item>
+        <item>‏🇨🇳 چین</item>
+        <item>🌎 سایر</item>
+    </string-array>
+
+    <string-array name="speedtest_proxy_select" translatable="false">
+        <item>🗝️ با فیلترشکن</item>
+        <item>🔒 بدون فیلترشکن</item>
+
+    </string-array>
+
+    <string-array name="speedtest_mode_select" translatable="false">
+        <item>⬆ آپلود</item>
+        <item>⬇ دانلود</item>
+        <item>⬇⬆ هردود</item>
+    </string-array>
+</resources>

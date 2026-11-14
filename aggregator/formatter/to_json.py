@@ -1,6 +1,8 @@
 import json
 import logging
 
+from aggregator.filter.cdn import is_cdn_endpoint
+
 logger = logging.getLogger(__name__)
 
 PROFILE_XHTTP = "xhttp"
@@ -147,6 +149,14 @@ def is_compatible(
         reality = stream.get("realitySettings") or {}
         if not str(reality.get("publicKey", "")).strip():
             return False
+        # Reality и CDN несовместимы: CDN терминирует TLS и ломает рукопожатие.
+        if is_cdn_endpoint(str(vnext.get("address", "")), str(reality.get("serverName", ""))):
+            logger.debug(
+                "Reality через CDN отброшен: %s / %s",
+                vnext.get("address"),
+                reality.get("serverName"),
+            )
+            return False
     else:
         tls = stream.get("tlsSettings") or {}
         if not str(tls.get("serverName", "")).strip():
@@ -205,6 +215,9 @@ def _compact_outbound(
         if not public_key:
             return None
         server_name = str(reality.get("serverName", "")).strip() or address
+        if is_cdn_endpoint(address, server_name):
+            logger.debug("Reality через CDN отброшен: %s / %s", address, server_name)
+            return None
         reality_settings = {
             "serverName": server_name,
             "publicKey": public_key,

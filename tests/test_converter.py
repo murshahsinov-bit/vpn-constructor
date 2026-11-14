@@ -1,6 +1,10 @@
 import pytest
 
-from aggregator.converter.link_to_outbound import LinkToOutboundConverter
+from aggregator.converter.link_to_outbound import (
+    FORBIDDEN_FINGERPRINTS,
+    SUPPORTED_FINGERPRINTS,
+    LinkToOutboundConverter,
+)
 
 
 @pytest.fixture
@@ -97,3 +101,40 @@ def test_convert_hysteria2(converter):
     # Hysteria2 остаётся только для TXT-подписки; JSON-сборщик её отбрасывает.
     assert outbound["streamSettings"]["security"] == "tls"
     assert outbound["streamSettings"]["tlsSettings"]["serverName"] == "example.com"
+
+
+def test_chrome_and_safari_are_forbidden_fingerprints():
+    assert FORBIDDEN_FINGERPRINTS == {"chrome", "safari"}
+    assert not (SUPPORTED_FINGERPRINTS & FORBIDDEN_FINGERPRINTS)
+    assert "firefox" in SUPPORTED_FINGERPRINTS
+
+
+@pytest.mark.parametrize(
+    "address,sni",
+    [
+        ("104.16.1.1", "www.microsoft.com"),     # Cloudflare IPv4
+        ("172.67.10.10", "example.com"),         # Cloudflare IPv4
+        ("85.11.187.26", "edge.workers.dev"),    # Cloudflare Workers SNI
+        ("85.11.187.26", "cdn.cloudflare.net"),  # Cloudflare SNI
+        ("85.11.187.26", "app.netlify.app"),     # другой CDN
+    ],
+)
+def test_reality_over_cdn_is_rejected(converter, address, sni):
+    uri = (
+        f"vless://e0c8c4a3-4d56-49c1-b403-40cbd757473b@{address}:443"
+        f"?security=reality&sni={sni}&pbk=abc&sid=def&type=xhttp&path=%2F"
+    )
+    assert converter.convert(uri) is None
+
+
+def test_xhttp_tls_over_cloudflare_is_still_allowed(converter):
+    # TLS через CDN — штатная схема, запрет касается только Reality.
+    uri = (
+        "vless://e0c8c4a3-4d56-49c1-b403-40cbd757473b@104.16.1.1:443"
+        "?security=tls&sni=cdn.example.com&type=xhttp"
+        "&path=%2F&host=cdn.example.com"
+    )
+    outbound = converter.convert(uri)
+    assert outbound is not None
+    assert outbound["streamSettings"]["security"] == "tls"
+    assert outbound["_profile"] == "xhttp"

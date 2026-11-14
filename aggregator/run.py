@@ -12,6 +12,7 @@ import yaml
 from aggregator.sources.loader import SourceLoader
 from aggregator.fetcher.downloader import ConfigDownloader
 from aggregator.converter.link_to_outbound import (
+    PROFILE_XHTTP,
     TCP_FRAGMENT,
     VISION_FLOW,
     LinkToOutboundConverter,
@@ -367,13 +368,60 @@ async def _synthesize_and_rank(
     return records
 
 
+def _select_records(
+    records: list[ServerRecord],
+    limit: int,
+    xhttp_share: float = 0.6,
+) -> list[ServerRecord]:
+    """
+    Отбирает серверы для подписки, отдавая приоритет XHTTP.
+
+    XHTTP — основной профиль (Android/desktop). TCP-only серверы остаются
+    резервом для iOS и старых ядер, поэтому им гарантируется часть слотов,
+    но они не вытесняют XHTTP из топа. Внутри каждой группы сохраняется
+    порядок по задержке: ``records`` уже отсортированы rank_by_latency.
+    """
+    limit = max(1, int(limit))
+    ordered = sorted(
+        records,
+        key=lambda record: (record.delay_ms, -len(record.alive_profiles)),
+    )
+
+    xhttp_records = [
+        record for record in ordered
+        if PROFILE_XHTTP in record.alive_profiles
+    ]
+    other_records = [
+        record for record in ordered
+        if PROFILE_XHTTP not in record.alive_profiles
+    ]
+
+    share = min(1.0, max(0.0, float(xhttp_share)))
+    xhttp_slots = min(len(xhttp_records), max(1, round(limit * share))) if xhttp_records else 0
+    selected = (
+        xhttp_records[:xhttp_slots]
+        + other_records[:max(0, limit - xhttp_slots)]
+    )
+
+    # Если одного типа не хватило, добираем оставшиеся в порядке задержки.
+    if len(selected) < limit:
+        chosen = {id(record) for record in selected}
+        for record in ordered:
+            if len(selected) >= limit:
+                break
+            if id(record) not in chosen:
+                selected.append(record)
+                chosen.add(id(record))
+    return selected
+
+
 def _builder_entries(records: list[ServerRecord], limit: int) -> list[dict]:
     """
     Преобразует записи в формат formatter: один entry = один сервер,
     внутри ``_variants`` лежат XHTTP/TCP outbound-ы.
     """
     entries: list[dict] = []
-    for record in records[:max(1, int(limit))]:
+    for record in _select_records(records, limit):
         profiles = record.alive_profiles
         if not profiles:
             continue
@@ -400,7 +448,7 @@ def _builder_entries(records: list[ServerRecord], limit: int) -> list[dict]:
 def _txt_links(records: list[ServerRecord], limit: int) -> list[str]:
     links: list[str] = []
     seen: set[str] = set()
-    for record in records[:max(1, int(limit))]:
+    for record in _select_records(records, limit):
         for profile in record.alive_profiles:
             link = record.links.get(profile)
             if link and link not in seen:

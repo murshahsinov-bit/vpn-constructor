@@ -1,0 +1,35 @@
+[versions]
+agp = "9.5.1"
+kotlin="2.4.21"
+ksp = "2.3.12"
+androidxActivityKtx = "1.13.0"
+androidxCoreKtx = "1.19.1"
+androidxAppCompat = "1.8.0"
+androidxLifecycleViewmodelKtx = "2.11.0"
+androidxRoom = "2.8.5"
+blacksquircleUi = "2.9.0"
+googleMaterial = "1.14.0"
+kotlinSerializationJson = "1.12.0"
+libsuCore = "5.2.2"
+codeScanner="2.3.2"
+
+[libraries]
+androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "androidxActivityKtx" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCoreKtx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "androidxLifecycleViewmodelKtx" }
+androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "androidxRoom" }
+androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidxRoom" }
+androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidxRoom" }
+blacksquircle-ui-editorkit = { group = "com.blacksquircle.ui", name = "editorkit", version.ref = "blacksquircleUi" }
+blacksquircle-ui-language-json = { group = "com.blacksquircle.ui", name = "language-json", version.ref = "blacksquircleUi" }
+google-material = { group = "com.google.android.material", name = "material", version.ref = "googleMaterial" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinSerializationJson" }
+topjohnwu-libsu-core = { module = "com.github.topjohnwu.libsu:core", version.ref = "libsuCore" }
+yuriy-budiyev-code-scanner = { group = "com.github.yuriy-budiyev", name = "code-scanner", version.ref = "codeScanner" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+google-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

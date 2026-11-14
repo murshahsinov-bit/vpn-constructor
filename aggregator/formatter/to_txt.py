@@ -10,12 +10,24 @@
 Фрагментация добавляется только TCP-ссылкам. XHTTP-ссылки не трогаем:
 XHTTP и так передаёт данные отдельными HTTP-запросами, а лишние
 параметры могут сломать импорт в некоторых клиентах.
+
+Перед фрагментацией все VLESS-ссылки проходят нормализацию DPI-правил:
+
+* ``fp``/``fingerprint`` всегда становится ``firefox`` (chrome и safari
+  ТСПУ выделяет по JA3/JA4 с июня 2026);
+* у XHTTP удаляется ``flow`` и выставляется ``mode=stream-one``;
+* у TCP+Reality с Vision ``flow`` сохраняется/добавляется;
+* ``type=raw`` приводится к ``type=tcp``.
 """
 
 from __future__ import annotations
 
 import re
 import urllib.parse
+
+VISION_FLOW = "xtls-rprx-vision"
+DEFAULT_FINGERPRINT = "firefox"
+XHTTP_MODE = "stream-one"
 
 COUNTRY_FLAGS = {
     "germany": "🇩🇪", "германия": "🇩🇪", "de": "🇩🇪",
@@ -103,6 +115,61 @@ def _with_fragment(link: str, client: str) -> str:
     )
 
 
+def _normalize_dpi_params(link: str) -> str:
+    """
+    Приводит VLESS-ссылку к правилам проекта 2026.
+
+    * fingerprint только firefox;
+    * XHTTP: без flow, mode=stream-one;
+    * TCP+Reality: flow=xtls-rprx-vision;
+    * type=raw -> type=tcp.
+    """
+    parsed = urllib.parse.urlsplit(link)
+    if parsed.scheme.lower() != "vless":
+        return link
+
+    pairs = _query_pairs(parsed.query)
+    network = (
+        _query_value(pairs, "type")
+        or _query_value(pairs, "network")
+        or "tcp"
+    ).strip().lower()
+    if network == "raw":
+        network = "tcp"
+    security = _query_value(pairs, "security").strip().lower()
+
+    kept: list[str] = []
+    has_flow = False
+    for item in pairs:
+        name, _, _value = item.partition("=")
+        key = name.strip().lower()
+        if key in ("fp", "fingerprint"):
+            continue
+        if key in ("type", "network"):
+            kept.append(f"{name}={network}")
+            continue
+        if key == "flow":
+            has_flow = True
+            if network != "tcp":
+                # Vision несовместим с XHTTP: соединение рвётся.
+                continue
+            kept.append(item)
+            continue
+        if key == "mode" and network == "xhttp":
+            continue
+        kept.append(item)
+
+    if network == "xhttp":
+        kept.append(f"mode={XHTTP_MODE}")
+    elif network == "tcp" and security == "reality" and not has_flow:
+        kept.append(f"flow={VISION_FLOW}")
+
+    kept.append(f"fp={DEFAULT_FINGERPRINT}")
+    return urllib.parse.urlunsplit(
+        (parsed.scheme, parsed.netloc, parsed.path, "&".join(kept), parsed.fragment)
+    )
+
+
 def _decorate_name(link: str, counter: dict[str, int]) -> str:
     """Добавляет флаг страны и уникализирует имя в fragment ссылки."""
     parsed = urllib.parse.urlsplit(link)
@@ -162,6 +229,7 @@ def generate_txt(links: list[str], client: str = "incy") -> str:
         link = (raw_link or "").strip()
         if not link:
             continue
+        link = _normalize_dpi_params(link)
         link = _with_fragment(link, client)
         formatted_links.append(_decorate_name(link, counter))
 

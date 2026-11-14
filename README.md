@@ -138,7 +138,8 @@ python manager.py check --status expired
 
 ## Автоматическая сборка конфигов
 
-`.github/workflows/aggregator.yml` запускается раз в час и вручную:
+`.github/workflows/aggregator.yml` запускается раз в час, вручную и на каждый
+push, который затрагивает `aggregator/**`, `tests/**` или `requirements.txt`:
 
 1. ставит Python-зависимости и Go 1.27;
 2. собирает `xray-knife` из исходников (`go install ...@v11.5.0`);
@@ -146,8 +147,11 @@ python manager.py check --status expired
 4. запускает `python -m aggregator.run`: парсинг XHTTP/TCP → дедупликация →
    реальный HTTP-тест через Xray-core с конкурентностью 50 и фрагментацией
    TLS ClientHello → сортировка по задержке → топ-30 в `auto.json` и топ-10
-   в `whitelist.json` через RU relay;
-5. коммитит изменения из `web/subscriptions/` в `main`.
+   в `whitelist.json` через RU relay. XHTTP-серверы получают 60 % слотов,
+   TCP+Vision остаётся fallback для iOS и старых ядер;
+5. проверяет JSON/TXT (только `firefox`, `stream-one`, без flow на XHTTP,
+   без Reality через CDN) и синхронизирует `netrun_worker/`;
+6. коммитит `web/subscriptions/` и `netrun_worker/` в `main`.
 
 Таймаут job — 45 минут. Cron — `0 * * * *`: частая массовая проверка прокси
 повышает риск блокировки аккаунта GitHub.

@@ -4,6 +4,14 @@ on:
   schedule:
     # Раз в час: частая массовая проверка прокси повышает риск блокировки аккаунта.
     - cron: '0 * * * *'
+  # Обновляем конфиги и при каждом пуше, который затрагивает агрегатор.
+  push:
+    branches: [main, master]
+    paths:
+      - "aggregator/**"
+      - "tests/**"
+      - "requirements.txt"
+      - ".github/workflows/aggregator.yml"
   workflow_dispatch:
     inputs:
       skip_latency:
@@ -154,6 +162,7 @@ jobs:
           python - <<'PY'
           import pathlib
           import sys
+          import urllib.parse
 
           required = {
               "auto_all.txt": "fragmentPackets=tlshello",
@@ -167,14 +176,45 @@ jobs:
               text = path.read_text(encoding="utf-8")
               if marker not in text:
                   sys.exit(f"{name}: нет ожидаемой фрагментации {marker}")
-              print(f"{name} OK: {len(text.splitlines())} ссылок")
+
+              links = [line for line in text.splitlines() if line.startswith("vless://")]
+              for link in links:
+                  query = dict(
+                      urllib.parse.parse_qsl(
+                          urllib.parse.urlsplit(link).query, keep_blank_values=True
+                      )
+                  )
+                  fp = query.get("fp") or query.get("fingerprint")
+                  if fp != "firefox":
+                      sys.exit(f"{name}: fingerprint != firefox ({fp})")
+                  network = (query.get("type") or query.get("network") or "tcp").lower()
+                  if network == "xhttp":
+                      if query.get("flow"):
+                          sys.exit(f"{name}: flow на XHTTP ломает соединение")
+                      if query.get("mode") != "stream-one":
+                          sys.exit(f"{name}: XHTTP mode != stream-one")
+              print(f"{name} OK: {len(links)} ссылок, все firefox")
           PY
+
+      - name: Sync worker assets
+        run: |
+          mkdir -p netrun_worker
+          for name in auto.json auto_all.txt auto_all_happ.txt; do
+            if [ -f "web/subscriptions/$name" ]; then
+              cp "web/subscriptions/$name" "netrun_worker/$name"
+            fi
+          done
+          for name in whitelist.json whitelist_all.txt whitelist_all_happ.txt; do
+            if [ -f "web/subscriptions/$name" ]; then
+              cp "web/subscriptions/$name" "netrun_worker/$name"
+            fi
+          done
 
       - name: Commit and Push if Changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add web/subscriptions/
+          git add web/subscriptions/ netrun_worker/
           if git diff --staged --quiet; then
             echo "Конфиги не изменились, коммит не требуется."
           else

@@ -107,3 +107,41 @@ def test_generate_is_idempotent_for_decorated_names():
         urllib.parse.urlsplit(second).fragment
     )
     assert first_fragment == second_fragment == "🇩🇪 Berlin"
+
+
+def test_fingerprint_is_always_firefox():
+    link = TCP_LINK.replace("&type=tcp", "&fp=chrome&type=tcp")
+    text = generate_txt([link], client="happ")
+    _parsed, query = parse_link(text.splitlines()[0])
+
+    assert query["fp"] == "firefox"
+    assert "fingerprint" not in query
+
+
+def test_xhttp_flow_is_removed_and_mode_is_stream_one():
+    link = XHTTP_LINK.replace(
+        "mode=auto", "mode=packet-up&flow=xtls-rprx-vision&fp=safari"
+    )
+    text = generate_txt([link], client="happ")
+    _parsed, query = parse_link(text.splitlines()[0])
+
+    assert query["mode"] == "stream-one"
+    assert "flow" not in query
+    assert query["fp"] == "firefox"
+    assert "fragment" not in query
+
+
+def test_raw_is_normalized_to_tcp():
+    text = generate_txt([TCP_TLS_LINK], client="happ")
+    _parsed, query = parse_link(text.splitlines()[0])
+
+    assert query["type"] == "tcp"
+    assert query["fp"] == "firefox"
+
+
+def test_tcp_reality_without_flow_gets_vision():
+    link = TCP_LINK.replace("flow=xtls-rprx-vision&", "")
+    text = generate_txt([link], client="incy")
+    _parsed, query = parse_link(text.splitlines()[0])
+
+    assert query["flow"] == "xtls-rprx-vision"

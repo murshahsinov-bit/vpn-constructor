@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- hiddify -->
+    <string name="default_layout_description">To use the program, you must
+        have set up a proxy server and
+        enter that profile in the program.</string>
+    <string name="add_profile_description">New Profile</string>
+    <string name="scan_qr_code">QR Code</string>
+    <string name="advanced">Advanced</string>
+    <string name="tab_to_connect">Click to connect.</string>
+    <string name="connected">Connected</string>
+    <string name="connecting">Connecting...</string>
+    <string name="proxy">Proxy</string>
+    <string name="connection_mode">Connection mode</string>
+    <string name="filtered_sites">Blocked</string>
+    <string name="external_sites">Not Opened</string>
+    <string name="sites_all">All</string>
+    <string name="smart">Smart</string>
+    <string name="load_balance">Load Balance</string>
+    <string name="manual">Manual</string>
+    <string name="new_profile">Import</string>
+    <string name="new_item">New</string>
+    <string name="first_profile" translatable="false">Profile 1</string>
+    <string name="consumer_traffic">Usage</string>
+    <string name="show">Panel</string>
+    <string name="fragment" translatable="false">Fragment</string>
+    <!-- hiddify -->
+
+    <string name="import_from_clipboard">Clipboard</string>
+    <string name="import_from_link">Importing from Link</string>
+
+
+
+
+    <string name="profiles">Profiles</string>
+    <string name="add_profile">Add Profile</string>
+    <string name="title_sub_update_failed" translatable="false">Update Sub failed</string>
+    <string name="no_server_selected">No server is selected!</string>
+    <string name="expired">Expired</string>
+    <string name="title_country">Country</string>
+    <string name="proxyAppAndSites">Proxy Applications</string>
+    <string name="hiddify_notification">Hiddify Notifications</string>
+    <string name="toast_services_failure_config_error">One config has error. Please remove it. It can be one of configs that has -1.</string>
+    <string name="speedtest">Speed Test</string>
+    <string name="title_speedtest_proxy_select">Speedtest</string>
+    <string name="title_speedtest_mode_select">Speedtest Mode</string>
+    <string name="blocked_apps">Blocked Apps</string>
+    <string name="opened_apps">Opened Apps</string>
+    <string name="msg_downloading_content_failed_no_proxy">Trying to download with proxy because download failed without proxy! </string>
+    <string name="sub_moved_to_another_address">Subscription Provider suggest a new address! Changing the Address</string>
+    <string name="fragment_old">Fragment v1 (old)</string>
+    <string name="fragment_default">Default</string>
+    <string name="fragment_random">Random</string>
+    <string name="fragment_sni">SNI</string>
+    <string name="proxymode_help_url">https://github.com/hiddify/hiddify-config/discussions/1076</string>
+    <string name="connection_mode_help_url">https://t.me/hiddify/65</string>
+    <string name="fragment_help_url">https://t.me/hiddify_board/103416/129287</string>
+    <string name="summary_mux_enabled">Mux is designed to reduce TCP handshake latency, not to increase connection throughput. Using Mux to watch videos, download or speed test is usually counter productive. If the server does not support Mux, we will not be able to connect to it.</string>
+    <string name="title_mux_enabled">Enable Multiplexer</string>
+
+
+
+    <string name="home">Home</string>
+    <string name="configs">Configs</string>
+    <string name="paste_failed">Import Config Failed</string>
+    <string name="import_success">Configs are Successfully Imported</string>
+    <string name="nothing_in_clipboard">The Input is Empty</string>
+    <string name="all_configs">All Configs</string>
+    <string name="title_dark_mode">Dark Mode</string>
+    <string name="infinit">Infinite</string>
+
+
+</resources>

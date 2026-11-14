@@ -40,3 +40,15 @@ redis_data/
 .vscode/
 .idea/
 *.swp
+
+# ShieldVPN (Android)
+ShieldVPN/app/libs/*.aar
+ShieldVPN/.gradle/
+ShieldVPN/.kotlin/
+ShieldVPN/build/
+ShieldVPN/app/build/
+ShieldVPN/local.properties
+ShieldVPN/keystore.properties
+ShieldVPN/*.jks
+ShieldVPN/app/release/
+ShieldVPN/app/libs/**/*.so
