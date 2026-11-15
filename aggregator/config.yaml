@@ -4,18 +4,22 @@ aggregator:
     - whitelist
 
   # Сколько серверов оставлять в TXT-подписке (share-ссылки)
-  max_servers_per_subscription: 30
+  max_servers_per_subscription: 60
+
+  # Не даём одному источнику занять весь список: зарубежные узлы с низким
+  # пингом не должны вытеснять российские, доступные из РФ.
+  max_servers_per_source: 10
 
   # Сколько лучших СЕРВЕРОВ класть в JSON-подписку auto.
   # Отбор идёт по задержке: сначала самые быстрые и живые.
   # Если сервер поддерживает XHTTP и TCP, он даёт два outbound:
   # proxy-xhttp-N и proxy-tcp-N.
-  json_max_outbounds: 30
+  json_max_outbounds: 60
 
   # Пробовать второй транспорт (XHTTP ↔ TCP+Vision) для лучших серверов.
   # Гипотеза проверяется через xray-knife и попадает в JSON только если
   # реально работает. Так сервер с обоими транспортами даёт два outbound.
-  synthesize_alternate_profiles: true
+  synthesize_alternate_profiles: false
   synthesis_candidates: 60
 
   # Проверка реальной задержки через Xray-core (xray-knife).
@@ -30,7 +34,7 @@ aggregator:
     # packets,length[,interval]; запись 100-200,tlshello тоже принимается.
     fragment: "tlshello,100-200,10-20"
     # Если xray-knife недоступен/упал — измеряем хотя бы TCP RTT.
-    fallback_tcp: true
+    fallback_tcp: false
     fallback_concurrency: 50
     fallback_timeout_seconds: 5.0
 

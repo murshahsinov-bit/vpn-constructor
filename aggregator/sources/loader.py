@@ -42,6 +42,7 @@ class SourceLoader:
                 "name": source.get("name") or url,
                 "url": url,
                 "format": (source.get("format") or "text").lower(),
+                "priority": int(source.get("priority") or 0),
             })
 
         logger.info(f"Режим '{mode}': загружено {len(result)} источников.")

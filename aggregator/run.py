@@ -40,6 +40,9 @@ class ServerRecord:
     sources: set[str] = field(default_factory=set)
     delays: dict[str, int] = field(default_factory=dict)
     statuses: dict[str, str] = field(default_factory=dict)
+    # Наивысший приоритет среди источников сервера: RU-friendly источники
+    # должны идти первыми, даже если у зарубежных узлов пинг ниже.
+    priority: int = 0
 
     @property
     def alive_profiles(self) -> list[str]:
@@ -252,6 +255,10 @@ def _parse_sources(
                 record.links.setdefault(profile, line)
 
             record.sources.add(source_name)
+            try:
+                record.priority = max(record.priority, int(source.get("priority") or 0))
+            except (TypeError, ValueError):
+                pass
 
     logger.info(
         "Режим %s: серверов %d (xhttp=%d, tcp=%d, оба=%d)",
@@ -372,56 +379,71 @@ def _select_records(
     records: list[ServerRecord],
     limit: int,
     xhttp_share: float = 0.6,
+    max_per_source: int = 0,
 ) -> list[ServerRecord]:
     """
-    Отбирает серверы для подписки, отдавая приоритет XHTTP.
+    Отбирает серверы для подписки, отдавая приоритет XHTTP и RU-источникам.
 
     XHTTP — основной профиль (Android/desktop). TCP-only серверы остаются
     резервом для iOS и старых ядер, поэтому им гарантируется часть слотов,
-    но они не вытесняют XHTTP из топа. Внутри каждой группы сохраняется
-    порядок по задержке: ``records`` уже отсортированы rank_by_latency.
+    но они не вытесняют XHTTP из топа.
+
+    Сортировка: сначала источники с высоким ``priority`` (igareck/zieng2 —
+    узлы, доступные из РФ), затем по задержке. ``max_per_source`` не даёт
+    одному источнику занять весь список: зарубежные узлы с низким пингом
+    не должны вытеснять российские.
     """
     limit = max(1, int(limit))
     ordered = sorted(
         records,
-        key=lambda record: (record.delay_ms, -len(record.alive_profiles)),
+        key=lambda record: (
+            -record.priority,
+            record.delay_ms,
+            -len(record.alive_profiles),
+        ),
     )
 
     xhttp_records = [
         record for record in ordered
         if PROFILE_XHTTP in record.alive_profiles
     ]
-    other_records = [
-        record for record in ordered
-        if PROFILE_XHTTP not in record.alive_profiles
-    ]
-
     share = min(1.0, max(0.0, float(xhttp_share)))
     xhttp_slots = min(len(xhttp_records), max(1, round(limit * share))) if xhttp_records else 0
-    selected = (
-        xhttp_records[:xhttp_slots]
-        + other_records[:max(0, limit - xhttp_slots)]
-    )
 
-    # Если одного типа не хватило, добираем оставшиеся в порядке задержки.
-    if len(selected) < limit:
-        chosen = {id(record) for record in selected}
-        for record in ordered:
-            if len(selected) >= limit:
-                break
-            if id(record) not in chosen:
-                selected.append(record)
-                chosen.add(id(record))
+    selected: list[ServerRecord] = []
+    chosen: set[int] = set()
+    per_source: dict[str, int] = {}
+
+    def try_add(record: ServerRecord) -> None:
+        if len(selected) >= limit or id(record) in chosen:
+            return
+        if max_per_source > 0 and record.sources:
+            primary = sorted(record.sources)[0]
+            if per_source.get(primary, 0) >= max_per_source:
+                return
+            per_source[primary] = per_source.get(primary, 0) + 1
+        selected.append(record)
+        chosen.add(id(record))
+
+    for record in xhttp_records[:xhttp_slots]:
+        try_add(record)
+    # Если одного типа не хватило, добираем оставшиеся в том же порядке.
+    for record in ordered:
+        try_add(record)
     return selected
 
 
-def _builder_entries(records: list[ServerRecord], limit: int) -> list[dict]:
+def _builder_entries(
+    records: list[ServerRecord],
+    limit: int,
+    max_per_source: int = 0,
+) -> list[dict]:
     """
     Преобразует записи в формат formatter: один entry = один сервер,
     внутри ``_variants`` лежат XHTTP/TCP outbound-ы.
     """
     entries: list[dict] = []
-    for record in _select_records(records, limit):
+    for record in _select_records(records, limit, max_per_source=max_per_source):
         profiles = record.alive_profiles
         if not profiles:
             continue
@@ -445,10 +467,14 @@ def _builder_entries(records: list[ServerRecord], limit: int) -> list[dict]:
     return entries
 
 
-def _txt_links(records: list[ServerRecord], limit: int) -> list[str]:
+def _txt_links(
+    records: list[ServerRecord],
+    limit: int,
+    max_per_source: int = 0,
+) -> list[str]:
     links: list[str] = []
     seen: set[str] = set()
-    for record in _select_records(records, limit):
+    for record in _select_records(records, limit, max_per_source=max_per_source):
         for profile in record.alive_profiles:
             link = record.links.get(profile)
             if link and link not in seen:
@@ -713,8 +739,9 @@ async def _process_auto(config: dict) -> list[ServerRecord]:
 
     max_json = max(1, int(config['aggregator'].get('json_max_outbounds', 30)))
     max_servers = max(1, int(config['aggregator'].get('max_servers_per_subscription', 30)))
+    max_per_source = max(0, int(config['aggregator'].get('max_servers_per_source', 0) or 0))
 
-    entries = _builder_entries(records, max_json)
+    entries = _builder_entries(records, max_json, max_per_source=max_per_source)
     template_path = os.path.join(config['paths']['templates_dir'], "auto_template.json")
 
     try:
@@ -744,7 +771,11 @@ async def _process_auto(config: dict) -> list[ServerRecord]:
             os.path.getsize(output_json),
         )
 
-    _write_txt("auto", _txt_links(records, max_servers), config)
+    _write_txt(
+        "auto",
+        _txt_links(records, max_servers, max_per_source=max_per_source),
+        config,
+    )
     return records
 
 

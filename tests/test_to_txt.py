@@ -118,14 +118,14 @@ def test_fingerprint_is_always_firefox():
     assert "fingerprint" not in query
 
 
-def test_xhttp_flow_is_removed_and_mode_is_stream_one():
+def test_xhttp_flow_is_removed_and_mode_is_preserved():
     link = XHTTP_LINK.replace(
         "mode=auto", "mode=packet-up&flow=xtls-rprx-vision&fp=safari"
     )
     text = generate_txt([link], client="happ")
     _parsed, query = parse_link(text.splitlines()[0])
 
-    assert query["mode"] == "stream-one"
+    assert query["mode"] == "packet-up"
     assert "flow" not in query
     assert query["fp"] == "firefox"
     assert "fragment" not in query
@@ -139,9 +139,10 @@ def test_raw_is_normalized_to_tcp():
     assert query["fp"] == "firefox"
 
 
-def test_tcp_reality_without_flow_gets_vision():
+def test_tcp_reality_without_flow_stays_without_flow():
     link = TCP_LINK.replace("flow=xtls-rprx-vision&", "")
     text = generate_txt([link], client="incy")
     _parsed, query = parse_link(text.splitlines()[0])
 
-    assert query["flow"] == "xtls-rprx-vision"
+    assert "flow" not in query
+    assert query["fp"] == "firefox"

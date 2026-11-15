@@ -179,3 +179,36 @@ def test_select_records_reserves_slots_for_tcp_only():
     assert len(selected) == 3
     assert sum(1 for r in selected if "xhttp" in r.alive_profiles) == 2
     assert sum(1 for r in selected if "xhttp" not in r.alive_profiles) == 1
+
+
+def test_select_records_prefers_high_priority_source_over_lower_delay():
+    foreign = _record("tcp", "10.3.0.1", 5)
+    foreign.priority = 5
+    foreign.sources = {"0xradikal_top100"}
+    ru = _record("tcp", "10.3.0.2", 900)
+    ru.priority = 30
+    ru.sources = {"igareck_cidr_ru_checked"}
+
+    selected = _select_records([foreign, ru], 2, xhttp_share=0.0)
+
+    assert [r.identity[0] for r in selected] == ["10.3.0.2", "10.3.0.1"]
+
+
+def test_select_records_caps_servers_per_source():
+    records = []
+    for i in range(1, 7):
+        record = _record("tcp", f"10.4.0.{i}", i)
+        record.priority = 5
+        record.sources = {"0xradikal_top100"}
+        records.append(record)
+    for i in range(1, 4):
+        record = _record("tcp", f"10.5.0.{i}", 500 + i)
+        record.priority = 30
+        record.sources = {"igareck_cidr_ru_checked"}
+        records.append(record)
+
+    selected = _select_records(records, 6, xhttp_share=0.0, max_per_source=4)
+
+    assert len(selected) == 6
+    assert sum(1 for r in selected if "0xradikal_top100" in r.sources) == 3
+    assert sum(1 for r in selected if "igareck_cidr_ru_checked" in r.sources) == 3

@@ -27,7 +27,6 @@ import urllib.parse
 
 VISION_FLOW = "xtls-rprx-vision"
 DEFAULT_FINGERPRINT = "firefox"
-XHTTP_MODE = "stream-one"
 
 COUNTRY_FLAGS = {
     "germany": "🇩🇪", "германия": "🇩🇪", "de": "🇩🇪",
@@ -120,8 +119,8 @@ def _normalize_dpi_params(link: str) -> str:
     Приводит VLESS-ссылку к правилам проекта 2026.
 
     * fingerprint только firefox;
-    * XHTTP: без flow, mode=stream-one;
-    * TCP+Reality: flow=xtls-rprx-vision;
+    * XHTTP: без flow, исходный mode сервера сохраняется;
+    * TCP: flow сохраняется как в источнике (Vision не добавляется насильно);
     * type=raw -> type=tcp.
     """
     parsed = urllib.parse.urlsplit(link)
@@ -136,10 +135,8 @@ def _normalize_dpi_params(link: str) -> str:
     ).strip().lower()
     if network == "raw":
         network = "tcp"
-    security = _query_value(pairs, "security").strip().lower()
 
     kept: list[str] = []
-    has_flow = False
     for item in pairs:
         name, _, _value = item.partition("=")
         key = name.strip().lower()
@@ -149,20 +146,12 @@ def _normalize_dpi_params(link: str) -> str:
             kept.append(f"{name}={network}")
             continue
         if key == "flow":
-            has_flow = True
             if network != "tcp":
                 # Vision несовместим с XHTTP: соединение рвётся.
                 continue
             kept.append(item)
             continue
-        if key == "mode" and network == "xhttp":
-            continue
         kept.append(item)
-
-    if network == "xhttp":
-        kept.append(f"mode={XHTTP_MODE}")
-    elif network == "tcp" and security == "reality" and not has_flow:
-        kept.append(f"flow={VISION_FLOW}")
 
     kept.append(f"fp={DEFAULT_FINGERPRINT}")
     return urllib.parse.urlunsplit(

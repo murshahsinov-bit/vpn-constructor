@@ -10,9 +10,15 @@ import java.io.InputStream
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SNIHostName
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocket
+import javax.net.ssl.X509TrustManager
 
 /** One row of the server picker. */
 data class ShieldServer(
@@ -63,9 +69,11 @@ object ShieldRepository {
             ?: error("Подписка ShieldVPN не создана")
 
         val imported = MmkvManager.decodeServerList(ShieldConfig.SUBSCRIPTION_ID)
-        val neverDownloaded = cache.subscription.lastUpdated <= 0L
+        val ageMs = System.currentTimeMillis() - cache.subscription.lastUpdated
+        val stale = cache.subscription.lastUpdated <= 0L ||
+            ageMs >= TimeUnit.MINUTES.toMillis(ShieldConfig.SUBSCRIPTION_MAX_AGE_MINUTES)
 
-        if (forceRefresh || created || urlChanged || imported.isEmpty() || neverDownloaded) {
+        if (forceRefresh || created || urlChanged || imported.isEmpty() || stale) {
             val result = AngConfigManager.updateConfigViaSub(cache)
             LogUtil.i(
                 TAG,
@@ -143,11 +151,7 @@ object ShieldRepository {
         val candidates = serverGuids().asSequence()
             .take(limit)
             .mapNotNull { guid ->
-                val profile = MmkvManager.decodeServerConfig(guid) ?: return@mapNotNull null
-                val host = profile.server?.trim().orEmpty()
-                val port = profile.serverPort?.trim()?.toIntOrNull() ?: return@mapNotNull null
-                if (host.isBlank() || port !in 1..65_535) return@mapNotNull null
-                Triple(guid, host, port)
+                MmkvManager.decodeServerConfig(guid)?.let { guid to it }
             }
             .toList()
         if (candidates.isEmpty()) return emptyList()
@@ -156,8 +160,8 @@ object ShieldRepository {
             minOf(candidates.size, parallelism.coerceAtLeast(1)),
         )
         return try {
-            val futures = candidates.map { (guid, host, port) ->
-                pool.submit(Callable { ServerLatency(guid, measureTcp(host, port, timeoutMs)) })
+            val futures = candidates.map { (guid, profile) ->
+                pool.submit(Callable { ServerLatency(guid, measureReachability(profile, timeoutMs)) })
             }
             futures.mapNotNull { future ->
                 runCatching {
@@ -177,6 +181,36 @@ object ShieldRepository {
         return best?.guid
     }
 
+    /**
+     * Cheap reachability probe used before the daemon is started.
+     *
+     * For Reality/TLS nodes it performs a real TLS handshake with the node's SNI:
+     * DPI-blocked endpoints accept the TCP connection and then hang, so a plain
+     * connect check cannot tell them apart. Nodes without transport security fall
+     * back to a TCP connect.
+     */
+    private fun measureReachability(profile: ProfileItem, timeoutMs: Int): Long {
+        val host = profile.server?.trim().orEmpty()
+        val port = profile.serverPort?.trim()?.toIntOrNull() ?: return Long.MAX_VALUE
+        if (host.isBlank() || port !in 1..65_535) return Long.MAX_VALUE
+
+        val security = profile.security?.trim()?.lowercase().orEmpty()
+        if (security != "reality" && security != "tls") {
+            return measureTcp(host, port, timeoutMs)
+        }
+        val serverName = sequenceOf(profile.sni, profile.host, host)
+            .mapNotNull { it?.trim()?.takeIf(String::isNotBlank) }
+            .firstOrNull()
+            ?: return measureTcp(host, port, timeoutMs)
+        return try {
+            measureTls(host, port, serverName, timeoutMs)
+        } catch (e: IllegalArgumentException) {
+            // SNI is not a valid hostname (IP literal or strange token): TLS probe
+            // cannot help, fall back to a plain connect.
+            measureTcp(host, port, timeoutMs)
+        }
+    }
+
     private fun measureTcp(host: String, port: Int, timeoutMs: Int): Long = try {
         val started = System.nanoTime()
         Socket().use { socket ->
@@ -187,6 +221,38 @@ object ShieldRepository {
     } catch (e: Exception) {
         LogUtil.d(TAG, "latency probe $host:$port failed: ${e.message}")
         Long.MAX_VALUE
+    }
+
+    /**
+     * TLS ClientHello against the node with its own SNI.
+     *
+     * Reality serves the impersonated site's certificate, so the handshake only
+     * completes when the connection actually reaches the node. Certificate
+     * validation is intentionally disabled: the probe measures reachability, not
+     * trust (the node's identity is verified by Xray's Reality key later).
+     */
+    private fun measureTls(host: String, port: Int, serverName: String, timeoutMs: Int): Long {
+        val sni = SNIHostName(serverName)
+        val started = System.nanoTime()
+        val context = SSLContext.getInstance("TLS")
+        context.init(null, arrayOf(TRUST_ALL), SecureRandom())
+        Socket().use { plain ->
+            plain.tcpNoDelay = true
+            plain.connect(InetSocketAddress(host, port), timeoutMs)
+            plain.soTimeout = timeoutMs
+            context.socketFactory.createSocket(plain, serverName, port, true).use { socket ->
+                val tls = socket as SSLSocket
+                tls.sslParameters = tls.sslParameters.apply { serverNames = listOf(sni) }
+                tls.startHandshake()
+            }
+        }
+        return (System.nanoTime() - started) / 1_000_000L
+    }
+
+    private val TRUST_ALL = object : X509TrustManager {
+        override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) = Unit
+        override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) = Unit
+        override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
     }
 
     /**
@@ -227,8 +293,8 @@ object ShieldRepository {
                 if (!readFully(input, head)) return false
                 if (head[0] != 0x05.toByte() || head[1] != 0x00.toByte()) return false
 
-                // Consume BND.ADDR / BND.PORT so the socket closes cleanly.
-                when (head[3].toInt()) {
+                // Consume BND.ADDR / BND.PORT so the socket is in a clean state.
+                val consumed = when (head[3].toInt()) {
                     0x01 -> readFully(input, ByteArray(4)) && readFully(input, ByteArray(2))
                     0x03 -> {
                         val length = ByteArray(1)
@@ -239,6 +305,23 @@ object ShieldRepository {
                     0x04 -> readFully(input, ByteArray(16)) && readFully(input, ByteArray(2))
                     else -> false
                 }
+                if (!consumed) return false
+
+                // A CONNECT alone does not prove the tunnel carries traffic: dead
+                // nodes accept it and then drop the payload. Request a tiny page
+                // through the tunnel and require a real HTTP response.
+                val httpRequest = (
+                    "GET ${ShieldConfig.HEALTH_PATH} HTTP/1.1\r\n" +
+                        "Host: ${ShieldConfig.HEALTH_HOST}\r\n" +
+                        "User-Agent: ShieldVPN\r\n" +
+                        "Connection: close\r\n\r\n"
+                    ).toByteArray(Charsets.US_ASCII)
+                output.write(httpRequest)
+                output.flush()
+
+                val response = ByteArray(5)
+                readFully(input, response) &&
+                    response.contentEquals("HTTP/".toByteArray(Charsets.US_ASCII))
             }
         } catch (e: Exception) {
             LogUtil.d(TAG, "probe failed on port $socksPort: ${e.message}")

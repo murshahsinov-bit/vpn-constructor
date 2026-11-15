@@ -219,93 +219,157 @@ class ShieldVpnController(private val context: Context) {
             )
         }
 
-        val import = withContext(Dispatchers.IO) {
-            runCatching { ShieldRepository.ensureSubscription(forceRefresh = false) }
-        }
-        if (import.isFailure) {
-            val reason = import.exceptionOrNull()?.message ?: "Ошибка загрузки подписки"
-            LogUtil.e("ShieldVPN", "subscription import failed: $reason")
-            _state.update { it.copy(status = ShieldStatus.Error, message = reason) }
-            return
-        }
-
-        val servers = withContext(Dispatchers.IO) { ShieldRepository.servers() }
-        if (servers.isEmpty()) {
-            _state.update {
-                it.copy(
-                    status = ShieldStatus.Error,
-                    servers = servers,
-                    message = context.getString(R.string.shield_no_servers),
-                )
-            }
-            return
-        }
-
-        // First launch (or a freshly refreshed subscription) has no trusted
-        // choice yet: race the servers over plain TCP and keep the fastest one
-        // instead of blindly taking the first entry of the subscription.
         var preferred = preferredGuid ?: ShieldRepository.selectedGuid()
-        if (preferredGuid == null && !ShieldPrefs.isServerRanked()) {
-            _state.update { it.copy(message = context.getString(R.string.shield_ranking_servers)) }
-            val fastest = withContext(Dispatchers.IO) {
-                runCatching { ShieldRepository.selectFastestServer() }.getOrNull()
+        var lastError: String? = null
+
+        for (round in 0 until ShieldConfig.CONNECT_ROUNDS) {
+            val forceRefresh = round > 0
+            val import = withContext(Dispatchers.IO) {
+                runCatching { ShieldRepository.ensureSubscription(forceRefresh = forceRefresh) }
             }
-            if (!fastest.isNullOrBlank()) preferred = fastest
-            ShieldPrefs.setServerRanked(true)
-            LogUtil.i("ShieldVPN", "first-launch ranking picked: $fastest")
-        }
-
-        val order = buildOrder(servers, preferred)
-        _state.update { it.copy(servers = servers, totalAttempts = order.size) }
-
-        if (serviceRunning) stopAndWait()
-
-        for ((index, server) in order.withIndex()) {
-            _state.update {
-                it.copy(
-                    status = ShieldStatus.Connecting,
-                    attempt = index + 1,
-                    selectedGuid = server.guid,
-                    selectedTitle = server.title,
-                    message = context.getString(R.string.shield_failover_searching),
-                )
+            if (import.isFailure) {
+                val reason = import.exceptionOrNull()?.message ?: "Ошибка загрузки подписки"
+                LogUtil.e("ShieldVPN", "subscription import failed (round $round): $reason")
+                lastError = reason
+                if (round > 0) break
             }
 
-            withContext(Dispatchers.IO) { ShieldRepository.selectServer(server.guid) }
-            LauncherManager.startService(context, server.guid)
-
-            val startEvent = withTimeoutOrNull(ShieldConfig.CONNECT_TIMEOUT_MS) {
-                awaitEvent(AppConfig.MSG_STATE_START_SUCCESS, AppConfig.MSG_STATE_START_FAILURE)
-            }
-            if (startEvent == AppConfig.MSG_STATE_START_SUCCESS && awaitHealthy()) {
-                LogUtil.i("ShieldVPN", "connected to ${server.title}")
+            val servers = withContext(Dispatchers.IO) { ShieldRepository.servers() }
+            if (servers.isEmpty()) {
+                LogUtil.w("ShieldVPN", "subscription has no servers (round $round)")
+                if (round > 0) break
                 _state.update {
                     it.copy(
-                        status = ShieldStatus.Connected,
-                        selectedGuid = server.guid,
-                        selectedTitle = server.title,
-                        message = null,
+                        status = ShieldStatus.Error,
+                        servers = servers,
+                        message = context.getString(R.string.shield_no_servers),
                     )
                 }
                 return
             }
 
-            LogUtil.w("ShieldVPN", "server ${server.title} failed (event=$startEvent), trying next")
-            stopAndWait()
+            // Always race the servers before dialing: free nodes die fast and the
+            // stored pick may already be blocked by DPI. The TLS probe drops
+            // endpoints that accept TCP but never complete a handshake.
+            _state.update {
+                it.copy(servers = servers, message = context.getString(R.string.shield_ranking_servers))
+            }
+            val ranked = withContext(Dispatchers.IO) {
+                runCatching { ShieldRepository.rankServersByLatency() }.getOrDefault(emptyList())
+            }
+            val reachable = ranked.filter { it.delayMs != Long.MAX_VALUE }.map { it.guid }
+            LogUtil.i(
+                "ShieldVPN",
+                "round $round: ${reachable.size}/${servers.size} servers reachable",
+            )
+            if (preferred.isNullOrBlank() || servers.none { it.guid == preferred }) {
+                preferred = reachable.firstOrNull()
+            }
+
+            val order = buildOrder(servers, preferred, reachable)
+            _state.update { it.copy(servers = servers, totalAttempts = order.size) }
+
+            if (serviceRunning) stopAndWait()
+
+            for ((index, server) in order.withIndex()) {
+                _state.update {
+                    it.copy(
+                        status = ShieldStatus.Connecting,
+                        attempt = index + 1,
+                        selectedGuid = server.guid,
+                        selectedTitle = server.title,
+                        message = context.getString(R.string.shield_failover_searching),
+                    )
+                }
+
+                var connected = false
+                try {
+                    withContext(Dispatchers.IO) { ShieldRepository.selectServer(server.guid) }
+                    LauncherManager.startService(context, server.guid)
+
+                    val startEvent = withTimeoutOrNull(ShieldConfig.CONNECT_TIMEOUT_MS) {
+                        awaitEvent(AppConfig.MSG_STATE_START_SUCCESS, AppConfig.MSG_STATE_START_FAILURE)
+                    }
+                    if (startEvent == AppConfig.MSG_STATE_START_SUCCESS && awaitHealthy()) {
+                        connected = true
+                        ShieldPrefs.setServerRanked(true)
+                        LogUtil.i("ShieldVPN", "connected to ${server.title}")
+                        _state.update {
+                            it.copy(
+                                status = ShieldStatus.Connected,
+                                selectedGuid = server.guid,
+                                selectedTitle = server.title,
+                                message = null,
+                            )
+                        }
+                    } else {
+                        LogUtil.w(
+                            "ShieldVPN",
+                            "server ${server.title} failed (event=$startEvent), trying next",
+                        )
+                    }
+                } catch (t: Throwable) {
+                    // A crash of the :daemon process must not take down the UI
+                    // coroutine: report it and keep failing over.
+                    LogUtil.e("ShieldVPN", "attempt for ${server.title} crashed: ${t.message}", t)
+                    lastError = t.message
+                } finally {
+                    if (!connected) {
+                        runCatching { stopAndWait() }
+                    }
+                }
+                if (connected) return
+            }
+
+            if (round == 0) {
+                LogUtil.w("ShieldVPN", "all servers failed, refreshing subscription and retrying")
+            }
         }
 
         _state.update {
             it.copy(
                 status = ShieldStatus.Error,
-                message = "Не удалось подключиться ни к одному серверу",
+                message = lastError ?: "Не удалось подключиться ни к одному серверу",
             )
         }
     }
 
-    private fun buildOrder(servers: List<ShieldServer>, preferredGuid: String?): List<ShieldServer> {
-        val index = servers.indexOfFirst { it.guid == preferredGuid }.takeIf { it >= 0 } ?: 0
-        val rotated = servers.drop(index) + servers.take(index)
-        return rotated.take(ShieldConfig.MAX_FAILOVER_SERVERS)
+    /**
+     * Builds the failover order: reachable servers first (starting from the
+     * preferred/pinned one), then a few unreachable ones only when the probe found
+     * almost nothing, so a broken probe cannot leave the app with no attempts.
+     */
+    private fun buildOrder(
+        servers: List<ShieldServer>,
+        preferredGuid: String?,
+        reachable: List<String>,
+    ): List<ShieldServer> {
+        val byGuid = servers.associateBy { it.guid }
+        val ordered = LinkedHashMap<String, ShieldServer>()
+
+        val reachableServers = reachable.mapNotNull { byGuid[it] }
+        val start = reachableServers.indexOfFirst { it.guid == preferredGuid }.takeIf { it >= 0 } ?: 0
+        (reachableServers.drop(start) + reachableServers.take(start)).forEach {
+            ordered[it.guid] = it
+        }
+
+        val fallbackSlots = when {
+            reachableServers.isEmpty() -> ShieldConfig.MAX_FAILOVER_SERVERS
+            reachableServers.size < 3 -> 3 - reachableServers.size
+            else -> 0
+        }
+        if (fallbackSlots > 0) {
+            val index = servers.indexOfFirst { it.guid == preferredGuid }.takeIf { it >= 0 } ?: 0
+            var added = 0
+            for (server in servers.drop(index) + servers.take(index)) {
+                if (added >= fallbackSlots) break
+                if (ordered.containsKey(server.guid)) continue
+                ordered[server.guid] = server
+                added++
+            }
+        }
+
+        return ordered.values.take(ShieldConfig.MAX_FAILOVER_SERVERS)
     }
 
     private suspend fun awaitHealthy(): Boolean = withContext(Dispatchers.IO) {

@@ -18,6 +18,12 @@ object ShieldConfig {
 
     const val SUBSCRIPTION_TITLE = "ShieldVPN"
 
+    /**
+     * Free nodes die fast: re-download the subscription whenever the cached copy
+     * is older than this. The aggregator refreshes the panel every hour.
+     */
+    const val SUBSCRIPTION_MAX_AGE_MINUTES = 15L
+
     /** Refresh the subscription in the background every 6 hours. */
     const val SUBSCRIPTION_UPDATE_INTERVAL_MINUTES = 360L
 
@@ -28,33 +34,41 @@ object ShieldConfig {
     /** Set once the first-launch latency race has picked a server. */
     const val PREF_SERVER_RANKED = "shield_server_ranked"
 
-    /** Endpoint used by the SOCKS5 health probe (only a TCP CONNECT, no payload). */
-    const val HEALTH_HOST = "www.gstatic.com"
-    const val HEALTH_PORT = 443
+    /**
+     * Data-plane probe endpoint, requested through the tunnel with a plain HTTP
+     * GET. A successful SOCKS CONNECT alone is not enough: dead free nodes accept
+     * the TCP handshake and then drop the payload.
+     */
+    const val HEALTH_HOST = "connectivitycheck.gstatic.com"
+    const val HEALTH_PORT = 80
+    const val HEALTH_PATH = "/generate_204"
 
     /** How long the daemon may take to report MSG_STATE_START_SUCCESS. */
-    const val CONNECT_TIMEOUT_MS = 25_000L
+    const val CONNECT_TIMEOUT_MS = 12_000L
 
-    /** Health probe tuning. */
-    const val PROBE_TIMEOUT_MS = 6_000
-    const val PROBE_ATTEMPTS = 3
-    const val PROBE_RETRY_DELAY_MS = 1_200L
+    /** Health probe tuning (SOCKS CONNECT + HTTP GET through the tunnel). */
+    const val PROBE_TIMEOUT_MS = 4_000
+    const val PROBE_ATTEMPTS = 2
+    const val PROBE_RETRY_DELAY_MS = 900L
 
     /** Stop after this many servers so a broken subscription cannot loop forever. */
-    const val MAX_FAILOVER_SERVERS = 8
+    const val MAX_FAILOVER_SERVERS = 12
 
     /** Grace period after a stop request before the next server is started. */
-    const val STOP_GRACE_MS = 500L
+    const val STOP_GRACE_MS = 400L
 
     /**
-     * First-launch latency race: how many subscription servers to probe, how many
-     * connect attempts to run in parallel, and the per-attempt TCP timeout.
+     * Pre-connect reachability race: how many subscription servers to probe, how
+     * many probes to run in parallel, and the per-probe timeout.
      *
-     * The ranking is a plain TCP connect to address:port. It is cheap, does not
-     * touch the tunnel, and correlates well with the handshake time of the real
-     * VLESS/Reality connection.
+     * The probe performs a TLS handshake with the node's own SNI (Reality falls
+     * back to the impersonated site), so DPI-blocked nodes are dropped instead of
+     * being tried one by one.
      */
-    const val LATENCY_PROBE_COUNT = 24
-    const val LATENCY_PARALLELISM = 12
-    const val LATENCY_PROBE_TIMEOUT_MS = 2_500
+    const val LATENCY_PROBE_COUNT = 60
+    const val LATENCY_PARALLELISM = 16
+    const val LATENCY_PROBE_TIMEOUT_MS = 3_000
+
+    /** How many full rounds (fresh subscription on the second one) connect may run. */
+    const val CONNECT_ROUNDS = 2
 }

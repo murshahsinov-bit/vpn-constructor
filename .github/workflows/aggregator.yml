@@ -188,11 +188,8 @@ jobs:
                   if fp != "firefox":
                       sys.exit(f"{name}: fingerprint != firefox ({fp})")
                   network = (query.get("type") or query.get("network") or "tcp").lower()
-                  if network == "xhttp":
-                      if query.get("flow"):
-                          sys.exit(f"{name}: flow на XHTTP ломает соединение")
-                      if query.get("mode") != "stream-one":
-                          sys.exit(f"{name}: XHTTP mode != stream-one")
+                  if network == "xhttp" and query.get("flow"):
+                      sys.exit(f"{name}: flow на XHTTP ломает соединение")
               print(f"{name} OK: {len(links)} ссылок, все firefox")
           PY
 
