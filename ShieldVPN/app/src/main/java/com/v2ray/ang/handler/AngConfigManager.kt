@@ -263,7 +263,14 @@ object AngConfigManager {
                     if (it.startsWith(AppConfig.V2RAYNFMTS, ignoreCase = true)) {
                         v2raynLines.add(it)
                     } else {
-                        val config = parseConfig(it, subid, subItem)
+                        // One malformed link must not throw away the whole
+                        // subscription: free lists regularly contain broken entries.
+                        val config = try {
+                            parseConfig(it, subid, subItem)
+                        } catch (e: Exception) {
+                            LogUtil.w(AppConfig.TAG, "Skipping malformed config: ${e.message}")
+                            null
+                        }
                         if (config != null) {
                             configs.add(config)
                         }

@@ -399,8 +399,40 @@ object Utils {
      * @return The URL string with illegal characters replaced.
      */
     fun fixIllegalUrl(str: String): String {
-        return str.replace(" ", "%20")
+        val sanitized = str.replace(" ", "%20")
             .replace("|", "%7C")
+
+        // Free subscriptions ship raw JSON (Xray finalmask) in the query, e.g.
+        // `fm={"tcp":[...]}`. java.net.URI rejects those characters and the
+        // exception used to abort the import of the whole subscription, so escape
+        // the query part only (the authority may legitimately contain "[" for IPv6).
+        val hashIndex = sanitized.indexOf('#')
+        val base = if (hashIndex >= 0) sanitized.substring(0, hashIndex) else sanitized
+        val fragment = if (hashIndex >= 0) sanitized.substring(hashIndex) else ""
+
+        val queryIndex = base.indexOf('?')
+        if (queryIndex < 0) return sanitized
+        return base.substring(0, queryIndex) +
+            base.substring(queryIndex).escapeIllegalUriQueryChars() +
+            fragment
+    }
+
+    private fun String.escapeIllegalUriQueryChars(): String = buildString(length) {
+        for (ch in this@escapeIllegalUriQueryChars) {
+            when (ch) {
+                '"' -> append("%22")
+                '{' -> append("%7B")
+                '}' -> append("%7D")
+                '[' -> append("%5B")
+                ']' -> append("%5D")
+                '<' -> append("%3C")
+                '>' -> append("%3E")
+                '\\' -> append("%5C")
+                '^' -> append("%5E")
+                '`' -> append("%60")
+                else -> append(ch)
+            }
+        }
     }
 
     /**

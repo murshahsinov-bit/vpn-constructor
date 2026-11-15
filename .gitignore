@@ -52,3 +52,5 @@ ShieldVPN/keystore.properties
 ShieldVPN/*.jks
 ShieldVPN/app/release/
 ShieldVPN/app/libs/**/*.so
+# Geo-базы Xray скачиваются scripts/fetch-libs.sh при сборке
+ShieldVPN/app/src/main/assets/*.dat

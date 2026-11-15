@@ -146,3 +146,20 @@ def test_tcp_reality_without_flow_stays_without_flow():
 
     assert "flow" not in query
     assert query["fp"] == "firefox"
+
+
+def test_raw_json_in_query_is_percent_encoded():
+    """Сырой fm={...} ломал java.net.URI и импорт всей подписки в v2rayNG."""
+    fm = '{"tcp":[{"type":"fragment","settings":{"length":"3-3"}}]}'
+    link = (
+        "vless://44444444-4444-4444-4444-444444444444@198.51.100.10:443"
+        f"?type=xhttp&security=tls&sni=cdn.example.com&path=%2Fcf&fm={fm}"
+        "#Nuremberg"
+    )
+
+    text = generate_txt([link], client="happ")
+    raw = text.splitlines()[0]
+
+    assert '"' not in raw and "{" not in raw and "[" not in raw
+    _parsed, query = parse_link(raw)
+    assert query["fm"] == fm

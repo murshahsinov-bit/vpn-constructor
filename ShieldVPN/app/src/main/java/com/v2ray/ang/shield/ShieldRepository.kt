@@ -1,5 +1,6 @@
 package com.v2ray.ang.shield
 
+import com.v2ray.ang.AngApplication
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.dto.entities.SubscriptionItem
 import com.v2ray.ang.handler.AngConfigManager
@@ -48,6 +49,10 @@ object ShieldRepository {
      */
     @Synchronized
     fun ensureSubscription(forceRefresh: Boolean = false): Int {
+        // Xray cannot start without the geo databases, so unpack them before any
+        // core launch. Cheap: they are only copied on the very first run.
+        ShieldGeoAssets.ensure(AngApplication.application)
+
         val stored = MmkvManager.decodeSubscription(ShieldConfig.SUBSCRIPTION_ID)
         val created = stored == null
         val urlChanged = stored != null && stored.url != ShieldConfig.SUBSCRIPTION_URL

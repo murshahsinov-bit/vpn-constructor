@@ -62,6 +62,23 @@ FRAGMENT_KEYS = {
     "fragmentmaxsplit",
 }
 
+# Символы, которые источники присылают «как есть», а java.net.URI/Android
+# (и многие клиенты) считают недопустимыми в query. Чаще всего это сырой JSON
+# Xray finalmask: `fm={"tcp":[{"type":"fragment",...}]}`. Из-за одной такой
+# ссылки v2rayNG отбрасывал всю подписку, поэтому query кодируем.
+URI_ILLEGAL_QUERY_CHARS = {
+    '"': "%22",
+    "{": "%7B",
+    "}": "%7D",
+    "[": "%5B",
+    "]": "%5D",
+    "<": "%3C",
+    ">": "%3E",
+    "\\": "%5C",
+    "^": "%5E",
+    "`": "%60",
+}
+
 SUPPORTED_CLIENTS = {"incy", "happ"}
 
 
@@ -200,6 +217,22 @@ def _decorate_name(link: str, counter: dict[str, int]) -> str:
     return urllib.parse.urlunsplit(parsed._replace(fragment=new_fragment))
 
 
+def _sanitize_query(link: str) -> str:
+    """
+    Кодирует символы, недопустимые в query по RFC 3986.
+
+    Источники кладут в ``fm`` сырой JSON finalmask; Android-клиент разбирает
+    ссылку через ``java.net.URI`` и падает с ``URISyntaxException``, из-за чего
+    ломается импорт всей подписки. Кодируем только query, не трогая фрагмент
+    (там уже percent-encoding) и authority (там ``[`` легален для IPv6).
+    """
+    parsed = urllib.parse.urlsplit(link)
+    if not parsed.query:
+        return link
+    query = "".join(URI_ILLEGAL_QUERY_CHARS.get(ch, ch) for ch in parsed.query)
+    return urllib.parse.urlunsplit(parsed._replace(query=query))
+
+
 def generate_txt(links: list[str], client: str = "incy") -> str:
     """
     Собирает TXT-подписку.
@@ -220,6 +253,7 @@ def generate_txt(links: list[str], client: str = "incy") -> str:
             continue
         link = _normalize_dpi_params(link)
         link = _with_fragment(link, client)
+        link = _sanitize_query(link)
         formatted_links.append(_decorate_name(link, counter))
 
     return "\n".join(formatted_links)

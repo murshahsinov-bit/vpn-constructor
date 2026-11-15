@@ -9,6 +9,7 @@ import com.v2ray.ang.AppConfig.ANG_PACKAGE
 import com.v2ray.ang.handler.AppLocaleManager
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsManager
+import com.v2ray.ang.shield.ShieldGeoAssets
 import com.v2ray.ang.ui.compose.ThemeManager
 
 class AngApplication : Application() {
@@ -44,6 +45,12 @@ class AngApplication : Application() {
 
         // Ensure critical preference defaults are present in MMKV early
         SettingsManager.initApp(this)
+
+        // Unpack the Xray geo databases in the background: the core cannot start
+        // without them, and the connect flow waits for this copy anyway.
+        Thread {
+            runCatching { ShieldGeoAssets.ensure(this) }
+        }.apply { isDaemon = true }.start()
 
         // Initialize theme state from MMKV
         ThemeManager.refresh()

@@ -46,4 +46,29 @@ fi
 # Never let the AAR manifest reach the manifest merger.
 rm -f "$LIBS_DIR/hev-socks5-tunnel.aar"
 
+# ------------------------------------------------------- geo databases (Xray)
+# Xray refuses the whole config when routing references geosite:/geoip: rules and
+# the .dat files are missing ("failed to open geosite.dat"), which used to keep
+# the VPN from ever coming up. They are packed into the APK and copied into the
+# user asset directory on first launch, so a fresh install works offline.
+ASSETS_DIR="$PROJECT_DIR/app/src/main/assets"
+mkdir -p "$ASSETS_DIR"
+
+fetch_geo() {
+  local target="$1" url="$2"
+  if [ -s "$ASSETS_DIR/$target" ]; then
+    return
+  fi
+  echo "Downloading $target..."
+  curl -fL --retry 3 --retry-delay 5 -o "$ASSETS_DIR/$target" "$url"
+}
+
+fetch_geo "geoip.dat" \
+  "https://github.com/v2fly/geoip/releases/latest/download/geoip.dat"
+fetch_geo "geosite.dat" \
+  "https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat"
+fetch_geo "geoip-only-cn-private.dat" \
+  "https://github.com/Loyalsoldier/geoip/releases/latest/download/geoip-only-cn-private.dat"
+
 find "$LIBS_DIR" -type f -exec ls -lh {} \;
+ls -lh "$ASSETS_DIR"/*.dat

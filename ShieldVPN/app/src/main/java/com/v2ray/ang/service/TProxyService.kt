@@ -18,26 +18,21 @@ class TProxyService(
     private val isRunningProvider: () -> Boolean,
     private val restartCallback: () -> Unit
 ) : Tun2SocksControl {
+    // The prebuilt libhev-socks5-tunnel.so registers its JNI methods on
+    // hev.htproxy.TProxyService (declared in that package), not on this class.
+    // Declaring the natives here makes JNI_OnLoad fail with JNI_ERR and the
+    // :daemon process crashes with UnsatisfiedLinkError, so every call is
+    // forwarded to the class the library actually knows about.
     companion object {
-        @JvmStatic
-        @Suppress("FunctionName")
-        private external fun TProxyStartService(configPath: String, fd: Int): Boolean
+        private fun startService(configPath: String, fd: Int): Boolean =
+            hev.htproxy.TProxyService.TProxyStartService(configPath, fd)
 
-        @JvmStatic
-        @Suppress("FunctionName")
-        private external fun TProxyStopService(): Boolean
+        private fun stopService(): Boolean =
+            hev.htproxy.TProxyService.TProxyStopService()
 
-        @JvmStatic
-        @Suppress("FunctionName")
-        private external fun TProxyIsRunning(): Boolean
+        fun isRunning(): Boolean = hev.htproxy.TProxyService.TProxyIsRunning()
 
-        @JvmStatic
-        @Suppress("FunctionName")
-        private external fun TProxyGetStats(): LongArray?
-
-        init {
-            System.loadLibrary("hev-socks5-tunnel")
-        }
+        fun stats(): LongArray? = hev.htproxy.TProxyService.TProxyGetStats()
     }
 
     /**
@@ -55,7 +50,7 @@ class TProxyService(
 
         try {
 //            LogUtil.i(AppConfig.TAG, "TProxyStartService...")
-            TProxyStartService(configFile.absolutePath, vpnInterface.fd)
+            startService(configFile.absolutePath, vpnInterface.fd)
         } catch (e: Exception) {
             LogUtil.e(AppConfig.TAG, "HevSocks5Tunnel exception: ${e.message}")
         }
@@ -107,7 +102,7 @@ class TProxyService(
     override fun stopTun2Socks() {
         try {
             LogUtil.i(AppConfig.TAG, "TProxyStopService...")
-            TProxyStopService()
+            stopService()
         } catch (e: Exception) {
             LogUtil.e(AppConfig.TAG, "Failed to stop hev-socks5-tunnel", e)
         }

@@ -56,3 +56,26 @@ if (-not (Test-Path $hevSo) -or (Get-Item $hevSo).Length -eq 0) {
 }
 
 Get-ChildItem $libsDir -Recurse -File | Select-Object FullName, Length
+
+# ------------------------------------------------------- geo databases (Xray)
+# Xray rejects the config when routing uses geosite:/geoip: rules and the .dat
+# files are absent, so they are packed into the APK and unpacked on first launch.
+$assetsDir = Join-Path $projectDir "app\src\main\assets"
+New-Item -ItemType Directory -Force -Path $assetsDir | Out-Null
+
+$geoFiles = @{
+    "geoip.dat"                 = "https://github.com/v2fly/geoip/releases/latest/download/geoip.dat"
+    "geosite.dat"               = "https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat"
+    "geoip-only-cn-private.dat" = "https://github.com/Loyalsoldier/geoip/releases/latest/download/geoip-only-cn-private.dat"
+}
+
+foreach ($name in $geoFiles.Keys) {
+    $target = Join-Path $assetsDir $name
+    if ((Test-Path $target) -and (Get-Item $target).Length -gt 0) {
+        continue
+    }
+    Write-Host "Downloading $name..."
+    Invoke-WebRequest -UseBasicParsing -TimeoutSec 900 -Uri $geoFiles[$name] -OutFile $target
+}
+
+Get-ChildItem (Join-Path $assetsDir "*.dat") | Select-Object Name, Length
