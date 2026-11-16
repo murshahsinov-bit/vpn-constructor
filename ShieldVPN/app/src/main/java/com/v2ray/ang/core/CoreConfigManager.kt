@@ -17,6 +17,7 @@ import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.extension.isNotNullEmpty
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsManager
+import com.v2ray.ang.shield.ShieldByeDpiRouting
 import com.v2ray.ang.util.HttpUtil
 import com.v2ray.ang.util.JsonUtil
 import com.v2ray.ang.util.LogUtil
@@ -204,6 +205,10 @@ object CoreConfigManager {
 
         // User routing rules (policyGroupBalancerTags rewrites TAG_PROXY→balancer when main is POLICYGROUP).
         configureRouting(configContext, v2rayConfig, policyGroupBalancerTags)
+        // ShieldVPN: steer the DPI-throttled YouTube domains into the local ByeDPI
+        // SOCKS5 listener. The rule is prepended, so it wins over user rules.
+        runCatching { ShieldByeDpiRouting.apply(v2rayConfig) }
+            .onFailure { LogUtil.w(AppConfig.TAG, "ByeDPI routing injection failed: ${it.message}") }
         configureFakeDns(v2rayConfig)
         configureDns(configContext, v2rayConfig, policyGroupBalancerTags)
         configureLocalDns(configContext, v2rayConfig)

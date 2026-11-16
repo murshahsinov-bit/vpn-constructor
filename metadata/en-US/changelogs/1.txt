@@ -1,0 +1,8 @@
+First public release.
+
+- New single-screen UI: one big Connect button, connection status and an "Auto" mode that is on by default.
+- Every subscription server is probed on launch; the fastest reachable node is dialed automatically.
+- Server picker shows the country flag, node name and latency in ms with a green/amber/red status colour.
+- Local ByeDPI (ciadpi) proxy on 127.0.0.1:1080: only YouTube domains are routed through it, everything else keeps using the VLESS/Reality tunnel.
+- Sign-in screen with Google and e-mail (Firebase Auth when credentials are supplied, local mode otherwise).
+- Fresh subscription sources, GitHub Actions release pipeline and a landing page.

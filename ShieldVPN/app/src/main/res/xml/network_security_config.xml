@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ShieldVPN talks to four kinds of endpoints:
+
+  * the local ByeDPI listener (127.0.0.1:1080) and the local Xray socks inbound,
+  * subscription and profile endpoints, some of which are plain HTTP only,
+  * latency probes (generate_204 style URLs, also plain HTTP on some nodes),
+  * the Firebase Auth/Firestore REST API (always HTTPS).
+
+  That is why cleartext stays permitted app-wide instead of being enabled through
+  the blunt android:usesCleartextTraffic manifest flag: the explicit configuration
+  below documents the reason and keeps the policy in one reviewable place.
+  V2Ray prefixes may also install a custom CA, hence user certificates are trusted.
+-->
 <network-security-config xmlns:tools="http://schemas.android.com/tools">
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>

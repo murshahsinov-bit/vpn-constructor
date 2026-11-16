@@ -43,9 +43,20 @@ data class ShieldUiState(
     val totalAttempts: Int = 0,
     val message: String? = null,
     val autoConnect: Boolean = true,
+    /** True while the latency race is running in the background. */
+    val pinging: Boolean = false,
+    /** GUID -> latency in ms, [Long.MAX_VALUE] when the node is unreachable. */
+    val pings: Map<String, Long> = emptyMap(),
+    /** "Авто" mode: the app always dials the fastest reachable server itself. */
+    val autoMode: Boolean = true,
+    /** Local ByeDPI bypass for the YouTube domains. */
+    val byeDpiEnabled: Boolean = true,
+    /** True when the ciadpi listener is actually up. */
+    val byeDpiRunning: Boolean = false,
     /** False until the daemon has been asked whether the tunnel is already up. */
     val initialized: Boolean = false,
 )
+
 
 /**
  * Owns the whole connection lifecycle:
@@ -57,7 +68,12 @@ data class ShieldUiState(
  */
 class ShieldVpnController(private val context: Context) {
 
-    private val _state = MutableStateFlow(ShieldUiState(autoConnect = ShieldPrefs.isAutoConnect()))
+    private val _state = MutableStateFlow(
+        ShieldUiState(
+            autoConnect = ShieldPrefs.isAutoConnect(),
+            byeDpiEnabled = ShieldPrefs.isByeDpiEnabled(),
+        )
+    )
     val state: StateFlow<ShieldUiState> = _state.asStateFlow()
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -65,6 +81,7 @@ class ShieldVpnController(private val context: Context) {
 
     private var attachCount = 0
     private var connectJob: Job? = null
+    private var pingJob: Job? = null
     private var serviceRunning = false
 
     private val receiver = object : BroadcastReceiver() {
@@ -99,6 +116,7 @@ class ShieldVpnController(private val context: Context) {
             when (key) {
                 AppConfig.MSG_STATE_RUNNING -> {
                     serviceRunning = true
+                    ensureByeDpi()
                     _state.update {
                         it.copy(
                             status = ShieldStatus.Connected,
@@ -141,6 +159,80 @@ class ShieldVpnController(private val context: Context) {
                     selectedTitle = selected?.title ?: it.selectedTitle,
                 )
             }
+            // First screen of the app: probe every node so the picker shows real
+            // numbers and "Авто" can dial the best one immediately.
+            if (servers.isNotEmpty() && _state.value.pings.isEmpty()) pingAll()
+        }
+    }
+
+    /**
+     * Races a TLS/TCP probe against every subscription server and publishes the
+     * latencies, sorted fastest-first. Used on launch and by the picker refresh.
+     */
+    fun pingAll() {
+        if (pingJob?.isActive == true) return
+        pingJob = scope.launch {
+            val servers = withContext(Dispatchers.IO) { ShieldRepository.servers() }
+            if (servers.isEmpty()) return@launch
+            _state.update { it.copy(pinging = true, servers = servers) }
+            val ranked = withContext(Dispatchers.IO) {
+                runCatching { ShieldRepository.rankServersByLatency() }.getOrDefault(emptyList())
+            }
+            val pings = ranked.associate { it.guid to it.delayMs }
+            _state.update { current ->
+                current.copy(
+                    pinging = false,
+                    pings = pings,
+                    servers = current.servers.sortedBy { server ->
+                        pings[server.guid] ?: Long.MAX_VALUE
+                    },
+                )
+            }
+        }
+    }
+
+    fun setAutoMode(enabled: Boolean) {
+        _state.update { it.copy(autoMode = enabled) }
+        if (enabled) {
+            // Auto always means "the fastest node we currently know about".
+            bestKnownGuid()?.let { guid ->
+                val server = _state.value.servers.firstOrNull { it.guid == guid }
+                _state.update { it.copy(selectedGuid = guid, selectedTitle = server?.title) }
+            }
+        }
+    }
+
+    fun setByeDpiEnabled(enabled: Boolean) {
+        ShieldPrefs.setByeDpiEnabled(enabled)
+        _state.update { it.copy(byeDpiEnabled = enabled) }
+        scope.launch {
+            val running = withContext(Dispatchers.IO) {
+                if (enabled) {
+                    if (_state.value.status == ShieldStatus.Connected) ShieldByeDpi.start(context) else false
+                } else {
+                    ShieldByeDpi.stop()
+                    false
+                }
+            }
+            _state.update { it.copy(byeDpiRunning = running) }
+        }
+    }
+
+    /** GUID of the fastest reachable server from the last latency race. */
+    private fun bestKnownGuid(): String? {
+        val pings = _state.value.pings
+        return _state.value.servers
+            .mapNotNull { server -> pings[server.guid]?.let { server.guid to it } }
+            .filter { it.second != Long.MAX_VALUE }
+            .minByOrNull { it.second }
+            ?.first
+    }
+
+    private fun ensureByeDpi() {
+        if (!ShieldPrefs.isByeDpiEnabled()) return
+        scope.launch {
+            val running = withContext(Dispatchers.IO) { ShieldByeDpi.start(context) }
+            _state.update { it.copy(byeDpiRunning = running) }
         }
     }
 
@@ -172,6 +264,17 @@ class ShieldVpnController(private val context: Context) {
 
     fun connect(preferredGuid: String? = null) {
         if (connectJob?.isActive == true) return
+        if (preferredGuid != null) {
+            _state.update {
+                it.copy(
+                    autoMode = false,
+                    selectedGuid = preferredGuid,
+                    selectedTitle = it.servers.firstOrNull { server -> server.guid == preferredGuid }?.title,
+                )
+            }
+        } else {
+            _state.update { it.copy(autoMode = true) }
+        }
         connectJob = scope.launch {
             // Wait for the initial "is the tunnel already up?" exchange with the daemon,
             // otherwise this coroutine and attach() would compete for the same events.
@@ -186,12 +289,14 @@ class ShieldVpnController(private val context: Context) {
         scope.launch {
             _state.update { it.copy(status = ShieldStatus.Disconnecting, message = null) }
             stopAndWait()
+            withContext(Dispatchers.IO) { ShieldByeDpi.stop() }
             _state.update {
                 it.copy(
                     status = ShieldStatus.Idle,
                     attempt = 0,
                     totalAttempts = 0,
                     message = null,
+                    byeDpiRunning = false,
                 )
             }
         }
@@ -221,6 +326,13 @@ class ShieldVpnController(private val context: Context) {
 
         var preferred = preferredGuid ?: ShieldRepository.selectedGuid()
         var lastError: String? = null
+
+        // The local DPI bypass must be listening before Xray loads a config that
+        // routes the YouTube domains into it.
+        val byeDpiRunning = withContext(Dispatchers.IO) {
+            if (ShieldPrefs.isByeDpiEnabled()) ShieldByeDpi.start(context) else false
+        }
+        _state.update { it.copy(byeDpiRunning = byeDpiRunning) }
 
         for (round in 0 until ShieldConfig.CONNECT_ROUNDS) {
             val forceRefresh = round > 0
@@ -257,6 +369,8 @@ class ShieldVpnController(private val context: Context) {
             val ranked = withContext(Dispatchers.IO) {
                 runCatching { ShieldRepository.rankServersByLatency() }.getOrDefault(emptyList())
             }
+            val pings = ranked.associate { it.guid to it.delayMs }
+            _state.update { it.copy(pings = pings) }
             val reachable = ranked.filter { it.delayMs != Long.MAX_VALUE }.map { it.guid }
             LogUtil.i(
                 "ShieldVPN",

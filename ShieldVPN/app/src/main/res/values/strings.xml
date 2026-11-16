@@ -27,6 +27,35 @@
     <string name="shield_auto_connecting">Автоподключение…</string>
     <string name="shield_ranking_servers">Выбираем самый быстрый сервер…</string>
     <string name="shield_failover_searching">Ищем рабочий сервер…</string>
+
+    <!-- v2: аккаунт -->
+    <string name="shield_login_subtitle">Войдите, чтобы получить доступ к VPN</string>
+    <string name="shield_login_google">Войти через Google</string>
+    <string name="shield_login_email">Войти по Email</string>
+    <string name="shield_email_hint">E-mail</string>
+    <string name="shield_password_hint">Пароль</string>
+    <string name="shield_sign_in">Войти</string>
+    <string name="shield_register">Создать аккаунт</string>
+    <string name="shield_have_account">Уже есть аккаунт? Войти</string>
+    <string name="shield_create_account">Создать новый аккаунт</string>
+    <string name="shield_logout">Выйти</string>
+    <string name="shield_google_failed">Не удалось войти через Google</string>
+
+    <!-- v2: пинг и режим -->
+    <string name="shield_ping_all">Пинг серверов</string>
+    <string name="shield_ping_unknown">—</string>
+    <string name="shield_ping_offline">офлайн</string>
+    <string name="shield_ping_value">%1$d мс</string>
+    <string name="shield_mode_auto">АВТО</string>
+    <string name="shield_mode_manual">ВРУЧНУЮ</string>
+    <string name="shield_auto_best">Лучший сервер</string>
+    <string name="shield_auto_mode_hint">Выбирается автоматически по пингу</string>
+
+    <!-- v2: ByeDPI -->
+    <string name="shield_byedpi">Обход DPI для YouTube</string>
+    <string name="shield_byedpi_hint">Локальный ByeDPI · 127.0.0.1:1080</string>
+    <string name="shield_byedpi_active">Обход DPI активен · YouTube напрямую</string>
+
     <string name="app_tile_first_use">Add a profile in the app before using this feature.</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

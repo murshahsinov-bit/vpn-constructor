@@ -353,3 +353,108 @@ python -m venv .venv
 pip install -r requirements.txt
 python app.py                     # http://127.0.0.1:8080
 ```
+
+---
+
+# ShieldVPN (Android-клиент)
+
+`ShieldVPN/` — форк v2rayNG с одним экраном «Подключиться», умным автовыбором
+серверов, локальным обходом DPI для YouTube и входом по аккаунту. Подробности
+архитектуры — в [ShieldVPN/README_SHIELD.md](ShieldVPN/README_SHIELD.md).
+
+## Сайт-визитка и GitHub Pages
+
+Статический лендинг лежит в [`site/`](site) (HTML + CSS + JS, без сборки):
+
+- `site/index.html` — заголовок, три преимущества, большая кнопка «Скачать APK», инструкция установки;
+- `site/styles.css` — тёмный минимализм, адаптивность до 320 px;
+- `site/app.js` — подтягивает последний релиз через GitHub API, но статическая ссылка на `/releases/latest` работает и без него.
+
+Публикация:
+
+1. Запушьте репозиторий на GitHub.
+2. **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+3. Workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) сам задеплоит `site/` при каждом изменении в этой папке.
+4. Адрес будет `https://<логин>.github.io/vpn-constructor/`.
+
+Локальная проверка:
+
+```bash
+cd site && python -m http.server 8080
+# http://127.0.0.1:8080
+```
+
+## Релизы APK
+
+Workflow [`.github/workflows/build.yml`](.github/workflows/build.yml) собирает
+APK по тегу и прикрепляет файлы к GitHub Release:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+Собираются два APK по ABI (`arm64-v8a`, `armeabi-v7a`) размером ~36 МБ каждый:
+универсальный файл весит ~48 МБ из-за 23 МБ `geoip.dat` и ядра Xray под две
+архитектуры. Если универсальный APK нужен локально:
+
+```powershell
+cd ShieldVPN
+.\gradlew.bat assemblePlaystoreRelease              # universal
+.\gradlew.bat assemblePlaystoreRelease "-PABI_FILTERS=arm64-v8a;armeabi-v7a"   # per-ABI
+```
+
+Секреты репозитория (все опциональны, кроме подписи для магазинов):
+
+| Секрет | Назначение |
+|---|---|
+| `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` | release-подпись; без них APK подписывается debug-ключом |
+| `FIREBASE_API_KEY`, `FIREBASE_APP_ID`, `FIREBASE_PROJECT_ID`, `FIREBASE_WEB_CLIENT_ID` | включает реальный Firebase Auth |
+
+## Firebase Auth (бесплатный Spark-план)
+
+1. Создайте проект в [console.firebase.google.com](https://console.firebase.google.com) и добавьте Android-приложение с пакетом `io.netrun.shieldvpn`.
+2. **Authentication → Sign-in method**: включите *Email/Password*; для Google включите *Google*, укажите support email и добавьте SHA-1 отпечаток ключа, которым подписан APK
+   (`keytool -list -v -keystore shield-release.jks -alias shieldvpn`).
+3. **Firestore Database** → создать базу (production mode). Коллекция `users/{uid}` создаётся приложением автоматически, правила можно начать с:
+
+   ```text
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /users/{uid} {
+         allow read, write: if request.auth != null && request.auth.uid == uid;
+       }
+     }
+   }
+   ```
+
+4. Пропишите ключи в `ShieldVPN/local.properties` (файл в `.gitignore`) или передайте `-P`-параметрами:
+
+   ```properties
+   FIREBASE_API_KEY=AIza...
+   FIREBASE_APP_ID=1:1234567890:android:abcdef
+   FIREBASE_PROJECT_ID=shieldvpn-xxxx
+   FIREBASE_WEB_CLIENT_ID=1234567890-xxxx.apps.googleusercontent.com
+   ```
+
+5. Пересоберите APK. Признак включённого Firebase — `BuildConfig.FIREBASE_ENABLED == true`;
+   без ключей приложение работает в локальном режиме (пароль хранится как SHA-256 в MMKV,
+   кнопка Google неактивна, в UI показывается предупреждение).
+
+`google-services.json` не нужен: `FirebaseOptions` собирается из `BuildConfig` в
+`AngApplication`, поэтому одни и те же исходники собираются и с Firebase, и без него.
+
+## F-Droid и IzzyOnDroid
+
+- Лицензия — **GPL-3.0** ([`LICENSE`](LICENSE)), проект — форк v2rayNG (credit в описании и README).
+- Метаданные для магазинов — в [`metadata/`](metadata) (Fastlane-структура: `en-US`, `ru`, иконка, скриншоты, changelog с именем `versionCode`).
+- Пакет `io.netrun.shieldvpn` уникален, display name и иконка отличаются от v2rayNG.
+- `android:usesCleartextTraffic` в манифесте не используется; вместо него — `res/xml/network_security_config.xml` с комментарием, зачем разрешён cleartext (локальный прокси и HTTP-подписки).
+- Firebase — проприетарная зависимость, но она нужна только для входа по аккаунту; IzzyOnDroid это допускает. Сборка без ключей Firebase работает автономно.
+- APK должен быть подписан release-ключом (не debug): задайте секреты `KEYSTORE_*` в GitHub Actions.
+- Для IzzyOnDroid достаточно указать в заявке: репозиторий `murshahsinov-bit/vpn-constructor`,
+  путь к Fastlane-метаданным `metadata`, пакет `io.netrun.shieldvpn`.
+
+Anti-features для карточки: `NonFreeDep` (Firebase Auth/Firestore, опционально),
+`NonFreeNet` не применим — все узлы берутся из публичных подписок.

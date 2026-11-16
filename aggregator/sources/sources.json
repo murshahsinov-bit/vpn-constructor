@@ -85,6 +85,20 @@
       "note": "Отдельно проверенные конфиги (base64-подписка).",
       "priority": 5,
       "enabled": true
+    },
+    {
+      "name": "0xradikal_fast",
+      "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/fast/configs.txt",
+      "note": "FAST-срез 0xRadikal: ~708 конфигов, прошедших проверку с лучшей медианной задержкой.",
+      "priority": 8,
+      "enabled": true
+    },
+    {
+      "name": "rjsxrd_bypass",
+      "url": "https://raw.githubusercontent.com/whoahaow/rjsxrd/refs/heads/main/githubmirror/bypass/bypass-all.txt",
+      "note": "rjsxrd bypass-all: ~690 узлов для обхода белых списков РФ mobile, обновляется ежечасно.",
+      "priority": 12,
+      "enabled": true
     }
   ],
   "whitelist": [

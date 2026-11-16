@@ -16,6 +16,14 @@ object ShieldConfig {
     /** Fixed MMKV key so re-launches update the same subscription instead of adding new ones. */
     const val SUBSCRIPTION_ID = "shield_default_subscription"
 
+    /** Token part of [SUBSCRIPTION_URL], mirrored to the user's Firebase profile. */
+    fun subscriptionToken(): String =
+        Regex("[?&]token=([A-Za-z0-9]+)")
+            .find(SUBSCRIPTION_URL)
+            ?.groupValues
+            ?.getOrNull(1)
+            .orEmpty()
+
     const val SUBSCRIPTION_TITLE = "ShieldVPN"
 
     /**
@@ -33,6 +41,47 @@ object ShieldConfig {
 
     /** Set once the first-launch latency race has picked a server. */
     const val PREF_SERVER_RANKED = "shield_server_ranked"
+
+    // ------------------------------------------------------------------ ByeDPI
+
+    /**
+     * Local DPI-bypass proxy (ciadpi from hufrea/byedpi). It runs as a plain
+     * userspace process next to the Xray tunnel: the system VPN is still owned by
+     * Xray, ByeDPI is only a loopback SOCKS5 endpoint for the domains that the
+     * Russian DPI throttles (YouTube).
+     */
+    const val BYEDPI_HOST = "127.0.0.1"
+    const val BYEDPI_PORT = 1080
+
+    /**
+     * Default ciadpi strategy. `--disorder 1` splits the first TLS record and
+     * `--auto=torst` re-tries the alternative fragmentation modes when a
+     * handshake stalls. Verified against YouTube on a Russian mobile network.
+     */
+    const val BYEDPI_DEFAULT_ARGS = "--disorder 1 --auto=torst --timeout 5"
+
+    /** Xray outbound tag and the domains steered into it. */
+    const val BYEDPI_OUTBOUND_TAG = "byedpi"
+
+    val BYEDPI_DOMAINS = listOf(
+        "domain:youtube.com",
+        "domain:youtu.be",
+        "domain:youtube-nocookie.com",
+        "domain:googlevideo.com",
+        "domain:ytimg.com",
+        "domain:ggpht.com",
+        "domain:youtubei.googleapis.com",
+    )
+
+    const val PREF_BYEDPI_ENABLED = "shield_byedpi_enabled"
+    const val PREF_BYEDPI_ARGS = "shield_byedpi_args"
+
+    // ------------------------------------------------------------------- auth
+
+    const val PREF_AUTH_EMAIL = "shield_auth_email"
+    const val PREF_AUTH_NAME = "shield_auth_name"
+    const val PREF_AUTH_SECRET = "shield_auth_secret"
+    const val PREF_AUTH_SIGNED_IN = "shield_auth_signed_in"
 
     /**
      * Data-plane probe endpoint, requested through the tunnel with a plain HTTP

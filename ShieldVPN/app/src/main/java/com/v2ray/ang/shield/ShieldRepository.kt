@@ -26,7 +26,12 @@ data class ShieldServer(
     val guid: String,
     val title: String,
     val subtitle: String,
+    /** Country emoji extracted from the subscription title, "🌐" when unknown. */
+    val flag: String = "🌐",
+    /** Last measured latency in milliseconds, null while it has not been probed. */
+    val pingMs: Long? = null,
 )
+
 
 /**
  * All storage / network work for the branded client.
@@ -107,12 +112,23 @@ object ShieldRepository {
     /** Profiles ready to be rendered by the UI. */
     fun servers(): List<ShieldServer> = serverGuids().mapNotNull { guid ->
         val profile = MmkvManager.decodeServerConfig(guid) ?: return@mapNotNull null
+        val rawTitle = profile.remarks.ifBlank { "Сервер" }
+        val flagMatch = FLAG_PREFIX.find(rawTitle)
         ShieldServer(
             guid = guid,
-            title = profile.remarks.ifBlank { "Сервер" },
+            title = rawTitle.removePrefix(flagMatch?.value.orEmpty()).ifBlank { "Сервер" },
             subtitle = describe(profile),
+            flag = flagMatch?.groupValues?.getOrNull(1)?.takeIf { it.isNotBlank() } ?: "🌐",
         )
     }
+
+    /**
+     * The aggregator already prefixes every remark with the country emoji
+     * (`🇩🇪 Германия`), so the picker can show a real flag instead of a letter.
+     */
+    private val FLAG_PREFIX =
+        Regex("^([\\uD83C][\\uDDE6-\\uDDFF][\\uD83C][\\uDDE6-\\uDDFF]|\\uD83C\\uDF10)\\s*")
+
 
     fun profile(guid: String): ProfileItem? = MmkvManager.decodeServerConfig(guid)
 

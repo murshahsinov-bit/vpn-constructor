@@ -23,7 +23,15 @@ class ShieldViewModel(application: Application) : AndroidViewModel(application) 
 
     fun refreshSubscription() = controller.refreshSubscription()
 
+    fun refreshServers() = controller.refreshServers()
+
+    fun pingAll() = controller.pingAll()
+
     fun setAutoConnect(enabled: Boolean) = controller.setAutoConnect(enabled)
+
+    fun setAutoMode(enabled: Boolean) = controller.setAutoMode(enabled)
+
+    fun setByeDpiEnabled(enabled: Boolean) = controller.setByeDpiEnabled(enabled)
 
     fun reportPermissionDenied() = controller.reportPermissionDenied()
 

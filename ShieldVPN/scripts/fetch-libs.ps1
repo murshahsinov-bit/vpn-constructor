@@ -57,6 +57,43 @@ if (-not (Test-Path $hevSo) -or (Get-Item $hevSo).Length -eq 0) {
 
 Get-ChildItem $libsDir -Recurse -File | Select-Object FullName, Length
 
+# ------------------------------------------------- ByeDPI (ciadpi) for Android
+# YouTube is throttled by the Russian DPI, so the app runs the upstream ciadpi
+# binary as a local SOCKS5 proxy (127.0.0.1:1080) and Xray routes the YouTube
+# domains into it. The binary is stored as libciadpi.so so Android extracts it to
+# nativeLibraryDir, the only directory mounted executable for the app.
+$ByeDpiVersion = "v0.17.3"
+$byedpiAssets = @{
+    "arm64-v8a"   = "byedpi-17.3-aarch64.tar.gz"
+    "armeabi-v7a" = "byedpi-17.3-armv7l.tar.gz"
+    "x86_64"      = "byedpi-17.3-x86_64.tar.gz"
+    "x86"         = "byedpi-17.3-i686.tar.gz"
+}
+
+foreach ($abi in $byedpiAssets.Keys) {
+    $target = Join-Path $libsDir "$abi\libciadpi.so"
+    if ((Test-Path $target) -and (Get-Item $target).Length -gt 0) {
+        continue
+    }
+    $asset = $byedpiAssets[$abi]
+    $archive = Join-Path $env:TEMP $asset
+    $extract = Join-Path $env:TEMP "byedpi-$abi"
+    Write-Host "Downloading $asset ($ByeDpiVersion)..."
+    Invoke-WebRequest -UseBasicParsing -TimeoutSec 600 `
+        -Uri "https://github.com/hufrea/byedpi/releases/download/$ByeDpiVersion/$asset" `
+        -OutFile $archive
+    New-Item -ItemType Directory -Force -Path $extract | Out-Null
+    tar -xzf $archive -C $extract
+    $binary = Get-ChildItem $extract -File | Where-Object { $_.Name -like "ciadpi*" } | Select-Object -First 1
+    if ($null -eq $binary) { throw "ciadpi binary not found in $asset" }
+    New-Item -ItemType Directory -Force -Path (Split-Path $target) | Out-Null
+    Copy-Item $binary.FullName $target -Force
+    Remove-Item $archive -Force -ErrorAction SilentlyContinue
+    Remove-Item $extract -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Get-ChildItem $libsDir -Recurse -File | Where-Object { $_.Name -like "*ciadpi*" } | Select-Object FullName, Length
+
 # ------------------------------------------------------- geo databases (Xray)
 # Xray rejects the config when routing uses geosite:/geoip: rules and the .dat
 # files are absent, so they are packed into the APK and unpacked on first launch.

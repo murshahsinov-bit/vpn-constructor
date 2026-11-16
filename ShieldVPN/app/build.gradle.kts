@@ -12,6 +12,24 @@ android {
     namespace = "com.v2ray.ang"
     compileSdk = 37
 
+    // Firebase credentials are optional: without them the app runs the local
+    // account mode (see ShieldAuth). CI injects them from repository secrets.
+    val localProperties = Properties().apply {
+        val file = rootProject.file("local.properties")
+        if (file.exists()) file.inputStream().use { load(it) }
+    }
+    fun secret(name: String): String =
+        (findProperty(name) as? String)?.takeIf { it.isNotBlank() }
+            ?: localProperties.getProperty(name, "").orEmpty()
+
+    val firebaseApiKey = secret("FIREBASE_API_KEY")
+    val firebaseAppId = secret("FIREBASE_APP_ID")
+    val firebaseProjectId = secret("FIREBASE_PROJECT_ID")
+    val firebaseWebClientId = secret("FIREBASE_WEB_CLIENT_ID")
+    val firebaseEnabled = firebaseApiKey.isNotBlank() &&
+        firebaseAppId.isNotBlank() &&
+        firebaseProjectId.isNotBlank()
+
     defaultConfig {
         // ShieldVPN branding: separate package so it can live next to the upstream client.
         applicationId = "io.netrun.shieldvpn"
@@ -19,6 +37,12 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0.0"
+
+        buildConfigField("boolean", "FIREBASE_ENABLED", firebaseEnabled.toString())
+        buildConfigField("String", "FIREBASE_API_KEY", "\"$firebaseApiKey\"")
+        buildConfigField("String", "FIREBASE_APP_ID", "\"$firebaseAppId\"")
+        buildConfigField("String", "FIREBASE_PROJECT_ID", "\"$firebaseProjectId\"")
+        buildConfigField("String", "FIREBASE_WEB_CLIENT_ID", "\"$firebaseWebClientId\"")
 
         // One universal APK for phones (arm64 + armeabi-v7a): the Xray core is ~33 MB per
         // ABI, so bundling every ABI would produce a ~150 MB file.
@@ -190,7 +214,6 @@ android {
 dependencies {
     // Core Libraries
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.aar", "*.jar"))))
-
     // AndroidX Core Libraries
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -213,6 +236,18 @@ dependencies {
     implementation(libs.mmkv.static)
     implementation(libs.gson)
     implementation(libs.okhttp)
+
+    // Accounts: Firebase Auth + Firestore (Spark plan, free tier)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+
+    // Compile-time only: Firebase puts Guava on the runtime classpath but not on
+    // the compile classpath, which is where ListenableFuture has to come from.
+    compileOnly("com.google.guava:guava:33.6.0-android")
 
     // Reactive and Utility Libraries
     implementation(libs.kotlinx.coroutines.android)
@@ -245,4 +280,19 @@ dependencies {
     testImplementation(libs.mockito.core)
     testImplementation(libs.mockito.kotlin)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
+}
+
+// Firebase upgrades com.google.guava:listenablefuture to the intentionally empty
+// "9999.0-empty-to-avoid-conflict-with-guava" stub and exposes Guava itself only
+// on the runtime classpath. Kotlin then cannot see ListenableFuture, which breaks
+// CameraX/WorkManager compilation. Guava ships the interface, so the compile
+// classpath gets it explicitly while packaging keeps the empty stub (no duplicate
+// classes).
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "com.google.guava" && requested.name == "listenablefuture") {
+            useVersion("9999.0-empty-to-avoid-conflict-with-guava")
+            because("Guava provides ListenableFuture; the stub avoids duplicate classes")
+        }
+    }
 }

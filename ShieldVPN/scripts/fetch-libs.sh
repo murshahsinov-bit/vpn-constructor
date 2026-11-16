@@ -46,6 +46,32 @@ fi
 # Never let the AAR manifest reach the manifest merger.
 rm -f "$LIBS_DIR/hev-socks5-tunnel.aar"
 
+# ------------------------------------------------- ByeDPI (ciadpi) for Android
+# The upstream ciadpi binary runs as a local SOCKS5 proxy for the YouTube
+# domains; see ShieldByeDpi.kt. It is stored as libciadpi.so so Android extracts
+# it into nativeLibraryDir, the only app directory mounted executable.
+BYEDPI_VERSION="v0.17.3"
+fetch_byedpi() {
+  local abi="$1" asset="$2"
+  local target="$LIBS_DIR/$abi/libciadpi.so"
+  [ -s "$target" ] && return
+  echo "Downloading $asset ($BYEDPI_VERSION)..."
+  local tmp
+  tmp="$(mktemp -d)"
+  curl -fL --retry 3 --retry-delay 5 \
+    -o "$tmp/$asset" \
+    "https://github.com/hufrea/byedpi/releases/download/${BYEDPI_VERSION}/${asset}"
+  tar -xzf "$tmp/$asset" -C "$tmp"
+  mkdir -p "$LIBS_DIR/$abi"
+  cp "$(find "$tmp" -maxdepth 1 -type f -name 'ciadpi*' | head -n 1)" "$target"
+  rm -rf "$tmp"
+}
+
+fetch_byedpi "arm64-v8a"   "byedpi-17.3-aarch64.tar.gz"
+fetch_byedpi "armeabi-v7a" "byedpi-17.3-armv7l.tar.gz"
+fetch_byedpi "x86_64"      "byedpi-17.3-x86_64.tar.gz"
+fetch_byedpi "x86"         "byedpi-17.3-i686.tar.gz"
+
 # ------------------------------------------------------- geo databases (Xray)
 # Xray refuses the whole config when routing references geosite:/geoip: rules and
 # the .dat files are missing ("failed to open geosite.dat"), which used to keep

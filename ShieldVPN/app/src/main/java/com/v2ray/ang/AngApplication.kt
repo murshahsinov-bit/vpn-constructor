@@ -5,10 +5,13 @@ import android.content.Context
 import androidx.core.content.ContextCompat
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
 import com.v2ray.ang.AppConfig.ANG_PACKAGE
 import com.v2ray.ang.handler.AppLocaleManager
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsManager
+import com.v2ray.ang.shield.ShieldAuth
 import com.v2ray.ang.shield.ShieldGeoAssets
 import com.v2ray.ang.ui.compose.ThemeManager
 
@@ -45,6 +48,23 @@ class AngApplication : Application() {
 
         // Ensure critical preference defaults are present in MMKV early
         SettingsManager.initApp(this)
+
+        // Firebase is optional: only builds with injected credentials initialize it.
+        if (BuildConfig.FIREBASE_ENABLED) {
+            runCatching {
+                if (FirebaseApp.getApps(this).isEmpty()) {
+                    FirebaseApp.initializeApp(
+                        this,
+                        FirebaseOptions.Builder()
+                            .setApiKey(BuildConfig.FIREBASE_API_KEY)
+                            .setApplicationId(BuildConfig.FIREBASE_APP_ID)
+                            .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
+                            .build(),
+                    )
+                }
+            }
+        }
+        ShieldAuth.initialize(this)
 
         // Unpack the Xray geo databases in the background: the core cannot start
         // without them, and the connect flow waits for this copy anyway.

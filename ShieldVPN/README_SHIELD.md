@@ -138,14 +138,15 @@ bash scripts/fetch-libs.sh
 ### 4.4 Где APK
 
 ```
-ShieldVPN/app/build/outputs/apk/playstore/release/ShieldVPN_1.0.0_universal.apk
+ShieldVPN/app/build/outputs/apk/playstore/release/ShieldVPN_1.0.0_universal.apk        # universal, ~48 МБ
+ShieldVPN/app/build/outputs/apk/playstore/release/ShieldVPN_1.0.0_arm64-v8a.apk        # ~36 МБ
+ShieldVPN/app/build/outputs/apk/playstore/release/ShieldVPN_1.0.0_armeabi-v7a.apk      # ~36 МБ
 ```
 
-Проверенный образец сборки: 45 272 700 байт (~43,2 МБ), SHA-256
-`EC2529C51001AF7098D60A54BB338DED9C9F211D545C5F8B0BDD8E91261B740B`,
-`versionCode=1`, `applicationId=io.netrun.shieldvpn`, `minSdk=24`,
-`targetSdk=37`, внутри `lib/arm64-v8a` и `lib/armeabi-v7a` с `libgojni.so`
-и `libhev-socks5-tunnel.so`.
+Универсальный APK содержит ядро Xray под две архитектуры (2 × 33 МБ `libgojni.so`)
+и 23 МБ `geoip.dat`, поэтому для раздачи собираются сборки по ABI — каждая
+укладывается в лимит IzzyOnDroid (~30 МБ на файл, исключения допускаются;
+v2rayNG отдаёт файлы того же порядка).
 
 Установка:
 
@@ -216,3 +217,81 @@ release-сборка подписывается debug-ключом — APK ус�
   настройки»; при желании её можно убрать из `ShieldActivity`.
 - В APK попадают только `arm64-v8a` и `armeabi-v7a` (универсальный `.apk`);
   для эмулятора собирайте с `-PABI_FILTERS=arm64-v8a;x86_64`.
+
+---
+
+## 7. Обход DPI для YouTube (ByeDPI)
+
+В приложение встроен апстримный бинарник `ciadpi` из
+[hufrea/byedpi](https://github.com/hufrea/byedpi) v0.17.3 — тот же движок, что
+используют ByeByeDPI и Zapret, но в режиме локального SOCKS5-прокси.
+
+- Бинарник лежит как `app/libs/<abi>/libciadpi.so`, поэтому Android распаковывает
+  его в `nativeLibraryDir` — единственный каталог приложения с правом на запуск.
+  Скачивается скриптом `scripts/fetch-libs.sh` / `.ps1`.
+- `ShieldByeDpi` запускает его через `ProcessBuilder` на `127.0.0.1:1080`,
+  аргументы по умолчанию: `--disorder 1 --auto=torst --timeout 5` (проверено на
+  мобильной сети РФ: прямой запрос к IP YouTube падал по таймауту, через ciadpi —
+  HTTP 200 за ~0.9 с). Лог пишется в `cacheDir/byedpi.log`.
+- `ShieldByeDpiRouting` добавляет в сгенерированный конфиг Xray outbound `socks`
+  с тегом `byedpi` и правило **первым** в `routing.rules`:
+  `youtube.com`, `youtu.be`, `youtube-nocookie.com`, `googlevideo.com`,
+  `ytimg.com`, `ggpht.com`, `youtubei.googleapis.com` → `byedpi`, `network: tcp`.
+- `targetStrategy = "UseIP"` заставляет Xray самому резолвить домен: у статического
+  musl-бинарника нет `/etc/resolv.conf`, поэтому имя ему передавать нельзя.
+  TLS ClientHello по-прежнему формируется приложением, так что фрагментация SNI
+  работает.
+- Системный VPN остаётся за Xray; ByeDPI — обычный userspace-процесс, который
+  поднимается при подключении и гасится при отключении или выключении тумблера
+  «Обход DPI для YouTube».
+
+## 8. Аккаунт (Firebase Auth)
+
+Экран входа: «Войти через Google» (Credential Manager + `googleid`) и «Войти по
+Email» (`createUserWithEmailAndPassword` / `signInWithEmailAndPassword`).
+Состояние — `ShieldAuth` (StateFlow), токен подписки зеркалится в Firestore
+`users/{uid}.subscriptionToken`.
+
+Без ключей Firebase (`BuildConfig.FIREBASE_ENABLED == false`) включается локальный
+режим: первый вход сохраняет SHA-256 пароля в MMKV, последующие проверяют его,
+кнопка Google неактивна, а в UI выводится предупреждение. Это позволяет собирать
+и тестировать APK без проекта Firebase и без `google-services.json`.
+
+Сборка с Firebase:
+
+```powershell
+.\gradlew.bat assemblePlaystoreRelease `
+  -PFIREBASE_API_KEY=AIza... `
+  -PFIREBASE_APP_ID="1:123:android:abc" `
+  -PFIREBASE_PROJECT_ID=shieldvpn-1234 `
+  -PFIREBASE_WEB_CLIENT_ID="123-abc.apps.googleusercontent.com"
+```
+
+Ключи также читаются из `ShieldVPN/local.properties` (в `.gitignore`).
+
+## 9. Публикация
+
+- **GitHub Release**: тег `v1.0.0` → `.github/workflows/build.yml` собирает APK
+  по ABI и прикрепляет к релизу.
+- **Лендинг**: `site/` публикуется workflow `pages.yml` (Settings → Pages →
+  Source: GitHub Actions). Кнопка «Скачать APK» ведёт на `/releases/latest` и
+  уточняется через GitHub API.
+- **IzzyOnDroid / F-Droid**: метаданные в `metadata/` (`en-US`, `ru`, иконка,
+  `phoneScreenshots/`, `changelogs/<versionCode>.txt`), лицензия GPL-3.0 в
+  `LICENSE`. Пакет `io.netrun.shieldvpn`, release-подпись задаётся секретами
+  `KEYSTORE_*`.
+
+## 10. Проверка после установки
+
+```bash
+adb install -r app/build/outputs/apk/playstore/release/ShieldVPN_1.0.0_arm64-v8a.apk
+adb shell am start -n io.netrun.shieldvpn/com.v2ray.ang.ui.shield.ShieldActivity
+adb logcat -s ShieldVPN
+# лог ciadpi лежит в cacheDir/byedpi.log; в release-сборке он доступен только
+# через run-as debug-варианта или root, т.к. APK не debuggable
+```
+
+Ожидаемое поведение: экран входа → главный экран с кнопкой «Подключиться» →
+автоматический пинг списка → подключение к лучшему серверу → в логе
+`ByeDPI listening on 127.0.0.1:1080`, YouTube открывается напрямую через обход,
+остальные сайты идут через VLESS.

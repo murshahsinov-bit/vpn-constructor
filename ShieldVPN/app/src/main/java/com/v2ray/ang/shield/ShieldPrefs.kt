@@ -27,4 +27,52 @@ object ShieldPrefs {
     fun setServerRanked(value: Boolean) {
         MmkvManager.encodeSettings(ShieldConfig.PREF_SERVER_RANKED, value)
     }
+
+    /** Local ByeDPI bypass. Enabled by default: YouTube is unusable without it in RU. */
+    fun isByeDpiEnabled(): Boolean =
+        MmkvManager.decodeSettingsBool(ShieldConfig.PREF_BYEDPI_ENABLED, true)
+
+    fun setByeDpiEnabled(value: Boolean) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_BYEDPI_ENABLED, value)
+    }
+
+    fun byeDpiArgs(): String =
+        MmkvManager.decodeSettingsString(ShieldConfig.PREF_BYEDPI_ARGS)
+            ?.takeIf { it.isNotBlank() }
+            ?: ShieldConfig.BYEDPI_DEFAULT_ARGS
+
+    fun setByeDpiArgs(value: String) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_BYEDPI_ARGS, value)
+    }
+
+    // ------------------------------------------------------------------- auth
+
+    fun authEmail(): String? =
+        MmkvManager.decodeSettingsString(ShieldConfig.PREF_AUTH_EMAIL)?.takeIf { it.isNotBlank() }
+
+    fun setAuthEmail(value: String?) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_AUTH_EMAIL, value ?: "")
+    }
+
+    fun authName(): String? =
+        MmkvManager.decodeSettingsString(ShieldConfig.PREF_AUTH_NAME)?.takeIf { it.isNotBlank() }
+
+    fun setAuthName(value: String?) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_AUTH_NAME, value ?: "")
+    }
+
+    /** SHA-256 of the local password. Only used when Firebase is not configured. */
+    fun authSecret(): String? =
+        MmkvManager.decodeSettingsString(ShieldConfig.PREF_AUTH_SECRET)?.takeIf { it.isNotBlank() }
+
+    fun setAuthSecret(value: String?) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_AUTH_SECRET, value ?: "")
+    }
+
+    fun isSignedIn(): Boolean =
+        MmkvManager.decodeSettingsBool(ShieldConfig.PREF_AUTH_SIGNED_IN, false)
+
+    fun setSignedIn(value: Boolean) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_AUTH_SIGNED_IN, value)
+    }
 }

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ShieldVPN — Твой быстрый и безопасный доступ</title>
+  <meta name="description" content="ShieldVPN — бесплатный VPN с умным автовыбором серверов и локальным обходом DPI для YouTube. Скачать APK для Android." />
+  <meta name="theme-color" content="#0b1220" />
+  <meta property="og:title" content="ShieldVPN — Твой быстрый и безопасный доступ" />
+  <meta property="og:description" content="Умный автовыбор серверов, обход DPI для YouTube, бесплатно и без рекламы." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="#top">
+      <img src="icon.png" alt="" width="36" height="36" />
+      <span>ShieldVPN</span>
+    </a>
+    <nav>
+      <a href="#features">Возможности</a>
+      <a href="#install">Установка</a>
+      <a class="nav-cta" href="https://github.com/murshahsinov-bit/vpn-constructor/releases/latest" target="_blank" rel="noopener">Скачать</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="glow" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <img class="hero-icon" src="icon.png" alt="Иконка ShieldVPN" width="96" height="96" />
+        <h1>ShieldVPN —<br />Твой быстрый и безопасный доступ</h1>
+        <p class="lead">
+          Бесплатный VPN для Android без рекламы и регистрационных барьеров.
+          Умный автовыбор серверов, обход DPI для YouTube и один большой кнопки
+          «Подключиться».
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" id="download" href="https://github.com/murshahsinov-bit/vpn-constructor/releases/latest">
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path fill="currentColor" d="M12 3v10.6l3.3-3.3 1.4 1.4L12 17.4l-4.7-4.7 1.4-1.4 3.3 3.3V3h2ZM5 19h14v2H5v-2Z"/>
+            </svg>
+            Скачать APK
+          </a>
+          <span class="meta" id="release-meta">Последний релиз · Android 7.0+</span>
+        </div>
+
+        <ul class="pills">
+          <li>Бесплатно</li>
+          <li>Без рекламы</li>
+          <li>GPL-3.0</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="features" class="features">
+      <article class="card">
+        <div class="card-icon">⚡</div>
+        <h2>Умный автовыбор</h2>
+        <p>
+          При запуске приложение пингует весь список серверов и подключается к
+          самому быстрому. Нужен другой — открой список: флаг, название и пинг в
+          миллисекундах видны сразу.
+        </p>
+      </article>
+
+      <article class="card">
+        <div class="card-icon">▶</div>
+        <h2>Обход DPI для YouTube</h2>
+        <p>
+          Встроенный ByeDPI работает локально на <code>127.0.0.1:1080</code>.
+          Только трафик YouTube идёт через него, остальное — через защищённый
+          VLESS-туннель. Системный VPN не перехватывается.
+        </p>
+      </article>
+
+      <article class="card">
+        <div class="card-icon">∞</div>
+        <h2>Бесплатно</h2>
+        <p>
+          Никаких подписок и пробных периодов. Актуальные конфиги обновляются
+          автоматически, а приложение собирается из открытого исходного кода.
+        </p>
+      </article>
+    </section>
+
+    <section id="install" class="install">
+      <h2>Как установить</h2>
+      <ol>
+        <li>
+          <span class="step">1</span>
+          <div>
+            <strong>Скачайте APK</strong>
+            <p>Кнопка выше ведёт на последний релиз в GitHub Releases. Для большинства телефонов берите файл <code>ShieldVPN_1.0.0_arm64-v8a.apk</code>, для старых 32-битных устройств — <code>…_armeabi-v7a.apk</code>.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step">2</span>
+          <div>
+            <strong>Разрешите установку</strong>
+            <p>Android спросит про «Установку из неизвестных источников» — разрешите её для браузера или файлового менеджера.</p>
+          </div>
+        </li>
+        <li>
+          <span class="step">3</span>
+          <div>
+            <strong>Откройте ShieldVPN</strong>
+            <p>Войдите через Google или по e-mail, нажмите «Подключиться» и разрешите создание VPN-подключения.</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="notice">
+        <strong>Из России?</strong> Если GitHub открывается с трудом, скачайте APK
+        через зеркало или попросите файл у того, у кого он уже есть: подпись
+        сборки проверяется Android автоматически.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© <span id="year">2026</span> ShieldVPN</span>
+      <span class="dot">·</span>
+      <a href="https://github.com/murshahsinov-bit/vpn-constructor" target="_blank" rel="noopener">GitHub</a>
+      <span class="dot">·</span>
+      <a href="https://github.com/murshahsinov-bit/vpn-constructor/blob/main/LICENSE" target="_blank" rel="noopener">GPL-3.0</a>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
