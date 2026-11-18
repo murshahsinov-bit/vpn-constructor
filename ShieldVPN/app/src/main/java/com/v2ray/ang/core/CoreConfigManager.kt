@@ -18,6 +18,7 @@ import com.v2ray.ang.extension.isNotNullEmpty
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.shield.ShieldByeDpiRouting
+import com.v2ray.ang.shield.ShieldDirectRouting
 import com.v2ray.ang.util.HttpUtil
 import com.v2ray.ang.util.JsonUtil
 import com.v2ray.ang.util.LogUtil
@@ -209,6 +210,10 @@ object CoreConfigManager {
         // SOCKS5 listener. The rule is prepended, so it wins over user rules.
         runCatching { ShieldByeDpiRouting.apply(v2rayConfig) }
             .onFailure { LogUtil.w(AppConfig.TAG, "ByeDPI routing injection failed: ${it.message}") }
+        // ShieldVPN: the panel host must leave directly, otherwise a refresh made
+        // while the tunnel is up is rejected by the panel.
+        runCatching { ShieldDirectRouting.apply(v2rayConfig) }
+            .onFailure { LogUtil.w(AppConfig.TAG, "direct routing injection failed: ${it.message}") }
         configureFakeDns(v2rayConfig)
         configureDns(configContext, v2rayConfig, policyGroupBalancerTags)
         configureLocalDns(configContext, v2rayConfig)

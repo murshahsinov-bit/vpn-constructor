@@ -59,7 +59,10 @@
     <!-- ShieldVPN settings screen -->
     <string name="shield_settings_title">Настройки ShieldVPN</string>
     <string name="shield_settings_appearance">Оформление</string>
-    <string name="shield_settings_dark_theme">Тёмная тема</string>
+    <string name="shield_settings_theme">Тема оформления</string>
+    <string name="shield_settings_theme_option_system">Как в системе</string>
+    <string name="shield_settings_theme_option_light">Светлая</string>
+    <string name="shield_settings_theme_option_dark">Тёмная</string>
     <string name="shield_settings_theme_system">Сейчас: как в системе</string>
     <string name="shield_settings_theme_light">Сейчас: светлая</string>
     <string name="shield_settings_theme_dark">Сейчас: тёмная</string>

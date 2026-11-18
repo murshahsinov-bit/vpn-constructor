@@ -33,9 +33,26 @@ Xray outbound `byedpi` (youtube.com, googlevideo.com, ytimg.com, ggpht.com).
        фрагментация, 503 при пустом источнике). Итог: 72 passed.
 [+] 6. HAPP_INCY.md и README.md: iPhone → /sub/incy.txt?token=<TOKEN>;
        Android → только приложение ShieldVPN. Описана авторизация по user.
-[+] 7. APK собран: ShieldVPN_1.0.0_arm64-v8a.apk (~35.8 МБ), токен в APK
-       отсутствует (проверено сканированием classes.dex).
+[+] 7. APK собран: ShieldVPN_1.0.0_arm64-v8a.apk (~34.1 МБ после фиксов), токен
+       в APK отсутствует (проверено сканированием classes.dex).
 [+] 8. netrun-worker.zip пересобран для загрузки в Netrun.
+[+] 9. Экран настроек проверен на устройстве. Переключатель темы заменён на
+       диалог из трёх режимов («Как в системе» / «Светлая» / «Тёмная»):
+       раньше тумблер не позволял вернуться к системной теме. Выбор сохраняется
+       в MMKV и переживает закрытие/переоткрытие экрана (проверено).
+[+] 10. Исправлен ложный успех обновления подписки. ShieldRepository возвращал
+       размер старого кэша, даже когда панель ответила 403, и UI показывал
+       «Подписка обновлена: 55 серверов». Теперь refreshSubscription() строгий:
+       ошибка/пустой ответ = тост «Не удалось обновить подписку…»; фоновый
+       ensureSubscription по-прежнему может работать с кэшем офлайн.
+[+] 11. Домен панели исключён из туннеля: ShieldDirectRouting добавляет первым
+       правилом domain:vpn-auth.de1.netrun.io → outbound `direct`. Раньше запрос
+       подписки при подключённом VPN уходил в proxy, панель рвала TLS
+       (SSLHandshakeException: connection closed). Лог после фикса:
+       `accepted //vpn-auth.de1.netrun.io:443 [socks -> direct]`.
+[+] 12. Добавлены JVM-тесты: ShieldDirectRoutingTest (5) и
+       ShieldRepositoryRefreshTest (5). Задача тестов в этом проекте —
+       `testPlaystoreDebugUnitTest` (release-варианта unit-тестов нет).
 
 3. ПРОВЕРКИ
 --------------------------------------------------------------------------------
@@ -48,12 +65,31 @@ Xray outbound `byedpi` (youtube.com, googlevideo.com, ytimg.com, ggpht.com).
     GET /sub/auto_happ.txt?user=...          → 200, 43 профиля.
 - Сборка: BUILD SUCCESSFUL, lintVital пройден.
 - Статически: строки 210c785... в APK нет.
+- Устройство Redmi A5 (Android 15, arm64-v8a), установка `adb install -r`
+  поверх данных: успешно.
+- Вход: локальный e-mail qa@shieldvpn.dev (Firebase выключен), подписка
+  запрошена с `?user=qa%40shieldvpn.dev`.
+- VPN: статус «Защищено», сервер Norway, Oslo | [BL], пинг 48 мс, ByeDPI
+  активен (127.0.0.1:1080), туннель поднят.
+- Настройки: «Оформление» → диалог темы; выбор «Тёмная» → «Сейчас: тёмная»,
+  после закрытия/переоткрытия экрана значение сохранилось; возврат к
+  «Как в системе» работает.
+- «Обновить подписку» при подключённом VPN: запрос ушёл `[socks -> direct]`,
+  ответ 403 (старый воркер) → показан честный тост об ошибке, ложного
+  «обновлено» больше нет.
+- «Настройки маршрутизации» открываются без падений.
+- JVM-тесты: `:app:testPlaystoreDebugUnitTest --tests *ShieldDirectRoutingTest
+  --tests *ShieldRepositoryRefreshTest` → BUILD SUCCESSFUL.
+- CI: ран `Build ShieldVPN APK` #5 (18a7e7e) после повторного запуска — success
+  (первый прогон упал на транспорентном «plugin org.jetbrains.kotlin.android
+  2.4.21 not found», повторный резолв прошёл).
 
 4. НЕ ВЫПОЛНЕНО / БЛОКЕРЫ
 --------------------------------------------------------------------------------
-- Устройство не подключено: `adb devices` пуст, MCP mobile не видит локальных
-  устройств. Установка APK, проверка входа, «Дополнительных настроек» и
-  реального VPN остаются за устройством/эмулятором.
+- Прод-воркер ещё старый: https://vpn-auth.de1.netrun.io/ отвечает 200, но
+  `/sub/incy.txt` → 404 и `/sub/auto_happ.txt?user=...` → 403. Нужна загрузка
+  netrun-worker.zip в Netrun (пользователь делает сам по DEPLOY_NETRUN.md,
+  раздел 9). После деплоя проверить 200/22 профиля и 403 для user=bad.
 - Firebase в сборке не настроен (FIREBASE_ENABLED=false): Google-вход
   недоступен, используется локальный e-mail вход, подписка идёт с
   `?user=<email>`. Для Google нужно задать FIREBASE_* Gradle-свойства.
@@ -74,7 +110,11 @@ Xray outbound `byedpi` (youtube.com, googlevideo.com, ytimg.com, ggpht.com).
   все 4 workflow проходят с exit=0; на исходном варианте actionlint воспроизводит
   ту же ошибку («context "secrets" is not allowed here»).
 - Workflow `Deploy landing page` на коммите a84aaa2 — success.
-  `Update VPN Configs` и `Build ShieldVPN APK` на момент проверки — in_progress.
+  `Build ShieldVPN APK` #5 (18a7e7e) — success после rerun; первый запуск упал
+  на транспорентной ошибке резолва плагина Kotlin 2.4.21 (версия доступна,
+  повторный запуск прошёл).
+- Не запускались (Not run): TalkBack-проверка диалога темы, проверки
+  динамического цвета, клавиатурная/D-pad-навигация по новому диалогу.
 
 5. АРХИТЕКТУРНЫЕ ЗАМЕТКИ
 --------------------------------------------------------------------------------
@@ -87,6 +127,9 @@ Xray outbound `byedpi` (youtube.com, googlevideo.com, ytimg.com, ggpht.com).
   сервисный аккаунт; сейчас любой валидный по форме UID/e-mail получает 200.
 - Legacy MainActivity/AboutActivity/Drawer остались в коде для QS tile, но из
   UI ShieldVPN недоступны.
+- Домен панели подписки всегда идёт через outbound `direct`
+  (ShieldDirectRouting, правило вставляется первым). Это не зависит от ByeDPI:
+  правило добавляется в любой сгенерированный конфиг.
 
 6. КОМАНДЫ
 --------------------------------------------------------------------------------
@@ -103,3 +146,9 @@ Worker local: $env:PORT=8098; C:\Python315\python.exe netrun_worker\app.py
 2026-11-18  Завершены пункты 1–8 этапа; осталось тестирование на устройстве.
 2026-11-18  Найден и исправлен невалидный build.yml (secrets в if:) — релиз по
             тегу снова возможен; проверено actionlint, все workflow валидны.
+2026-11-18  APK установлен на Redmi A5: вход, VPN, ByeDPI, настройки проверены.
+2026-11-18  Тема в настройках: тумблер → диалог «Как в системе/Светлая/Тёмная»,
+            сохранение проверено переоткрытием экрана.
+2026-11-18  Исправлен ложный успех обновления подписки и маршрут домена панели
+            вне туннеля (403 больше не маскируется кэшем). Добавлены JVM-тесты.
+2026-11-18  CI #5 (Build ShieldVPN APK) — success после rerun.

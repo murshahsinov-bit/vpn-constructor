@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -36,8 +37,8 @@ import com.v2ray.ang.ui.base.BaseComponentActivity
 import com.v2ray.ang.ui.compose.AppTopBar
 import com.v2ray.ang.ui.compose.NavigationBarsSpacer
 import com.v2ray.ang.ui.compose.PreferenceGroupHeader
+import com.v2ray.ang.ui.compose.SelectListDialog
 import com.v2ray.ang.ui.compose.SettingsMenuItem
-import com.v2ray.ang.ui.compose.SettingsSwitchItem
 import com.v2ray.ang.ui.compose.ThemeManager
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import com.v2ray.ang.ui.routing.RoutingSettingActivity
@@ -72,6 +73,9 @@ class SettingsActivity : BaseComponentActivity() {
     }
 }
 
+/** Theme modes stored in [AppConfig.PREF_UI_MODE_NIGHT]: follow system, light, dark. */
+private val THEME_MODES = listOf("0", "1", "2")
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShieldSettingsScreen(
@@ -84,7 +88,7 @@ private fun ShieldSettingsScreen(
     val lastUpdated by viewModel.lastUpdated.collectAsStateWithLifecycle()
 
     var themeMode by rememberMmkvString(AppConfig.PREF_UI_MODE_NIGHT, "0")
-    val darkTheme = themeMode == "2"
+    var themeDialogVisible by remember { mutableStateOf(false) }
 
     val themeSummary = when (themeMode) {
         "2" -> stringResource(R.string.shield_settings_theme_dark)
@@ -119,16 +123,32 @@ private fun ShieldSettingsScreen(
                 .verticalScroll(scrollState),
         ) {
             PreferenceGroupHeader(stringResource(R.string.shield_settings_appearance))
-            SettingsSwitchItem(
-                title = stringResource(R.string.shield_settings_dark_theme),
-                summary = themeSummary,
-                checked = darkTheme,
-                onCheckedChange = { enabled ->
-                    // The switch is a two-state control: on = dark, off = light.
-                    themeMode = if (enabled) "2" else "1"
-                    ThemeManager.setThemeMode(themeMode)
-                },
+            SettingsMenuItem(
+                title = stringResource(R.string.shield_settings_theme),
+                subtitle = themeSummary,
+                onClick = { themeDialogVisible = true },
             )
+            if (themeDialogVisible) {
+                SelectListDialog(
+                    title = stringResource(R.string.shield_settings_theme),
+                    options = THEME_MODES,
+                    optionText = { mode ->
+                        when (mode) {
+                            "2" -> stringResource(R.string.shield_settings_theme_option_dark)
+                            "1" -> stringResource(R.string.shield_settings_theme_option_light)
+                            else -> stringResource(R.string.shield_settings_theme_option_system)
+                        }
+                    },
+                    selectedOption = themeMode,
+                    showRadio = true,
+                    onSelected = { mode ->
+                        themeMode = mode
+                        ThemeManager.setThemeMode(mode)
+                        themeDialogVisible = false
+                    },
+                    onDismiss = { themeDialogVisible = false },
+                )
+            }
 
             PreferenceGroupHeader(stringResource(R.string.shield_settings_subscription))
             SettingsMenuItem(

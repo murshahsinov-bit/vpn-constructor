@@ -1,6 +1,7 @@
 package com.v2ray.ang.shield
 
 import com.v2ray.ang.AngApplication
+import com.v2ray.ang.dto.SubscriptionUpdateResult
 import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.dto.entities.SubscriptionItem
 import com.v2ray.ang.handler.AngConfigManager
@@ -50,10 +51,16 @@ object ShieldRepository {
      * Makes sure the per-account subscription exists and its profiles are imported.
      *
      * @param forceRefresh re-download even when profiles are already stored.
+     * @param failOnRefreshError report a refused/empty download instead of silently
+     *   falling back to the cached list. Background syncs leave it off so an
+     *   offline start can still use the last known nodes.
      * @return number of profiles available for the subscription.
      */
     @Synchronized
-    fun ensureSubscription(forceRefresh: Boolean = false): Int {
+    fun ensureSubscription(
+        forceRefresh: Boolean = false,
+        failOnRefreshError: Boolean = false,
+    ): Int {
         // Xray cannot start without the geo databases, so unpack them before any
         // core launch. Cheap: they are only copied on the very first run.
         ShieldGeoAssets.ensure(AngApplication.application)
@@ -97,8 +104,8 @@ object ShieldRepository {
                 "subscription sync: configs=${result.configCount} ok=${result.successCount} " +
                     "fail=${result.failureCount}",
             )
-            if (result.configCount <= 0 && imported.isEmpty()) {
-                error("Не удалось загрузить подписку. Проверьте интернет.")
+            if (isSubscriptionRefreshFailure(result, imported.isNotEmpty(), failOnRefreshError)) {
+                error("Не удалось обновить подписку. Проверьте интернет и аккаунт.")
             }
         }
 
@@ -108,6 +115,32 @@ object ShieldRepository {
 
         ShieldPrefs.setBootstrapped(true)
         return MmkvManager.decodeServerList(ShieldConfig.SUBSCRIPTION_ID).size
+    }
+
+    /**
+     * Forces a re-download for the signed-in account.
+     *
+     * Unlike [ensureSubscription] this fails when the panel refuses the request
+     * or returns an empty list, so the settings screen cannot report a stale
+     * server count as a successful update.
+     */
+    fun refreshSubscription(): Int =
+        ensureSubscription(forceRefresh = true, failOnRefreshError = true)
+
+    /**
+     * Whether a subscription update round must surface an error.
+     *
+     * A background sync may keep the cached nodes when the panel is unreachable,
+     * but a first-time setup and an explicit refresh have nothing to fall back
+     * on. Reporting the cached size as "updated" hid a 403 from the user.
+     */
+    internal fun isSubscriptionRefreshFailure(
+        result: SubscriptionUpdateResult,
+        hasCachedProfiles: Boolean,
+        strict: Boolean,
+    ): Boolean {
+        if (result.configCount > 0 && result.successCount > 0) return false
+        return strict || !hasCachedProfiles
     }
 
     /** GUIDs belonging to the built-in subscription, falling back to everything stored. */

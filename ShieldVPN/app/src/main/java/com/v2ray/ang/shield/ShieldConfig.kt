@@ -11,8 +11,11 @@ import java.net.URLEncoder
  */
 object ShieldConfig {
 
+    /** Panel host. Also routed outside the tunnel when the VPN is connected. */
+    const val SUBSCRIPTION_HOST = "vpn-auth.de1.netrun.io"
+
     /** Panel that serves the Android/Happ share-link list. */
-    const val SUBSCRIPTION_BASE_URL = "https://vpn-auth.de1.netrun.io/sub"
+    const val SUBSCRIPTION_BASE_URL = "https://$SUBSCRIPTION_HOST/sub"
 
     /** Happ-compatible TXT list (one share link per line). */
     const val SUBSCRIPTION_PATH = "auto_happ.txt"

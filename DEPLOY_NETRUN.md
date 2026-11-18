@@ -218,7 +218,53 @@ CLIENTS_FILE=../clients.json AUTO_FILE=../web/subscriptions/auto.json python app
 | Сервис «спит» | Это нормально для Free Tier: первый запрос после 15 минут простоя разбудит контейнер за несколько секунд |
 | Токен виден в логах Netrun | Мы отключили access-log gunicorn, но платформа может логировать URL запроса. Не публикуйте логи и используйте HTTPS |
 
-## 9. Ограничения бесплатного тарифа
+## 9. Обновление до версии с `/sub/incy.txt` и `?user=`
+
+Текущий прод отдаёт старую сборку: `/sub/incy.txt` отвечает `404`, а
+`/sub/auto_happ.txt?user=...` — `403`. Причина в том, что в контейнере лежит
+старый `app.py`; локальный `netrun-worker.zip` уже содержит новую версию.
+
+Порядок обновления:
+
+1. Убедитесь, что архив собран из **содержимого** `netrun_worker`, а не из папки.
+   Проверка (файлы должны быть в корне архива):
+
+   ```powershell
+   python -c "import zipfile;print('\n'.join(zipfile.ZipFile('netrun-worker.zip').namelist()))"
+   ```
+
+   Ожидаемый вывод начинается с `app.py`, `Dockerfile`, `requirements.txt`.
+
+2. Откройте кабинет Netrun → проект `vpn-auth` → кнопка обновления проекта
+   (**Загрузить новую версию** / **Redeploy** / **Обновить архив**).
+3. Загрузите `netrun-worker.zip` и опубликуйте. Публичный URL не изменится.
+4. Дождитесь статуса «Работает» (сборка Docker занимает 1–3 минуты).
+
+Проверка после деплоя:
+
+```text
+GET /                              → 200, в "endpoints" есть /sub/incy.txt?token=<token>|?user=<uid>
+GET /sub/incy.txt?token=<TOKEN>    → 200, text/plain, только reality+tcp+vision, 22 профиля
+GET /sub/incy.txt?user=<EMAIL>     → 200 (новый маршрут авторизации по аккаунту)
+GET /sub/incy.txt?user=bad         → 403
+GET /sub/auto_happ.txt?user=<EMAIL> → 200
+GET /healthz                       → 200
+```
+
+Быстрая проверка одной строкой (PowerShell):
+
+```powershell
+$r = Invoke-WebRequest "https://vpn-auth.de1.netrun.io/sub/incy.txt?user=qa@shieldvpn.dev" -UseBasicParsing
+"$($r.StatusCode) $($r.Headers['profile-title']) profiles=$((($r.Content -split "`n") | Where-Object { $_ }).Count)"
+```
+
+Ожидается `200 ShieldVPN iOS profiles=22`.
+
+Если после деплоя `/sub/incy.txt` всё ещё `404`, значит загрузился старый архив:
+проверьте содержимое ZIP и повторите публикацию. Если `502` — контейнер не
+поднялся, смотрите логи сборки в кабинете Netrun.
+
+## 10. Ограничения бесплатного тарифа
 
 - 1 проект;
 - 256 МБ RAM, 0.25 vCPU, 2 ГБ диска;

@@ -46,7 +46,7 @@ class SettingsViewModel(application: Application) : BaseViewModel(application) {
         if (_isLoading.value) return
         launchLoading {
             val result = withContext(Dispatchers.IO) {
-                runCatching { ShieldRepository.ensureSubscription(forceRefresh = true) }
+                runCatching { ShieldRepository.refreshSubscription() }
             }
             result.onSuccess { count ->
                 // A new list can have different nodes: re-rank on the next connect.
