@@ -60,6 +60,22 @@ Xray outbound `byedpi` (youtube.com, googlevideo.com, ytimg.com, ggpht.com).
 - Проверка `/sub/incy.txt` на боевом домене возможна только после загрузки
   netrun-worker.zip в Netrun: локальный код уже готов.
 
+4a. ИСПРАВЛЕНО В CI
+--------------------------------------------------------------------------------
+- `.github/workflows/build.yml` (Release ShieldVPN APK) был НЕВАЛИДНЫМ: шаг
+  «Restore release keystore» содержал `if: ${{ secrets.KEYSTORE_BASE64 != '' }}`.
+  GitHub не разрешает контекст `secrets` в `if:` шага, поэтому весь файл
+  отклонялся («Unrecognized named-value: 'secrets'»), и релиз по тегу не мог
+  запуститься вообще.
+- Теперь проверка наличия keystore сделана в shell
+  (`if [ -z "${KEYSTORE_BASE64:-}" ]`), а `keystore.properties` пишется через
+  printf-блок с безопасными значениями по умолчанию.
+- Локальная проверка: `actionlint 1.7.12` (скачан в $env:TEMP\actionlint) —
+  все 4 workflow проходят с exit=0; на исходном варианте actionlint воспроизводит
+  ту же ошибку («context "secrets" is not allowed here»).
+- Workflow `Deploy landing page` на коммите a84aaa2 — success.
+  `Update VPN Configs` и `Build ShieldVPN APK` на момент проверки — in_progress.
+
 5. АРХИТЕКТУРНЫЕ ЗАМЕТКИ
 --------------------------------------------------------------------------------
 - Подписка хранится в MMKV под ключом shield_default_subscription; при смене
@@ -85,3 +101,5 @@ Worker local: $env:PORT=8098; C:\Python315\python.exe netrun_worker\app.py
 --------------------------------------------------------------------------------
 2026-11-18  Создан PROJECT_STATE.txt.
 2026-11-18  Завершены пункты 1–8 этапа; осталось тестирование на устройстве.
+2026-11-18  Найден и исправлен невалидный build.yml (secrets в if:) — релиз по
+            тегу снова возможен; проверено actionlint, все workflow валидны.

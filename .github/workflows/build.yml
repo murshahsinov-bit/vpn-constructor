@@ -58,16 +58,23 @@ jobs:
       - name: Restore release keystore
         # Without the secret the APK is signed with the debug key, which is still
         # installable (IzzyOnDroid rebuilds from source anyway).
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        #
+        # The check lives in the shell on purpose: GitHub rejects the whole
+        # workflow file ("Unrecognized named-value: 'secrets'") when a step-level
+        # `if:` references the secrets context.
         run: |
           set -euo pipefail
+          if [ -z "${KEYSTORE_BASE64:-}" ]; then
+            echo "KEYSTORE_BASE64 is not set - releasing with the debug signing key."
+            exit 0
+          fi
           echo "$KEYSTORE_BASE64" | base64 -d > keystore.jks
-          cat > keystore.properties <<EOF
-          storeFile=../keystore.jks
-          storePassword=$KEYSTORE_PASSWORD
-          keyAlias=$KEY_ALIAS
-          keyPassword=$KEY_PASSWORD
-          EOF
+          {
+            echo "storeFile=../keystore.jks"
+            echo "storePassword=${KEYSTORE_PASSWORD:-}"
+            echo "keyAlias=${KEY_ALIAS:-}"
+            echo "keyPassword=${KEY_PASSWORD:-}"
+          } > keystore.properties
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
