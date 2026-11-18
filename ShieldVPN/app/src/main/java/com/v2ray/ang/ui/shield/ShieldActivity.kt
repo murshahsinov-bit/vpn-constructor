@@ -68,6 +68,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
@@ -87,7 +88,7 @@ import com.v2ray.ang.shield.ShieldStatus
 import com.v2ray.ang.shield.ShieldUiState
 import com.v2ray.ang.shield.ShieldViewModel
 import com.v2ray.ang.ui.base.HelperBaseComponentActivity
-import com.v2ray.ang.ui.main.MainActivity
+import com.v2ray.ang.ui.settings.SettingsActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -152,6 +153,12 @@ class ShieldActivity : HelperBaseComponentActivity() {
             }
         }
 
+        // Populate the server list from the per-account URL even when the user
+        // keeps auto-connect off: otherwise the picker stays empty until connect.
+        LaunchedEffect(auth.signedIn) {
+            if (auth.signedIn) viewModel.prefetchSubscription()
+        }
+
         ShieldScreen(
             state = state,
             accountEmail = auth.email,
@@ -171,9 +178,14 @@ class ShieldActivity : HelperBaseComponentActivity() {
             onAutoConnectChange = viewModel::setAutoConnect,
             onByeDpiChange = viewModel::setByeDpiEnabled,
             onOpenAdvanced = {
-                startActivity(Intent(this, MainActivity::class.java))
+                startActivity(Intent(this, SettingsActivity::class.java))
             },
-            onSignOut = ShieldAuth::signOut,
+            // Signing out must also tear the tunnel down: otherwise the vpn service,
+            // the daemon and the local ciadpi keep running for a signed-out user.
+            onSignOut = {
+                viewModel.disconnect()
+                ShieldAuth.signOut()
+            },
         )
     }
 
@@ -606,9 +618,11 @@ private fun ShieldScreen(
                 onCheckedChange = onAutoConnectChange,
             )
 
+            // Two short actions share a row; the long "advanced settings" label gets
+            // its own full-width row, otherwise it is squeezed into a vertical stack.
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
             ) {
                 TextButton(onClick = onPingAll) {
                     Text(
@@ -624,13 +638,16 @@ private fun ShieldScreen(
                         fontSize = 13.sp,
                     )
                 }
-                TextButton(onClick = onOpenAdvanced) {
-                    Text(
-                        text = stringResource(R.string.shield_advanced),
-                        color = TextMuted,
-                        fontSize = 12.sp,
-                    )
-                }
+            }
+            TextButton(
+                onClick = onOpenAdvanced,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.shield_advanced),
+                    color = TextMuted,
+                    fontSize = 13.sp,
+                )
             }
         }
     }
@@ -824,6 +841,8 @@ private fun ServerCard(
                         color = Color.White,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
                 PingLabel(pingMs = pingMs, pinging = pinging)
@@ -969,12 +988,15 @@ private fun ServerRow(
                 color = Color.White,
                 fontSize = 15.sp,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = subtitle,
                 color = TextMuted,
                 fontSize = 11.sp,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
         Spacer(Modifier.width(12.dp))

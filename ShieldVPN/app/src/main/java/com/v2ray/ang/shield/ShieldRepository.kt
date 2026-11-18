@@ -47,7 +47,7 @@ object ShieldRepository {
     private const val LOOPBACK_HOST = "127.0.0.1"
 
     /**
-     * Makes sure the baked-in subscription exists and its profiles are imported.
+     * Makes sure the per-account subscription exists and its profiles are imported.
      *
      * @param forceRefresh re-download even when profiles are already stored.
      * @return number of profiles available for the subscription.
@@ -58,15 +58,22 @@ object ShieldRepository {
         // core launch. Cheap: they are only copied on the very first run.
         ShieldGeoAssets.ensure(AngApplication.application)
 
+        // The panel is asked for the signed-in account only. There is deliberately
+        // no shared fallback token: without an account there is nothing to fetch.
+        val account = ShieldPrefs.subscriptionUser()
+            ?: error("Войдите в аккаунт, чтобы загрузить подписку")
+        val subscriptionUrl = ShieldConfig.subscriptionUrl(account)
+            .ifBlank { error("Не удалось построить адрес подписки") }
+
         val stored = MmkvManager.decodeSubscription(ShieldConfig.SUBSCRIPTION_ID)
         val created = stored == null
-        val urlChanged = stored != null && stored.url != ShieldConfig.SUBSCRIPTION_URL
+        val urlChanged = stored?.url != subscriptionUrl
         if (created || urlChanged) {
             MmkvManager.encodeSubscription(
                 ShieldConfig.SUBSCRIPTION_ID,
                 (stored ?: SubscriptionItem()).apply {
                     remarks = ShieldConfig.SUBSCRIPTION_TITLE
-                    url = ShieldConfig.SUBSCRIPTION_URL
+                    url = subscriptionUrl
                     enabled = true
                     autoUpdate = true
                     updateInterval = ShieldConfig.SUBSCRIPTION_UPDATE_INTERVAL_MINUTES
@@ -113,21 +120,68 @@ object ShieldRepository {
     fun servers(): List<ShieldServer> = serverGuids().mapNotNull { guid ->
         val profile = MmkvManager.decodeServerConfig(guid) ?: return@mapNotNull null
         val rawTitle = profile.remarks.ifBlank { "Сервер" }
-        val flagMatch = FLAG_PREFIX.find(rawTitle)
+        val title = stripLeadingDecorations(rawTitle).trim().ifBlank { rawTitle }
         ShieldServer(
             guid = guid,
-            title = rawTitle.removePrefix(flagMatch?.value.orEmpty()).ifBlank { "Сервер" },
+            title = title,
             subtitle = describe(profile),
-            flag = flagMatch?.groupValues?.getOrNull(1)?.takeIf { it.isNotBlank() } ?: "🌐",
+            flag = firstFlag(rawTitle) ?: "🌐",
         )
     }
 
     /**
-     * The aggregator already prefixes every remark with the country emoji
-     * (`🇩🇪 Германия`), so the picker can show a real flag instead of a letter.
+     * Country flag of a remark as an emoji string, or null when it has none.
+     *
+     * Implemented by scanning code points instead of a regex: the flag is a pair of
+     * regional indicators in the supplementary plane, and Android's ICU regex engine
+     * does not reliably match lone surrogate escapes such as `\uD83C`.
      */
-    private val FLAG_PREFIX =
-        Regex("^([\\uD83C][\\uDDE6-\\uDDFF][\\uD83C][\\uDDE6-\\uDDFF]|\\uD83C\\uDF10)\\s*")
+    private fun firstFlag(text: String): String? {
+        val codePoints = text.codePoints().toArray()
+        for (index in 0 until codePoints.size - 1) {
+            val first = codePoints[index]
+            val second = codePoints[index + 1]
+            if (first in REGIONAL_FIRST..REGIONAL_LAST && second in REGIONAL_FIRST..REGIONAL_LAST) {
+                return String(Character.toChars(first)) + String(Character.toChars(second))
+            }
+        }
+        return null
+    }
+
+    /**
+     * Removes the decorative prefix that subscription authors put in front of the
+     * name: country flags, the globe/white-flag emoji, and the separators between
+     * them ("🇩🇪 | 🌐 | Berlin" becomes "Berlin"). Text without such a prefix is
+     * returned unchanged, so plain remarks keep working.
+     */
+    private fun stripLeadingDecorations(text: String): String {
+        var index = 0
+        while (index < text.length) {
+            val codePoint = text.codePointAt(index)
+            val decoration = codePoint in REGIONAL_FIRST..REGIONAL_LAST ||
+                codePoint == GLOBE ||
+                codePoint == WHITE_FLAG ||
+                codePoint == VARIATION_SELECTOR
+            if (decoration) {
+                index += Character.charCount(codePoint)
+                continue
+            }
+            val char = text[index]
+            if (char.isWhitespace() || char in DECORATION_SEPARATORS) {
+                index++
+                continue
+            }
+            break
+        }
+        return text.substring(index)
+    }
+
+    private const val REGIONAL_FIRST = 0x1F1E6
+    private const val REGIONAL_LAST = 0x1F1FF
+    private const val GLOBE = 0x1F310
+    private const val WHITE_FLAG = 0x1F3F3
+    private const val VARIATION_SELECTOR = 0xFE0F
+    private const val DECORATION_SEPARATORS = "|•·/-:"
 
 
     fun profile(guid: String): ProfileItem? = MmkvManager.decodeServerConfig(guid)

@@ -7,13 +7,20 @@
 | `/sub/auto.json` | полный Xray JSON | Happ, INCY, v2RayTun |
 | `/sub/whitelist.json` | Xray JSON с цепочкой RU relay | Happ, INCY, v2RayTun |
 | `/sub/auto.txt` | share-ссылки с фрагментацией INCY | INCY |
-| `/sub/auto_happ.txt` | share-ссылки с фрагментацией Happ | Happ |
+| `/sub/auto_happ.txt` | share-ссылки с фрагментацией Happ | Happ, приложение ShieldVPN |
 | `/sub/whitelist.txt` | whitelist-ссылки INCY | INCY |
 | `/sub/whitelist_happ.txt` | whitelist-ссылки Happ | Happ |
+| `/sub/incy.txt` | **только TCP + Reality + Vision** | **INCY на iPhone** |
 | `/sub/webrtc.txt` | инструкция + SOCKS5 | ручной WebRTC-профиль |
 
-Любой маршрут требует персональный `?token=<TOKEN>`. Без токена или после
-срока действия возвращается `403 forbidden`.
+Любой маршрут требует персональный `?token=<TOKEN>` (клиенты из
+`clients.json`) **или** `?user=<UID>` — Firebase UID / e-mail из приложения
+ShieldVPN. Второй вариант не имеет срока действия: доступом управляет аккаунт
+Firebase, а не статический токен. Неизвестный или невалидный идентификатор
+даёт `403 forbidden`.
+
+Один и тот же сервер можно получить и по токену, и по UID: заголовки
+подписки и содержимое ответа идентичны.
 
 ---
 
@@ -172,6 +179,10 @@ vless://UUID@HOST:443?security=reality&sni=example.com&type=tcp&flow=xtls-rprx-v
 
 ## 4. Импорт в Happ
 
+> **Android:** основной клиент — само приложение **ShieldVPN**. Оно подтягивает
+> `/sub/auto_happ.txt?user=<UID>` автоматически, поэтому вручную импортировать
+> подписку в Happ нужно только для отладки.
+
 ### Android
 
 1. Установите Happ из Google Play или с официального сайта.
@@ -208,27 +219,38 @@ vless://UUID@HOST:443?security=reality&sni=example.com&type=tcp&flow=xtls-rprx-v
 
 ### Android
 
-1. Установите INCY.
-2. На главном экране нажмите **«+»**.
-3. Выберите **«Добавить подписку»** / **«Импорт из ссылки»**.
-4. Вставьте:
-   ```text
-   https://vpn-auth.de1.netrun.io/sub/auto.txt?token=<TOKEN>
-   ```
-   INCY отлично работает с share-ссылками и читает
-   `fragmentPackets/fragmentLength/fragmentInterval` прямо из URL.
-5. Сохраните и выберите `proxy-xhttp-1`.
-6. Нажмите **«Подключить»**.
+Android-пользователям отдельный клиент не нужен: подписка уже встроена в
+приложение **ShieldVPN**. После входа по Google/Email оно само запрашивает
+`/sub/auto_happ.txt?user=<UID>` — вставлять токены и ссылки вручную не нужно.
 
-JSON-вариант `/sub/auto.json?token=<TOKEN>` тоже поддерживается.
+INCY на Android поддерживается только для отладки: используйте
+`/sub/auto.txt?token=<TOKEN>` (или `/sub/auto.json?token=<TOKEN>`) и профиль
+`proxy-xhttp-1`.
 
-### iOS
+### iOS (INCY)
 
 1. Установите INCY из App Store.
 2. **«+»** → **«Подписка»**.
-3. Вставьте `/sub/auto.txt?token=<TOKEN>`.
-4. Разрешите добавление VPN-конфигурации.
-5. Выберите `proxy-tcp-1`.
+3. Вставьте **только этот адрес** (для iPhone он отдаёт исключительно
+   TCP + Reality + Vision):
+   ```text
+   https://vpn-auth.de1.netrun.io/sub/incy.txt?token=<ТОКЕН>
+   ```
+4. Разрешите добавление VPN-конфигурации (Face ID / Touch ID).
+5. Выберите любой профиль из списка и нажмите **«Подключить»**.
+
+Почему отдельный маршрут:
+
+- XHTTP/WS на iOS в INCY и Happ часто не работают — маршрут `/sub/incy.txt`
+  их **выбрасывает**;
+- остаются только `vless` + `security=reality` + `type=tcp` +
+  `flow=xtls-rprx-vision`;
+- фрагментация ClientHello всегда каноническая для INCY:
+  ```text
+  &fragmentPackets=tlshello&fragmentLength=100-200&fragmentInterval=10-20
+  ```
+  другие варианты `fragment*` из источника заменяются, а не дублируются;
+- `type=raw` автоматически приводится к `type=tcp`.
 
 Если импорт по ссылке не появляется, скопируйте ссылку и используйте
 **«Импорт из буфера обмена»**.
@@ -428,11 +450,14 @@ curl -sS -D - -o /dev/null \
 ```bash
 curl -sS "https://vpn-auth.de1.netrun.io/sub/auto.txt?token=<TOKEN>" | head -n 2
 curl -sS "https://vpn-auth.de1.netrun.io/sub/auto_happ.txt?token=<TOKEN>" | head -n 2
+curl -sS "https://vpn-auth.de1.netrun.io/sub/incy.txt?token=<TOKEN>" | head -n 2
 ```
 
 В INCY-файле должны быть `fragmentPackets=tlshello`,
 `fragmentLength=100-200`, `fragmentInterval=10-20`.
 В Happ-файле — `fragment=100-200,10-20,tlshello`.
+В `/sub/incy.txt` — только `security=reality` + `type=tcp` +
+`flow=xtls-rprx-vision`; XHTTP/WS там быть не должно.
 
 Проверка whitelist-цепочки:
 

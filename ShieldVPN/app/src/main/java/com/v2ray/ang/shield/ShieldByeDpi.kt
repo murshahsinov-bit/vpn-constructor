@@ -1,6 +1,7 @@
 package com.v2ray.ang.shield
 
 import android.content.Context
+import android.os.Build
 import com.v2ray.ang.util.LogUtil
 import java.io.File
 import java.net.InetSocketAddress
@@ -51,6 +52,25 @@ object ShieldByeDpi {
 
     fun isRunning(): Boolean = process?.isAlive == true && isListening()
 
+    /**
+     * Kills a ciadpi that outlived this app process.
+     *
+     * Android can recreate the app while the native child keeps running, so the pid
+     * is persisted in [ShieldPrefs]. The command line is checked first, otherwise a
+     * recycled pid could belong to an unrelated process.
+     */
+    private fun killOrphan() {
+        val pid = ShieldPrefs.byeDpiPid()
+        if (pid <= 0) return
+        ShieldPrefs.setByeDpiPid(0)
+        val commandLine = runCatching { File("/proc/$pid/cmdline").readText() }.getOrNull()
+        if (commandLine == null || !commandLine.contains(BINARY_NAME)) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            runCatching { android.os.Process.sendSignal(pid, android.os.Process.SIGNAL_KILL) }
+                .onFailure { LogUtil.w(TAG, "ByeDPI: cannot stop orphan $pid: ${it.message}") }
+        }
+    }
+
     /** Last lines of the ciadpi log, for the diagnostics screen. */
     fun lastLogLines(context: Context, limit: Int = 40): String {
         val file = logFile ?: File(context.cacheDir, "byedpi.log")
@@ -69,6 +89,14 @@ object ShieldByeDpi {
         if (!ShieldPrefs.isByeDpiEnabled()) {
             stop()
             return false
+        }
+        if (process?.isAlive == true && isListening()) return true
+
+        // A child started by a previous app process may still be listening. Drop it
+        // first so the current arguments (and the tracked pid) take effect.
+        if (ShieldPrefs.byeDpiPid() > 0) {
+            killOrphan()
+            Thread.sleep(120)
         }
         if (isListening()) return true
 
@@ -98,6 +126,7 @@ object ShieldByeDpi {
             val started = builder.start()
             process = started
             logFile = log
+            ShieldPrefs.setByeDpiPid(pidOf(started))
 
             repeat(START_ATTEMPTS) { attempt ->
                 if (isListening()) {
@@ -124,13 +153,30 @@ object ShieldByeDpi {
     fun stop() {
         val running = process
         process = null
-        if (running == null) return
+        running?.let {
+            runCatching {
+                it.destroy()
+                if (!it.waitFor(1, java.util.concurrent.TimeUnit.SECONDS)) {
+                    it.destroyForcibly()
+                }
+            }.onFailure { error -> LogUtil.w(TAG, "ByeDPI stop failed: ${error.message}") }
+        }
+        killOrphan()
+    }
+
+    /**
+     * Pid of a freshly started child, or 0 when it cannot be read.
+     *
+     * `java.lang.Process.pid()` is not part of the Android SDK in every compileSdk
+     * revision, so the field is read reflectively (it is a plain int on ART).
+     */
+    private fun pidOf(process: Process): Int = try {
+        val field = process.javaClass.getDeclaredField("pid").apply { isAccessible = true }
+        field.getInt(process)
+    } catch (_: Throwable) {
         runCatching {
-            running.destroy()
-            if (!running.waitFor(1, java.util.concurrent.TimeUnit.SECONDS)) {
-                running.destroyForcibly()
-            }
-        }.onFailure { LogUtil.w(TAG, "ByeDPI stop failed: ${it.message}") }
+            (process.javaClass.getMethod("pid").invoke(process) as Number).toInt()
+        }.getOrDefault(0)
     }
 
     /** Restarts the proxy after the strategy changed. */

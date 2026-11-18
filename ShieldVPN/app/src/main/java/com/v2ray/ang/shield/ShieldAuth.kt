@@ -21,6 +21,8 @@ data class ShieldAuthState(
     val signedIn: Boolean = false,
     val email: String? = null,
     val name: String? = null,
+    /** Firebase UID; null in local (non-Firebase) mode. */
+    val uid: String? = null,
     val loading: Boolean = false,
     val error: String? = null,
     /** Non-fatal hint, for example "Firebase не настроен — включён локальный режим". */
@@ -60,6 +62,7 @@ object ShieldAuth {
             signedIn = ShieldPrefs.isSignedIn(),
             email = ShieldPrefs.authEmail(),
             name = ShieldPrefs.authName(),
+            uid = ShieldPrefs.authUid(),
             firebaseAvailable = firebase,
             info = if (firebase) null else LOCAL_HINT,
         )
@@ -68,13 +71,14 @@ object ShieldAuth {
             FirebaseAuth.getInstance().addAuthStateListener { auth ->
                 val user = auth.currentUser
                 if (user == null && _state.value.signedIn && _state.value.email == null) {
-                    _state.value = _state.value.copy(signedIn = false)
+                    _state.value = _state.value.copy(signedIn = false, uid = null)
                 } else if (user != null) {
-                    persistSession(user.email ?: user.displayName, user.displayName)
+                    persistSession(user.email ?: user.displayName, user.displayName, user.uid)
                     _state.value = _state.value.copy(
                         signedIn = true,
                         email = user.email ?: _state.value.email,
                         name = user.displayName ?: _state.value.name,
+                        uid = user.uid,
                     )
                 }
             }
@@ -109,9 +113,10 @@ object ShieldAuth {
                 loading = false,
                 signedIn = true,
                 email = normalized,
+                uid = ShieldPrefs.authUid(),
                 error = null,
             )
-            syncSubscriptionToken()
+            syncSubscriptionIdentity()
         } catch (t: Throwable) {
             _state.value = _state.value.copy(
                 loading = false,
@@ -128,15 +133,16 @@ object ShieldAuth {
             val credential = GoogleAuthProvider.getCredential(idToken, null)
             val result = FirebaseAuth.getInstance().signInWithCredential(credential).await()
             val user = result.user ?: error("Google-вход не вернул пользователя")
-            persistSession(user.email ?: user.displayName, user.displayName)
+            persistSession(user.email ?: user.displayName, user.displayName, user.uid)
             _state.value = _state.value.copy(
                 loading = false,
                 signedIn = true,
                 email = user.email,
                 name = user.displayName,
+                uid = user.uid,
                 error = null,
             )
-            syncSubscriptionToken()
+            syncSubscriptionIdentity()
         } catch (t: Throwable) {
             _state.value = _state.value.copy(
                 loading = false,
@@ -151,7 +157,14 @@ object ShieldAuth {
         ShieldPrefs.setAuthEmail(null)
         ShieldPrefs.setAuthName(null)
         ShieldPrefs.setAuthSecret(null)
-        _state.value = _state.value.copy(signedIn = false, email = null, name = null, error = null)
+        ShieldPrefs.setAuthUid(null)
+        _state.value = _state.value.copy(
+            signedIn = false,
+            email = null,
+            name = null,
+            uid = null,
+            error = null,
+        )
     }
 
     /** Firebase web client id used by Credential Manager. Empty when not configured. */
@@ -172,7 +185,7 @@ object ShieldAuth {
             auth.signInWithEmailAndPassword(email, password).await()
         }
         val user = result.user ?: error("Firebase не вернул пользователя")
-        persistSession(user.email ?: email, user.displayName)
+        persistSession(user.email ?: email, user.displayName, user.uid)
     }
 
     private fun localEmail(email: String, password: String) {
@@ -183,12 +196,14 @@ object ShieldAuth {
         } else if (stored != secret) {
             error("Неверный пароль для $email")
         }
-        persistSession(email, email.substringBefore('@'))
+        // Local mode has no Firebase UID: the panel is asked with the e-mail.
+        persistSession(email, email.substringBefore('@'), null)
     }
 
-    private fun persistSession(email: String?, name: String?) {
+    private fun persistSession(email: String?, name: String?, uid: String?) {
         ShieldPrefs.setAuthEmail(email)
         ShieldPrefs.setAuthName(name)
+        ShieldPrefs.setAuthUid(uid)
         ShieldPrefs.setSignedIn(true)
     }
 
@@ -200,24 +215,25 @@ object ShieldAuth {
     }
 
     /**
-     * Mirrors the baked-in subscription token into Firestore so the account can
-     * restore access on a new device. Failures are non-fatal: the token is also
-     * embedded in the APK.
+     * Mirrors the per-account subscription identity into Firestore so the same
+     * account can restore access on a new device. No shared token is stored any
+     * more: the panel URL is derived from the UID on every launch.
      */
-    private fun syncSubscriptionToken() {
+    private fun syncSubscriptionIdentity() {
         if (!firebaseEnabled(appContext)) return
         val user = runCatching { FirebaseAuth.getInstance().currentUser }.getOrNull() ?: return
         runCatching {
             val data = mapOf(
                 "email" to (user.email ?: ""),
-                "subscriptionToken" to ShieldConfig.subscriptionToken(),
+                "subscriptionUser" to user.uid,
+                "subscriptionUrl" to ShieldConfig.subscriptionUrl(user.uid),
                 "updatedAt" to System.currentTimeMillis(),
             )
             FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(user.uid)
                 .set(data)
-        }.onFailure { LogUtil.w(TAG, "Firestore token sync failed: ${it.message}") }
+        }.onFailure { LogUtil.w(TAG, "Firestore subscription sync failed: ${it.message}") }
     }
 
     private fun sha256(value: String): String = MessageDigest.getInstance("SHA-256")

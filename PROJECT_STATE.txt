@@ -1,0 +1,87 @@
+================================================================================
+ShieldVPN — PROJECT STATE
+Обновлено: 2026-11-18 (вечер)
+================================================================================
+
+1. ЧТО ЭТО
+--------------------------------------------------------------------------------
+VPN-клиент на базе Xray-core (форк v2rayNG), пакет io.netrun.shieldvpn.
+Подписка: VLESS + XHTTP + Reality (Android), TCP + Reality + Vision (iOS).
+Локальный обход DPI: ciadpi (ByeDPI) на 127.0.0.1:1080, маршрутизация через
+Xray outbound `byedpi` (youtube.com, googlevideo.com, ytimg.com, ggpht.com).
+Бэкенд подписок: netrun_worker/app.py (Flask) + агрегатор aggregator/run.py.
+
+2. ИТОГ ТЕКУЩЕГО ЭТАПА
+--------------------------------------------------------------------------------
+[+] 1. SettingsActivity.kt переписана под бренд ShieldVPN: тема, «Обновить
+       подписку», «Настройки маршрутизации», версия приложения. Telegram,
+       сертификаты, лицензии, GitHub и транспортные тумблеры v2rayNG удалены.
+       «Дополнительные настройки» из ShieldActivity теперь открывают
+       SettingsActivity, а не legacy MainActivity.
+[+] 2. ShieldConfig.kt: зашитый токен удалён. URL строится после входа:
+       https://vpn-auth.de1.netrun.io/sub/auto_happ.txt?user=<UID>
+       (fallback — e-mail в локальном режиме). Пустой аккаунт = ошибка,
+       общего токена больше нет.
+[+] 3. ShieldPrefs/ShieldAuth/ShieldRepository: хранят Firebase UID, синкают
+       subscriptionUser/subscriptionUrl в Firestore, пересоздают подписку при
+       смене аккаунта. После входа ShieldActivity делает prefetch подписки.
+[+] 4. netrun_worker/app.py: authorize_account (UID 16..128 символов или e-mail),
+       `?user=` для всех /sub/*, новый /sub/incy.txt — только VLESS + TCP +
+       Reality + Vision, каноническая фрагментация INCY, поддержка старого
+       `token`. `type=raw` → `type=tcp`.
+[+] 5. tests/test_worker.py: +9 тестов (авторизация user, отказ, incy-фильтр,
+       фрагментация, 503 при пустом источнике). Итог: 72 passed.
+[+] 6. HAPP_INCY.md и README.md: iPhone → /sub/incy.txt?token=<TOKEN>;
+       Android → только приложение ShieldVPN. Описана авторизация по user.
+[+] 7. APK собран: ShieldVPN_1.0.0_arm64-v8a.apk (~35.8 МБ), токен в APK
+       отсутствует (проверено сканированием classes.dex).
+[+] 8. netrun-worker.zip пересобран для загрузки в Netrun.
+
+3. ПРОВЕРКИ
+--------------------------------------------------------------------------------
+- pytest tests -q: 72 passed (flask установлен в C:\Python315).
+- Локальный воркер (Flask, порт 8098):
+    GET /sub/incy.txt?user=qa@shieldvpn.dev  → 200, text/plain, 22 профиля,
+        profile-title: ShieldVPN iOS, все строки reality+tcp+vision с
+        fragmentPackets=tlshello&fragmentLength=100-200&fragmentInterval=10-20;
+    GET /sub/incy.txt?user=bad               → 403;
+    GET /sub/auto_happ.txt?user=...          → 200, 43 профиля.
+- Сборка: BUILD SUCCESSFUL, lintVital пройден.
+- Статически: строки 210c785... в APK нет.
+
+4. НЕ ВЫПОЛНЕНО / БЛОКЕРЫ
+--------------------------------------------------------------------------------
+- Устройство не подключено: `adb devices` пуст, MCP mobile не видит локальных
+  устройств. Установка APK, проверка входа, «Дополнительных настроек» и
+  реального VPN остаются за устройством/эмулятором.
+- Firebase в сборке не настроен (FIREBASE_ENABLED=false): Google-вход
+  недоступен, используется локальный e-mail вход, подписка идёт с
+  `?user=<email>`. Для Google нужно задать FIREBASE_* Gradle-свойства.
+- Проверка `/sub/incy.txt` на боевом домене возможна только после загрузки
+  netrun-worker.zip в Netrun: локальный код уже готов.
+
+5. АРХИТЕКТУРНЫЕ ЗАМЕТКИ
+--------------------------------------------------------------------------------
+- Подписка хранится в MMKV под ключом shield_default_subscription; при смене
+  аккаунта URL перезаписывается и подписка перекачивается.
+- `/sub/incy.txt` не создаёт отдельный файл: он фильтрует auto_all.txt на лету,
+  поэтому всегда совпадает с общей подпиской.
+- Авторизация `user` проверяет только формат (по требованию). Настоящая
+  проверка Firebase ID Token — следующий шаг, нужен FIREBASE_PROJECT_ID и
+  сервисный аккаунт; сейчас любой валидный по форме UID/e-mail получает 200.
+- Legacy MainActivity/AboutActivity/Drawer остались в коде для QS tile, но из
+  UI ShieldVPN недоступны.
+
+6. КОМАНДЫ
+--------------------------------------------------------------------------------
+JDK:  $env:TEMP\shieldvpn-build\jdk\jdk-21.0.13+9  (распакован из jdk21.zip)
+SDK:  $env:ANDROID_HOME=$env:TEMP\shieldvpn-build\android-sdk
+Build: cd ShieldVPN; .\gradlew.bat assemblePlaystoreRelease "-PABI_FILTERS=arm64-v8a"
+APK:  ShieldVPN/app/build/outputs/apk/playstore/release/ShieldVPN_1.0.0_arm64-v8a.apk
+Tests: C:\Python315\python.exe -m pytest tests -q
+Worker local: $env:PORT=8098; C:\Python315\python.exe netrun_worker\app.py
+
+7. ЖУРНАЛ
+--------------------------------------------------------------------------------
+2026-11-18  Создан PROJECT_STATE.txt.
+2026-11-18  Завершены пункты 1–8 этапа; осталось тестирование на устройстве.

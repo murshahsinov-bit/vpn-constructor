@@ -9,7 +9,12 @@ Netrun worker: выдаёт подписку только клиентам с д
     GET /sub/auto_happ.txt?token=<token>      — share-ссылки для Happ
     GET /sub/whitelist.txt?token=<token>      — whitelist-ссылки для INCY
     GET /sub/whitelist_happ.txt?token=<token> — whitelist-ссылки для Happ
+    GET /sub/incy.txt?user=<uid>|token=<token> — iOS: только TCP+Reality+Vision
     GET /sub/webrtc.txt?token=<token>         — ручная инструкция WebRTC
+
+Авторизация: персональный `token` (clients.json) или `user` — Firebase UID либо
+e-mail из приложения ShieldVPN. `user` не истекает: доступом управляет аккаунт
+Firebase, а не статический токен в APK.
 
 Источники данных:
     clients.json              — база клиентов (файл или CLIENTS_JSON)
@@ -38,7 +43,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time as dt_time, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import requests
 from flask import Flask, Response, jsonify, request
@@ -69,6 +74,11 @@ if SUBSCRIPTIONS_DIR in ("", "."):
 SUBSCRIPTIONS_DIR = SUBSCRIPTIONS_DIR.strip("/")
 
 TOKEN_RE = re.compile(r"^[A-Za-z0-9_-]{16,128}$")
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+USER_MAX_LENGTH = 254
+# Аккаунт не имеет срока действия: доступом управляет Firebase. Дата нужна
+# только для заголовка subscription-userinfo, поэтому берём далёкое будущее.
+ACCOUNT_EXPIRES_AT = "2099-12-31"
 HTTP_USER_AGENT = "vpn-constructor-netrun-worker/2.0"
 
 # Заголовки подписки. Значения можно переопределить в кабинете Netrun.
@@ -297,6 +307,120 @@ def authorize_token(token: str) -> dict[str, Any] | None:
                 matched_active = client
 
     return matched_active
+
+
+def is_valid_account(user: str) -> bool:
+    """UID Firebase (28 символов) или обычный e-mail."""
+    user = (user or "").strip()
+    if not user or len(user) > USER_MAX_LENGTH:
+        return False
+    if EMAIL_RE.fullmatch(user):
+        return True
+    return bool(TOKEN_RE.fullmatch(user))
+
+
+def authorize_account(user: str) -> dict[str, Any] | None:
+    """
+    Авторизация по аккаунту приложения ShieldVPN.
+
+    URL подписки в APK больше не содержит общего токена: после входа клиент
+    присылает `?user=<uid>` (или e-mail в локальном режиме). Валидный
+    идентификатор получает подписку без срока действия, невалидный — 403.
+    """
+    user = (user or "").strip()
+    if not is_valid_account(user):
+        return None
+    return {
+        "name": "ShieldVPN account",
+        "token": user,
+        "expires_at": ACCOUNT_EXPIRES_AT,
+    }
+
+
+# ---------------------------------------------------------------------------
+# iOS: только TCP + Reality + Vision
+# ---------------------------------------------------------------------------
+
+VISION_FLOW = "xtls-rprx-vision"
+INCY_FRAGMENT_PARAMS = (
+    ("fragmentPackets", "tlshello"),
+    ("fragmentLength", "100-200"),
+    ("fragmentInterval", "10-20"),
+)
+FRAGMENT_KEYS = {
+    "fragment",
+    "fragmentpackets",
+    "fragmentlength",
+    "fragmentinterval",
+    "fragmentmaxsplit",
+}
+
+
+def _query_pairs(query: str) -> list[str]:
+    return [item for item in (query or "").split("&") if item]
+
+
+def _query_value(pairs: list[str], key: str) -> str:
+    key = key.lower()
+    for item in pairs:
+        name, _, value = item.partition("=")
+        if name.lower() == key:
+            return unquote(value)
+    return ""
+
+
+def _is_tcp_reality_vision(pairs: list[str]) -> bool:
+    """TCP (raw тоже считается), Reality и Vision — всё остальное iOS не берёт."""
+    network = (
+        _query_value(pairs, "type") or _query_value(pairs, "network") or "tcp"
+    ).strip().lower()
+    if network == "raw":
+        network = "tcp"
+    if network != "tcp":
+        return False
+    if _query_value(pairs, "security").strip().lower() != "reality":
+        return False
+    return _query_value(pairs, "flow").strip().lower() == VISION_FLOW
+
+
+def incy_link(link: str) -> str | None:
+    """
+    Приводит VLESS-ссылку к формату INCY iOS или отбрасывает её.
+
+    XHTTP/WS/gRPC не поддерживаются сетевым расширением iOS в Happ/INCY,
+    поэтому в `/sub/incy.txt` попадают только TCP+Reality+Vision. Параметры
+    фрагментации всегда перезаписываются каноническими для INCY.
+    """
+    parsed = urlsplit(link.strip())
+    if parsed.scheme.lower() != "vless":
+        return None
+    pairs = _query_pairs(parsed.query)
+    if not _is_tcp_reality_vision(pairs):
+        return None
+
+    kept = []
+    for item in pairs:
+        name, _, value = item.partition("=")
+        key = name.strip().lower()
+        if key in FRAGMENT_KEYS:
+            continue
+        if key in ("type", "network") and unquote(value).strip().lower() == "raw":
+            kept.append(f"{name}=tcp")
+            continue
+        kept.append(item)
+    kept.extend(f"{key}={value}" for key, value in INCY_FRAGMENT_PARAMS)
+    return urlunsplit(
+        (parsed.scheme, parsed.netloc, parsed.path, "&".join(kept), parsed.fragment)
+    )
+
+
+def build_incy_subscription(data: bytes) -> str:
+    links = []
+    for raw in data.decode("utf-8", errors="replace").splitlines():
+        prepared = incy_link(raw)
+        if prepared:
+            links.append(prepared)
+    return "\n".join(links) + ("\n" if links else "")
 
 
 # ---------------------------------------------------------------------------
@@ -661,14 +785,20 @@ def add_security_headers(response: Response) -> Response:
 
 
 def _authorize_request() -> tuple[str, dict[str, Any] | None]:
+    """token — для старых клиентов, user (UID/e-mail) — для ShieldVPN."""
     token = (request.args.get("token") or "").strip()
-    return token, authorize_token(token)
+    if token:
+        return token, authorize_token(token)
+    user = (request.args.get("user") or "").strip()
+    if user:
+        return user, authorize_account(user)
+    return "", None
 
 
-def _forbidden(token: str) -> tuple[Response, int]:
+def _forbidden(credential: str) -> tuple[Response, int]:
     logger.warning(
-        "403: недействительный или истёкший токен fp=%s",
-        _token_fingerprint(token),
+        "403: недействительный токен или аккаунт fp=%s",
+        _token_fingerprint(credential),
     )
     return jsonify({"error": "forbidden"}), 403
 
@@ -711,9 +841,10 @@ def index() -> Response:
                 "/sub/auto.json?token=<token>",
                 "/sub/whitelist.json?token=<token>",
                 "/sub/auto.txt?token=<token>",
-                "/sub/auto_happ.txt?token=<token>",
+                "/sub/auto_happ.txt?token=<token>|?user=<uid>",
                 "/sub/whitelist.txt?token=<token>",
                 "/sub/whitelist_happ.txt?token=<token>",
+                "/sub/incy.txt?token=<token>|?user=<uid>",
                 "/sub/webrtc.txt?token=<token>",
             ],
         }
@@ -773,6 +904,45 @@ def subscription_whitelist_happ_txt() -> Response:
     if client is None:
         return _forbidden(token)
     return _serve_asset("whitelist_all_happ.txt", client, token)
+
+
+@app.get("/sub/incy.txt")
+def subscription_incy_txt() -> Response:
+    """
+    Подписка для INCY на iPhone: только VLESS + TCP + Reality + Vision.
+
+    XHTTP/WS-профили на iOS не работают, поэтому маршрут фильтрует готовый
+    список `auto_all.txt` и заново проставляет каноническую для INCY
+    фрагментацию ClientHello.
+    """
+    token, client = _authorize_request()
+    if client is None:
+        return _forbidden(token)
+
+    try:
+        data, source, stale = get_asset("auto_all.txt")
+    except RuntimeError as exc:
+        logger.error("503: incy.txt недоступен: %s", exc)
+        return jsonify({"error": "subscription source unavailable"}), 503
+
+    body = build_incy_subscription(data)
+    if not body:
+        logger.error("503: в auto_all.txt нет TCP+Reality+Vision ссылок")
+        return jsonify({"error": "no compatible profiles"}), 503
+
+    response = Response(body, mimetype="text/plain")
+    response.headers["Content-Type"] = "text/plain; charset=utf-8"
+    _apply_subscription_headers(response, client, title="ShieldVPN iOS")
+    if stale:
+        response.headers["X-Config-Stale"] = "1"
+
+    logger.info(
+        "200: incy.txt выдан fp=%s source=%s profiles=%d",
+        _token_fingerprint(token),
+        source,
+        body.count("\n"),
+    )
+    return response
 
 
 def _webrtc_text() -> str:

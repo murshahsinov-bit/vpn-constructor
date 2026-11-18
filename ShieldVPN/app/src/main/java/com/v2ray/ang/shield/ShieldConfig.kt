@@ -1,28 +1,38 @@
 package com.v2ray.ang.shield
 
+import java.net.URLEncoder
+
 /**
  * Single source of truth for everything that is specific to this branded build.
  *
- * The subscription URL below is baked into the APK: the user never has to paste a
- * link or scan a QR code. Change [SUBSCRIPTION_URL] here and rebuild to point the
- * app at another panel.
+ * The client no longer ships with a shared subscription token. After the account
+ * gate the panel URL is derived from the signed-in Firebase UID (or the e-mail
+ * address in local mode), so revoking one account never affects the others.
  */
 object ShieldConfig {
 
-    /** Panel subscription that is imported automatically on the very first launch. */
-    const val SUBSCRIPTION_URL =
-        "https://vpn-auth.de1.netrun.io/sub/auto_happ.txt?token=210c785aac0ae869b3fb35ebd8d8727e"
+    /** Panel that serves the Android/Happ share-link list. */
+    const val SUBSCRIPTION_BASE_URL = "https://vpn-auth.de1.netrun.io/sub"
+
+    /** Happ-compatible TXT list (one share link per line). */
+    const val SUBSCRIPTION_PATH = "auto_happ.txt"
+
+    /** iOS-only Reality+Vision list, documented in HAPP_INCY.md. */
+    const val SUBSCRIPTION_IOS_PATH = "incy.txt"
 
     /** Fixed MMKV key so re-launches update the same subscription instead of adding new ones. */
     const val SUBSCRIPTION_ID = "shield_default_subscription"
 
-    /** Token part of [SUBSCRIPTION_URL], mirrored to the user's Firebase profile. */
-    fun subscriptionToken(): String =
-        Regex("[?&]token=([A-Za-z0-9]+)")
-            .find(SUBSCRIPTION_URL)
-            ?.groupValues
-            ?.getOrNull(1)
-            .orEmpty()
+    /**
+     * Per-account subscription URL. Returns an empty string while the user is not
+     * signed in: the app must never fall back to a shared token.
+     */
+    fun subscriptionUrl(user: String?): String {
+        val account = user?.trim().orEmpty()
+        if (account.isEmpty()) return ""
+        val encoded = URLEncoder.encode(account, "UTF-8")
+        return "$SUBSCRIPTION_BASE_URL/$SUBSCRIPTION_PATH?user=$encoded"
+    }
 
     const val SUBSCRIPTION_TITLE = "ShieldVPN"
 
@@ -60,9 +70,15 @@ object ShieldConfig {
      */
     const val BYEDPI_DEFAULT_ARGS = "--disorder 1 --auto=torst --timeout 5"
 
-    /** Xray outbound tag and the domains steered into it. */
+    /** Xray outbound tag for the ByeDPI hop. */
     const val BYEDPI_OUTBOUND_TAG = "byedpi"
 
+    /**
+     * Domains that must leave the device directly (through ByeDPI) instead of using
+     * the tunnel. The YouTube app talks to `youtubei.googleapis.com` for its API and
+     * that host is not throttled, so it deliberately stays on the VLESS path: the
+     * feed then loads reliably, while the throttled media hosts still get the bypass.
+     */
     val BYEDPI_DOMAINS = listOf(
         "domain:youtube.com",
         "domain:youtu.be",
@@ -70,11 +86,11 @@ object ShieldConfig {
         "domain:googlevideo.com",
         "domain:ytimg.com",
         "domain:ggpht.com",
-        "domain:youtubei.googleapis.com",
     )
 
     const val PREF_BYEDPI_ENABLED = "shield_byedpi_enabled"
     const val PREF_BYEDPI_ARGS = "shield_byedpi_args"
+    const val PREF_BYEDPI_PID = "shield_byedpi_pid"
 
     // ------------------------------------------------------------------- auth
 
@@ -82,6 +98,9 @@ object ShieldConfig {
     const val PREF_AUTH_NAME = "shield_auth_name"
     const val PREF_AUTH_SECRET = "shield_auth_secret"
     const val PREF_AUTH_SIGNED_IN = "shield_auth_signed_in"
+
+    /** Firebase UID of the signed-in account. Used to build the panel URL. */
+    const val PREF_AUTH_UID = "shield_auth_uid"
 
     /**
      * Data-plane probe endpoint, requested through the tunnel with a plain HTTP

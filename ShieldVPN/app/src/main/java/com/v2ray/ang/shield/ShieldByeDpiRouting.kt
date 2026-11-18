@@ -9,11 +9,13 @@ import com.v2ray.ang.dto.V2rayConfig
  * shadow it: YouTube domains go to the local ciadpi SOCKS5 listener, every other
  * domain keeps using the VLESS/Reality outbound that the config already has.
  *
- * `targetStrategy = "UseIP"` makes Xray resolve the destination itself and pass an
- * IP address to ciadpi. That is required on Android: the static ciadpi build has no
- * `/etc/resolv.conf`, so it cannot resolve names, while Xray's DNS module can.
- * The TLS ClientHello (and therefore the blocked SNI) is still produced by the
- * app, so the DPI bypass keeps working.
+ * `targetStrategy = "UseIPv4"` makes Xray resolve the destination itself and pass an
+ * IPv4 address to ciadpi: the static ciadpi build has no `/etc/resolv.conf`, so it
+ * cannot resolve names (`resolve: ... not resolved` in its log) and answers 5s
+ * timeouts when a domain is forwarded to it. IPv6 addresses are excluded on purpose:
+ * Xray could return one that the mobile network cannot reach, which showed up as
+ * instant SOCKS failures for `i.ytimg.com`. The TLS ClientHello (and therefore the
+ * blocked SNI) is still produced by the app, so the DPI bypass keeps working.
  */
 object ShieldByeDpiRouting {
 
@@ -31,7 +33,7 @@ object ShieldByeDpiRouting {
                 ),
                 streamSettings = V2rayConfig.OutboundBean.StreamSettingsBean(network = "tcp"),
                 mux = null,
-                targetStrategy = "UseIP",
+                targetStrategy = "UseIPv4",
             )
             config.outbounds.add(outbound)
         }

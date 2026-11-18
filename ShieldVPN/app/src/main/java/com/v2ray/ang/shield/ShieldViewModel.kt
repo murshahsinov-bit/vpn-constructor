@@ -21,6 +21,8 @@ class ShieldViewModel(application: Application) : AndroidViewModel(application) 
 
     fun disconnect() = controller.disconnect()
 
+    fun prefetchSubscription() = controller.ensureSubscription()
+
     fun refreshSubscription() = controller.refreshSubscription()
 
     fun refreshServers() = controller.refreshServers()

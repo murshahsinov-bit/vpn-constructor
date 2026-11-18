@@ -45,6 +45,17 @@ object ShieldPrefs {
         MmkvManager.encodeSettings(ShieldConfig.PREF_BYEDPI_ARGS, value)
     }
 
+    /**
+     * PID of the running ciadpi process. The app can be restarted by the system while
+     * the child process keeps running, so the pid is persisted to be able to stop the
+     * orphan instead of leaking a listener on 127.0.0.1:1080.
+     */
+    fun byeDpiPid(): Int = MmkvManager.decodeSettingsInt(ShieldConfig.PREF_BYEDPI_PID, 0)
+
+    fun setByeDpiPid(value: Int) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_BYEDPI_PID, value)
+    }
+
     // ------------------------------------------------------------------- auth
 
     fun authEmail(): String? =
@@ -60,6 +71,20 @@ object ShieldPrefs {
     fun setAuthName(value: String?) {
         MmkvManager.encodeSettings(ShieldConfig.PREF_AUTH_NAME, value ?: "")
     }
+
+    /** Firebase UID; absent in local (non-Firebase) mode. */
+    fun authUid(): String? =
+        MmkvManager.decodeSettingsString(ShieldConfig.PREF_AUTH_UID)?.takeIf { it.isNotBlank() }
+
+    fun setAuthUid(value: String?) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_AUTH_UID, value ?: "")
+    }
+
+    /**
+     * Account identifier sent to the panel as `?user=`: UID when Firebase is
+     * configured, e-mail otherwise. Null while nobody is signed in.
+     */
+    fun subscriptionUser(): String? = authUid() ?: authEmail()
 
     /** SHA-256 of the local password. Only used when Firebase is not configured. */
     fun authSecret(): String? =

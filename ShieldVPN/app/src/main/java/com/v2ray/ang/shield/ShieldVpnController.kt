@@ -206,15 +206,24 @@ class ShieldVpnController(private val context: Context) {
         ShieldPrefs.setByeDpiEnabled(enabled)
         _state.update { it.copy(byeDpiEnabled = enabled) }
         scope.launch {
+            val connected = _state.value.status == ShieldStatus.Connected
             val running = withContext(Dispatchers.IO) {
-                if (enabled) {
-                    if (_state.value.status == ShieldStatus.Connected) ShieldByeDpi.start(context) else false
-                } else {
-                    ShieldByeDpi.stop()
-                    false
+                when {
+                    enabled && connected -> ShieldByeDpi.start(context)
+                    enabled -> false
+                    else -> {
+                        ShieldByeDpi.stop()
+                        false
+                    }
                 }
             }
             _state.update { it.copy(byeDpiRunning = running) }
+            // The byedpi rule is baked into the generated Xray config, so a live
+            // tunnel has to be rebuilt for the switch to take effect.
+            if (connected) {
+                val manualGuid = _state.value.selectedGuid.takeIf { !_state.value.autoMode }
+                connect(manualGuid)
+            }
         }
     }
 
@@ -241,9 +250,23 @@ class ShieldVpnController(private val context: Context) {
         _state.update { it.copy(autoConnect = enabled) }
     }
 
-    /** Downloads the subscription again without dropping the current connection. */
-    fun refreshSubscription() {
+    /**
+     * Loads the per-account subscription right after sign-in so the server picker
+     * is populated even when auto-connect is off. Uses the cached copy when it is
+     * still fresh, so this is cheap on every launch.
+     */
+    fun ensureSubscription() {
         scope.launch {
+            withContext(Dispatchers.IO) {
+                runCatching { ShieldRepository.ensureSubscription(forceRefresh = false) }
+                    .onFailure { LogUtil.w("ShieldVPN", "subscription prefetch failed: ${it.message}") }
+            }
+            refreshServers()
+        }
+    }
+
+    /** Downloads the subscription again without dropping the current connection. */
+    fun refreshSubscription() {        scope.launch {
             _state.update { it.copy(message = context.getString(R.string.shield_loading_subscription)) }
             val result = withContext(Dispatchers.IO) {
                 runCatching { ShieldRepository.ensureSubscription(forceRefresh = true) }

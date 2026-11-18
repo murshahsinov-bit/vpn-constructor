@@ -327,12 +327,17 @@ xray-knife http -f web/subscriptions/auto_all.txt -t 50 -o check.json \
 /sub/auto.json          /sub/whitelist.json
 /sub/auto.txt           /sub/whitelist.txt          (INCY)
 /sub/auto_happ.txt      /sub/whitelist_happ.txt     (Happ)
+/sub/incy.txt                                       (INCY на iPhone: TCP+Reality+Vision)
 /sub/webrtc.txt
 ```
 
 Все маршруты требуют `?token=<TOKEN>` и отдают заголовки `profile-title`,
 `profile-update-interval`, `subscription-userinfo`, `hide-url` и другие
-Happ/INCY-параметры.
+Happ/INCY-параметры. Приложение ShieldVPN не хранит токен: после входа оно
+запрашивает `/sub/auto_happ.txt?user=<UID>` (Firebase UID либо e-mail в
+локальном режиме). Валидный по формату `user` получает `200`, иначе `403`.
+Криптографическая проверка Firebase ID Token — следующий шаг: для неё нужен
+`FIREBASE_PROJECT_ID` и сервисный аккаунт.
 
 ## Ограничения
 
@@ -361,6 +366,14 @@ python app.py                     # http://127.0.0.1:8080
 `ShieldVPN/` — форк v2rayNG с одним экраном «Подключиться», умным автовыбором
 серверов, локальным обходом DPI для YouTube и входом по аккаунту. Подробности
 архитектуры — в [ShieldVPN/README_SHIELD.md](ShieldVPN/README_SHIELD.md).
+
+## Скриншоты
+
+| Главный экран | Выбор сервера | Вход |
+|---|---|---|
+| ![Главный экран](docs/screenshots/app-main.png) | ![Выбор сервера](docs/screenshots/app-servers.png) | ![Вход](docs/screenshots/app-login.png) |
+
+[Лендинг `site/` целиком](docs/screenshots/site.png).
 
 ## Сайт-визитка и GitHub Pages
 

@@ -141,3 +141,150 @@ def test_invalid_token_is_forbidden(monkeypatch):
     )
 
     assert response.status_code == 403
+
+
+# --------------------------------------------------------------------------- #
+# Аккаунт ShieldVPN (Firebase UID / e-mail) и iOS-подписка
+# --------------------------------------------------------------------------- #
+
+FIREBASE_UID = "Zx8Qw3Er5Ty7Ui9Op1As3Df5Gh7J"  # 28 символов, как настоящий UID
+
+
+def test_account_authorization_accepts_uid_and_email():
+    assert worker.authorize_account(FIREBASE_UID) is not None
+    assert worker.authorize_account("user@example.com") is not None
+    assert worker.authorize_account("  user@example.com  ") is not None
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["", "short", "bad user!", "no-at-sign.example.com", "x" * 300, "<script>"],
+)
+def test_account_authorization_rejects_invalid_values(value):
+    assert worker.authorize_account(value) is None
+
+
+def test_user_param_returns_happ_subscription(monkeypatch):
+    monkeypatch.setattr(
+        worker,
+        "get_asset",
+        lambda name: (
+            b"vless://uuid@example.com:443?type=tcp#Test",
+            f"test:{name}",
+            False,
+        ),
+    )
+
+    response = worker.app.test_client().get("/sub/auto_happ.txt?user=" + FIREBASE_UID)
+
+    assert response.status_code == 200
+    assert response.headers["Content-Type"].startswith("text/plain")
+    assert b"vless://" in response.data
+    assert response.headers["subscription-userinfo"].startswith("upload=0")
+
+
+def test_user_param_with_garbage_is_forbidden():
+    response = worker.app.test_client().get("/sub/auto_happ.txt?user=not-an-account")
+
+    assert response.status_code == 403
+
+
+def test_incy_link_keeps_only_tcp_reality_vision():
+    vision = (
+        "vless://u3@c.example:443?security=reality&sni=c.example&type=tcp"
+        "&flow=xtls-rprx-vision&pbk=K&sid=2&fp=chrome"
+        "&fragment=50-100,10-20,tlshello#Berlin"
+    )
+    prepared = worker.incy_link(vision)
+
+    assert prepared is not None
+    assert "type=tcp" in prepared
+    assert "flow=xtls-rprx-vision" in prepared
+    assert "fragmentPackets=tlshello" in prepared
+    assert "fragmentLength=100-200" in prepared
+    assert "fragmentInterval=10-20" in prepared
+    assert "fragment=50-100" not in prepared
+
+    assert worker.incy_link(
+        "vless://u1@a.example:443?security=reality&type=xhttp&path=%2Fx#XHTTP"
+    ) is None
+    assert worker.incy_link(
+        "vless://u2@b.example:443?security=tls&type=ws&path=%2Fws#WS"
+    ) is None
+    assert worker.incy_link(
+        "vless://u4@d.example:443?security=reality&type=tcp&pbk=K#NoVision"
+    ) is None
+
+
+def test_incy_route_filters_and_sets_fragmentation(monkeypatch):
+    source = "\n".join(
+        [
+            "vless://u1@a.example:443?security=reality&type=xhttp&path=%2Fx#XHTTP",
+            "vless://u2@b.example:443?security=tls&type=ws&path=%2Fws#WS",
+            (
+                "vless://u3@c.example:443?security=reality&sni=c.example&type=raw"
+                "&flow=xtls-rprx-vision&pbk=K&sid=2#🇩🇪 Berlin"
+            ),
+        ]
+    )
+    monkeypatch.setattr(worker, "authorize_token", lambda _token: make_client())
+    monkeypatch.setattr(
+        worker,
+        "get_asset",
+        lambda name: (source.encode("utf-8"), f"test:{name}", False),
+    )
+
+    response = worker.app.test_client().get("/sub/incy.txt?token=" + "a" * 32)
+
+    assert response.status_code == 200
+    assert response.headers["Content-Type"].startswith("text/plain")
+    assert response.headers["profile-title"] == "ShieldVPN iOS"
+
+    lines = [line for line in response.data.decode("utf-8").splitlines() if line]
+    assert len(lines) == 1
+    only = lines[0]
+    assert "u3@c.example" in only
+    assert "type=tcp" in only
+    assert "flow=xtls-rprx-vision" in only
+    assert "fragmentPackets=tlshello" in only
+    assert "fragmentLength=100-200" in only
+    assert "fragmentInterval=10-20" in only
+    assert "xhttp" not in only
+    assert "type=ws" not in only
+
+
+def test_incy_route_accepts_user_param(monkeypatch):
+    source = (
+        b"vless://u3@c.example:443?security=reality&type=tcp"
+        b"&flow=xtls-rprx-vision&pbk=K#Berlin"
+    )
+    monkeypatch.setattr(
+        worker,
+        "get_asset",
+        lambda name: (source, f"test:{name}", False),
+    )
+
+    response = worker.app.test_client().get("/sub/incy.txt?user=" + FIREBASE_UID)
+
+    assert response.status_code == 200
+    assert b"fragmentPackets=tlshello" in response.data
+
+
+def test_incy_route_is_forbidden_without_credentials():
+    response = worker.app.test_client().get("/sub/incy.txt")
+
+    assert response.status_code == 403
+
+
+def test_incy_route_reports_empty_source(monkeypatch):
+    monkeypatch.setattr(worker, "authorize_token", lambda _token: make_client())
+    monkeypatch.setattr(
+        worker,
+        "get_asset",
+        lambda name: (b"vless://u1@a.example:443?security=reality&type=xhttp", "test", False),
+    )
+
+    response = worker.app.test_client().get("/sub/incy.txt?token=" + "a" * 32)
+
+    assert response.status_code == 503
+

@@ -56,6 +56,23 @@
     <string name="shield_byedpi_hint">Локальный ByeDPI · 127.0.0.1:1080</string>
     <string name="shield_byedpi_active">Обход DPI активен · YouTube напрямую</string>
 
+    <!-- ShieldVPN settings screen -->
+    <string name="shield_settings_title">Настройки ShieldVPN</string>
+    <string name="shield_settings_appearance">Оформление</string>
+    <string name="shield_settings_dark_theme">Тёмная тема</string>
+    <string name="shield_settings_theme_system">Сейчас: как в системе</string>
+    <string name="shield_settings_theme_light">Сейчас: светлая</string>
+    <string name="shield_settings_theme_dark">Сейчас: тёмная</string>
+    <string name="shield_settings_subscription">Подписка</string>
+    <string name="shield_settings_routing">Настройки маршрутизации</string>
+    <string name="shield_settings_routing_hint">Правила обхода DPI и выбора серверов</string>
+    <string name="shield_settings_about">О приложении</string>
+    <string name="shield_settings_version">Версия ShieldVPN</string>
+    <string name="shield_settings_updated_never">Ещё не обновлялась</string>
+    <string name="shield_settings_updated_at">Обновлено %1$s</string>
+    <string name="shield_settings_footer">ShieldVPN · быстрый и безопасный доступ</string>
+    <string name="shield_subscription_failed">Не удалось обновить подписку</string>
+
     <string name="app_tile_first_use">Add a profile in the app before using this feature.</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
