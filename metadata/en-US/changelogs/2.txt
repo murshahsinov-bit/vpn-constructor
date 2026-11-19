@@ -1,0 +1,7 @@
+Monetization and cleaner servers.
+
+- 3-day free trial on first sign-in, then a subscription paid with Telegram Stars.
+- Activation screen: paste the link from the bot or tap the deep link it sends.
+- Licence badge on the main screen shows the plan and the days left.
+- Server names are cleaned up: country, protocol and a number instead of channel ads.
+- Settings screen trimmed down to theme, subscription refresh, routing and the app version.

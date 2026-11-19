@@ -11,6 +11,11 @@ Netrun worker: выдаёт подписку только клиентам с д
     GET /sub/whitelist_happ.txt?token=<token> — whitelist-ссылки для Happ
     GET /sub/incy.txt?user=<uid>|token=<token> — iOS: только TCP+Reality+Vision
     GET /sub/webrtc.txt?token=<token>         — ручная инструкция WebRTC
+    GET /api/plans                            — тарифы в рублях и Stars
+    GET /api/license?token=<license>           — проверка лицензии
+    POST /api/activate                        — активация по ссылке/коду
+    POST /api/trial                           — пробный период на устройство
+    GET /activate/<license>                   — короткая ссылка активации
 
 Авторизация: персональный `token` (clients.json) или `user` — Firebase UID либо
 e-mail из приложения ShieldVPN. `user` не истекает: доступом управляет аккаунт
@@ -32,6 +37,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import html
 import json
 import logging
 import os
@@ -47,6 +53,29 @@ from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import requests
 from flask import Flask, Response, jsonify, request
+
+try:  # запуск как пакет: python -m netrun_worker.app
+    from .licensing import (
+        LicenseError,
+        PLAN_TRIAL,
+        issue_license,
+        lookalike,
+        verify_license,
+    )
+    from .naming import prettify_subscription
+    from .plans import plan_by_id, plans_payload, trial_days
+    from .trials import TrialLedger
+except ImportError:  # запуск как скрипт: python netrun_worker/app.py
+    from licensing import (  # type: ignore[no-redef]
+        LicenseError,
+        PLAN_TRIAL,
+        issue_license,
+        lookalike,
+        verify_license,
+    )
+    from naming import prettify_subscription  # type: ignore[no-redef]
+    from plans import plan_by_id, plans_payload, trial_days  # type: ignore[no-redef]
+    from trials import TrialLedger  # type: ignore[no-redef]
 
 # ---------------------------------------------------------------------------
 # Настройки
@@ -420,7 +449,9 @@ def build_incy_subscription(data: bytes) -> str:
         prepared = incy_link(raw)
         if prepared:
             links.append(prepared)
-    return "\n".join(links) + ("\n" if links else "")
+    if not links:
+        return ""
+    return prettify_subscription("\n".join(links))
 
 
 # ---------------------------------------------------------------------------
@@ -626,6 +657,53 @@ def _env_int(name: str, default: int, minimum: int = 0) -> int:
         return default
 
 
+# ---------------------------------------------------------------------------
+# Лицензии, триалы и продажи
+# ---------------------------------------------------------------------------
+
+#: Секрет подписи лицензий. Общий с ботом продаж; без него платные ручки
+#: отвечают 503, а `?user=` остаётся единственным способом получить подписку.
+LICENSE_SECRET = os.getenv("LICENSE_SECRET", "").strip()
+
+#: Публичный адрес сервиса — из него строятся ссылки активации.
+PUBLIC_BASE_URL = (
+    os.getenv("PUBLIC_BASE_URL", "https://vpn-auth.de1.netrun.io").strip().rstrip("/")
+)
+
+#: Старое `?user=`-поведение. По умолчанию выключено: подписка только по
+#: лицензии. Включайте на переходный период, пока не все клиенты обновились.
+ALLOW_USER_AUTH = _env_bool("ALLOW_USER_AUTH", False)
+
+#: Ссылки для лендинга и сообщений бота.
+APK_URL = os.getenv(
+    "APK_URL",
+    "https://github.com/murshahsinov-bit/vpn-constructor/releases/latest",
+).strip()
+HAPP_ANDROID_URL = os.getenv("HAPP_ANDROID_URL", "https://happ.su").strip()
+HAPP_IOS_URL = os.getenv("HAPP_IOS_URL", "https://happ.su").strip()
+INCY_URL = os.getenv("INCY_URL", "https://happ.su").strip()
+BOT_URL = os.getenv("BOT_URL", "").strip()
+SUPPORT_URL_DEFAULT = os.getenv("SUPPORT_URL", "").strip()
+
+#: Ручная выдача лицензий для тестов и поддержки (заголовок X-Admin-Token).
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "").strip()
+
+#: Учёт выданных триалов. Путь можно переопределить в Netrun.
+TRIAL_LEDGER = TrialLedger(os.getenv("TRIAL_STORE", str(BASE_DIR / "data" / "trials.json")))
+
+#: Ограничение трафика по тарифам (байты). Бесплатный триал — 10 ГиБ.
+TRIAL_TOTAL_BYTES = _env_int("TRIAL_TOTAL_BYTES", 10 * 1024**3)
+PAID_TOTAL_BYTES = _env_int("PAID_TOTAL_BYTES", 250 * 1024**3)
+
+DEVICE_ANDROID = "android"
+DEVICE_IOS = "ios"
+DEVICE_ANY = "any"
+VALID_DEVICES = {DEVICE_ANDROID, DEVICE_IOS, DEVICE_ANY}
+
+DEVICE_ID_RE = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
+LICENSE_IN_TEXT_RE = re.compile(r"SVS1\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+")
+
+
 def _header_value(value: Any) -> str:
     """Убирает переводы строк, чтобы исключить header injection."""
     return " ".join(str(value or "").replace("\r", " ").replace("\n", " ").split()).strip()
@@ -698,6 +776,9 @@ def build_subscription_headers(client: dict[str, Any]) -> dict[str, str]:
     }
 
     total = _env_int("SUBSCRIPTION_TOTAL_BYTES", SUBSCRIPTION_TOTAL_DEFAULT)
+    override = client.get("total_bytes")
+    if isinstance(override, int) and override > 0:
+        total = override
     upload = _env_int("SUBSCRIPTION_UPLOAD_BYTES", 0)
     download = _env_int("SUBSCRIPTION_DOWNLOAD_BYTES", 0)
     userinfo = [
@@ -781,17 +862,105 @@ def add_security_headers(response: Response) -> Response:
     response.headers.setdefault("Referrer-Policy", "no-referrer")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+    # The landing page reads /api/plans and posts /api/activate from another
+    # origin. These endpoints are public; subscription URLs never are.
+    if request.path.startswith("/api/"):
+        response.headers.setdefault("Access-Control-Allow-Origin", "*")
+        response.headers.setdefault("Access-Control-Allow-Headers", "Content-Type")
+        response.headers.setdefault("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
     return response
 
 
+@app.route("/api/<path:_any>", methods=["OPTIONS"])
+def api_preflight(_any: str) -> Response:
+    return Response(status=204)
+
+
+def _verify_license_or_none(token: str) -> dict[str, Any] | None:
+    if not LICENSE_SECRET:
+        logger.warning("LICENSE_SECRET не задан: лицензии не проверяются")
+        return None
+    try:
+        return verify_license(LICENSE_SECRET, token)
+    except LicenseError as exc:
+        logger.info("лицензия отклонена: %s", exc)
+        return None
+
+
+def _license_client(payload: dict[str, Any]) -> dict[str, Any]:
+    """Превращает payload лицензии в «клиента» для заголовков подписки."""
+    expires_at = datetime.fromtimestamp(int(payload["exp"]), tz=timezone.utc).date()
+    plan = str(payload.get("plan") or "")
+    is_trial = plan == PLAN_TRIAL
+    return {
+        "name": "ShieldVPN license",
+        "token": str(payload.get("sub") or ""),
+        "expires_at": expires_at.isoformat(),
+        "plan": plan,
+        "device": str(payload.get("dev") or DEVICE_ANY),
+        "license": payload,
+        "total_bytes": TRIAL_TOTAL_BYTES if is_trial else PAID_TOTAL_BYTES,
+    }
+
+
+def _days_left_unix(expires: int) -> int:
+    seconds = expires - int(time.time())
+    return max(0, (seconds + 86_399) // 86_400)
+
+
+def _activation_payload(token: str, payload: dict[str, Any]) -> dict[str, Any]:
+    expires = int(payload["exp"])
+    quoted = quote(token, safe="")
+    return {
+        "valid": True,
+        "token": token,
+        "plan": str(payload.get("plan") or ""),
+        "device": str(payload.get("dev") or DEVICE_ANY),
+        "issued_at": int(payload.get("iat") or 0),
+        "expires_at": expires,
+        "expires_on": datetime.fromtimestamp(expires, tz=timezone.utc).date().isoformat(),
+        "days_left": _days_left_unix(expires),
+        "trial": str(payload.get("plan") or "") == PLAN_TRIAL,
+        "subscription_url": f"{PUBLIC_BASE_URL}/sub/auto_happ.txt?token={quoted}",
+        "ios_url": f"{PUBLIC_BASE_URL}/sub/incy.txt?token={quoted}",
+    }
+
+
+def _extract_license(value: str) -> str:
+    """Достаёт лицензию из чистого кода, deep link или URL активации."""
+    text = (value or "").strip()
+    match = LICENSE_IN_TEXT_RE.search(text)
+    return match.group(0) if match else ""
+
+
+def _remote_ip_key() -> str:
+    """Короткий хэш IP: нужен только для анти-абьюза триала, не для логов."""
+    address = (request.headers.get("X-Forwarded-For") or request.remote_addr or "").split(",")[0]
+    address = address.strip()
+    if not address:
+        return ""
+    return hashlib.sha256(address.encode("utf-8")).hexdigest()[:16]
+
+
+def _request_payload() -> dict[str, Any]:
+    data = request.get_json(silent=True)
+    if isinstance(data, dict):
+        return data
+    return request.form.to_dict()
+
+
 def _authorize_request() -> tuple[str, dict[str, Any] | None]:
-    """token — для старых клиентов, user (UID/e-mail) — для ShieldVPN."""
+    """token — для старых клиентов, license — для платных, user — если включён."""
     token = (request.args.get("token") or "").strip()
     if token:
+        if lookalike(token):
+            payload = _verify_license_or_none(token)
+            return token, _license_client(payload) if payload else None
         return token, authorize_token(token)
-    user = (request.args.get("user") or "").strip()
-    if user:
-        return user, authorize_account(user)
+    if ALLOW_USER_AUTH:
+        user = (request.args.get("user") or "").strip()
+        if user:
+            return user, authorize_account(user)
     return "", None
 
 
@@ -812,6 +981,9 @@ def _serve_asset(asset_name: str, client: dict[str, Any], token: str) -> Respons
         return jsonify({"error": "subscription source unavailable"}), 503
 
     mimetype = "application/json" if asset.kind == "json" else "text/plain"
+    if asset.kind != "json":
+        # Рекламные названия из публичных подписок заменяются на «🇩🇪 Германия · XHTTP».
+        data = prettify_subscription(data).encode("utf-8")
     response = Response(data, mimetype=mimetype)
     if asset.kind == "json":
         response.headers["Content-Type"] = "application/json"
@@ -838,14 +1010,19 @@ def index() -> Response:
             "service": "vpn-subscription-gateway",
             "status": "ok",
             "endpoints": [
-                "/sub/auto.json?token=<token>",
-                "/sub/whitelist.json?token=<token>",
-                "/sub/auto.txt?token=<token>",
-                "/sub/auto_happ.txt?token=<token>|?user=<uid>",
-                "/sub/whitelist.txt?token=<token>",
-                "/sub/whitelist_happ.txt?token=<token>",
-                "/sub/incy.txt?token=<token>|?user=<uid>",
-                "/sub/webrtc.txt?token=<token>",
+                "/sub/auto.json?token=<token>|<license>",
+                "/sub/whitelist.json?token=<token>|<license>",
+                "/sub/auto.txt?token=<token>|<license>",
+                "/sub/auto_happ.txt?token=<token>|<license>",
+                "/sub/whitelist.txt?token=<token>|<license>",
+                "/sub/whitelist_happ.txt?token=<token>|<license>",
+                "/sub/incy.txt?token=<token>|<license>",
+                "/sub/webrtc.txt?token=<token>|<license>",
+                "/api/plans",
+                "/api/license?token=<license>",
+                "/api/activate",
+                "/api/trial",
+                "/activate/<license>",
             ],
         }
     )
@@ -986,6 +1163,195 @@ def subscription_webrtc_txt() -> Response:
     )
     logger.info("200: webrtc.txt выдан fp=%s", _token_fingerprint(token))
     return response
+
+
+APP_ERROR_TEXT = {
+    "no_license": "Ссылка не распознана. Скопируйте её целиком из сообщения бота.",
+    "invalid": "Лицензия недействительна или истекла. Оформите подписку заново.",
+}
+
+
+def _activate_html(token: str, info: dict[str, Any]) -> str:
+    """Простая страница по короткой ссылке активации из бота."""
+    deep_link = f"shieldvpn://activate?token={quote(token, safe='')}"
+    expires = html.escape(str(info["expires_on"]))
+    days = int(info["days_left"])
+    device = html.escape(str(info["device"]))
+    subscription = html.escape(str(info["subscription_url"]))
+    instructions = (
+        "Откройте приложение ShieldVPN, вставьте эту ссылку на экране активации "
+        "и нажмите «Активировать»."
+        if device != DEVICE_IOS
+        else "Откройте Happ или INCY и добавьте ссылку подписки, указанную ниже."
+    )
+    return f"""<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Активация ShieldVPN</title>
+<style>
+body{{margin:0;background:#0b1220;color:#e8edf6;font:16px/1.5 system-ui,sans-serif}}
+main{{max-width:560px;margin:0 auto;padding:32px 20px}}
+h1{{font-size:24px;margin:0 0 8px}}
+.card{{background:#141d2e;border:1px solid #243149;border-radius:16px;padding:18px;margin:18px 0}}
+code{{display:block;word-break:break-all;background:#0b1220;border-radius:10px;padding:10px;font-size:13px}}
+a.btn{{display:block;text-align:center;background:#2ecc71;color:#06140b;font-weight:700;
+padding:14px;border-radius:14px;text-decoration:none;margin-top:16px}}
+small{{color:#8fa3c0}}
+</style></head><body><main>
+<h1>Подписка ShieldVPN</h1>
+<p>Действует до <b>{expires}</b> (осталось {days} дн.).</p>
+<div class="card"><p>{instructions}</p>
+<p><a class="btn" href="{html.escape(deep_link)}">Открыть ShieldVPN</a></p>
+<p><small>Если приложение не открылось, скопируйте ссылку:</small></p>
+<code>{subscription}</code></div>
+<p><small>Код лицензии: {html.escape(token)}</small></p>
+</main></body></html>"""
+
+
+def _activate_error_html(message: str) -> str:
+    return f"""<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Активация ShieldVPN</title></head>
+<body style="font:16px/1.5 system-ui,sans-serif;background:#0b1220;color:#e8edf6;padding:32px">
+<h1>Ссылка не сработала</h1><p>{html.escape(message)}</p></body></html>"""
+
+
+@app.get("/api/plans")
+def api_plans() -> Response:
+    payload = plans_payload()
+    payload.update(
+        {
+            "license_enabled": bool(LICENSE_SECRET),
+            "links": {
+                "android_apk": APK_URL,
+                "android_happ": HAPP_ANDROID_URL,
+                "ios_happ": HAPP_IOS_URL,
+                "ios_incy": INCY_URL,
+                "bot": BOT_URL,
+                "support": SUPPORT_URL_DEFAULT,
+            },
+        }
+    )
+    return jsonify(payload)
+
+
+@app.get("/api/license")
+def api_license() -> tuple[Response, int] | Response:
+    token = (request.args.get("token") or "").strip()
+    if not token:
+        return jsonify({"error": "token is required"}), 400
+    if not LICENSE_SECRET:
+        return jsonify({"error": "licensing is not configured"}), 503
+    payload = _verify_license_or_none(token)
+    if payload is None:
+        return jsonify({"valid": False, "error": "license is invalid or expired"}), 403
+    return jsonify(_activation_payload(token, payload))
+
+
+@app.post("/api/activate")
+def api_activate() -> tuple[Response, int] | Response:
+    if not LICENSE_SECRET:
+        return jsonify({"error": "licensing is not configured"}), 503
+    data = _request_payload()
+    raw = str(data.get("token") or data.get("link") or data.get("code") or "")
+    token = _extract_license(raw)
+    if not token:
+        return jsonify({"valid": False, "error": "activation link is required"}), 400
+    payload = _verify_license_or_none(token)
+    if payload is None:
+        return jsonify({"valid": False, "error": "license is invalid or expired"}), 403
+    return jsonify(_activation_payload(token, payload))
+
+
+@app.post("/api/trial")
+def api_trial() -> tuple[Response, int] | Response:
+    if not LICENSE_SECRET:
+        return jsonify({"error": "licensing is not configured"}), 503
+    data = _request_payload()
+    device = str(data.get("device") or DEVICE_ANDROID).strip().lower()
+    if device not in VALID_DEVICES or device == DEVICE_ANY:
+        return jsonify({"error": "unsupported device"}), 400
+    device_id = str(data.get("device_id") or "").strip()
+    if not DEVICE_ID_RE.fullmatch(device_id):
+        return jsonify({"error": "device_id is invalid"}), 400
+
+    ttl = trial_days()
+    if not TRIAL_LEDGER.claim(device_id, _remote_ip_key(), ttl):
+        return (
+            jsonify(
+                {
+                    "error": "trial_already_used",
+                    "message": "Пробный период уже использован на этом устройстве.",
+                }
+            ),
+            409,
+        )
+
+    token = issue_license(
+        LICENSE_SECRET,
+        sub=secrets.token_hex(8),
+        plan=PLAN_TRIAL,
+        device=device,
+        days=ttl,
+    )
+    payload = verify_license(LICENSE_SECRET, token)
+    body = _activation_payload(token, payload)
+    body["trial_days"] = ttl
+    logger.info("trial: выдан на %d дн., device=%s", ttl, device)
+    return jsonify(body)
+
+
+@app.post("/api/admin/issue")
+def api_admin_issue() -> tuple[Response, int] | Response:
+    """Ручная выдача лицензии: поддержка и тесты без бота."""
+    if not ADMIN_TOKEN:
+        return jsonify({"error": "not found"}), 404
+    if not secrets.compare_digest(
+        request.headers.get("X-Admin-Token", ""), ADMIN_TOKEN
+    ):
+        return jsonify({"error": "forbidden"}), 403
+    if not LICENSE_SECRET:
+        return jsonify({"error": "licensing is not configured"}), 503
+
+    data = _request_payload()
+    plan_id = str(data.get("plan") or "m1").strip()
+    plan = plan_by_id(plan_id)
+    if plan is None:
+        return jsonify({"error": "unknown plan"}), 400
+    device = str(data.get("device") or DEVICE_ANDROID).strip().lower()
+    if device not in VALID_DEVICES:
+        return jsonify({"error": "unsupported device"}), 400
+
+    token = issue_license(
+        LICENSE_SECRET,
+        sub=secrets.token_hex(8),
+        plan=str(plan["id"]),
+        device=device,
+        days=int(plan["days"]),
+    )
+    payload = verify_license(LICENSE_SECRET, token)
+    return jsonify(_activation_payload(token, payload))
+
+
+@app.get("/activate/<token>")
+def activate_page(token: str) -> Response:
+    if not LICENSE_SECRET:
+        return Response(
+            _activate_error_html("Сервис активации не настроен."),
+            status=503,
+            mimetype="text/html",
+        )
+    payload = _verify_license_or_none(token)
+    if payload is None:
+        return Response(
+            _activate_error_html(APP_ERROR_TEXT["invalid"]),
+            status=403,
+            mimetype="text/html",
+        )
+    return Response(
+        _activate_html(token, _activation_payload(token, payload)),
+        mimetype="text/html",
+    )
 
 
 @app.errorhandler(404)

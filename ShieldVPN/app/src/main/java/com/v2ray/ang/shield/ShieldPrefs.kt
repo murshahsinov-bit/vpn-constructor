@@ -100,4 +100,52 @@ object ShieldPrefs {
     fun setSignedIn(value: Boolean) {
         MmkvManager.encodeSettings(ShieldConfig.PREF_AUTH_SIGNED_IN, value)
     }
+
+    // ---------------------------------------------------------------- license
+
+    fun licenseToken(): String? =
+        MmkvManager.decodeSettingsString(ShieldConfig.PREF_LICENSE_TOKEN)
+            ?.takeIf { it.isNotBlank() }
+
+    fun setLicenseToken(value: String?) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_LICENSE_TOKEN, value ?: "")
+    }
+
+    fun licenseExpiresAt(): Long =
+        MmkvManager.decodeSettingsLong(ShieldConfig.PREF_LICENSE_EXPIRES_AT, 0L)
+
+    fun setLicenseExpiresAt(value: Long) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_LICENSE_EXPIRES_AT, value)
+    }
+
+    fun licensePlan(): String? =
+        MmkvManager.decodeSettingsString(ShieldConfig.PREF_LICENSE_PLAN)
+            ?.takeIf { it.isNotBlank() }
+
+    fun setLicensePlan(value: String?) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_LICENSE_PLAN, value ?: "")
+    }
+
+    fun licenseDevice(): String? =
+        MmkvManager.decodeSettingsString(ShieldConfig.PREF_LICENSE_DEVICE)
+            ?.takeIf { it.isNotBlank() }
+
+    fun setLicenseDevice(value: String?) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_LICENSE_DEVICE, value ?: "")
+    }
+
+    fun licenseTrial(): Boolean =
+        MmkvManager.decodeSettingsBool(ShieldConfig.PREF_LICENSE_TRIAL, false)
+
+    fun setLicenseTrial(value: Boolean) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_LICENSE_TRIAL, value)
+    }
+
+    fun licenseDeviceId(): String? =
+        MmkvManager.decodeSettingsString(ShieldConfig.PREF_LICENSE_DEVICE_ID)
+            ?.takeIf { it.isNotBlank() }
+
+    fun setLicenseDeviceId(value: String?) {
+        MmkvManager.encodeSettings(ShieldConfig.PREF_LICENSE_DEVICE_ID, value ?: "")
+    }
 }

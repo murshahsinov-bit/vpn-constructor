@@ -55,6 +55,17 @@ data class ShieldUiState(
     val byeDpiRunning: Boolean = false,
     /** False until the daemon has been asked whether the tunnel is already up. */
     val initialized: Boolean = false,
+    /** Trial or paid licence. Null until the panel has issued one. */
+    val license: ShieldLicenseInfo? = null,
+    /** True while a trial request or an activation is in flight. */
+    val licenseBusy: Boolean = false,
+    /**
+     * True when the app has no usable licence. The UI then shows the activation
+     * screen instead of the connect button.
+     */
+    val needsActivation: Boolean = false,
+    /** Human-readable reason for [needsActivation] or the last activation error. */
+    val licenseMessage: String? = null,
 )
 
 
@@ -82,6 +93,7 @@ class ShieldVpnController(private val context: Context) {
     private var attachCount = 0
     private var connectJob: Job? = null
     private var pingJob: Job? = null
+    private var licenseJob: Job? = null
     private var serviceRunning = false
 
     private val receiver = object : BroadcastReceiver() {
@@ -265,8 +277,103 @@ class ShieldVpnController(private val context: Context) {
         }
     }
 
+    // ------------------------------------------------------------------ license
+
+    /**
+     * Called after sign-in. A stored, still valid licence wins; otherwise the app
+     * asks the panel for the free trial once per device. When the trial is already
+     * used the UI switches to the activation screen.
+     */
+    fun ensureLicense() {
+        if (licenseJob?.isActive == true) return
+        licenseJob = scope.launch {
+            val cached = withContext(Dispatchers.IO) { runCatching { ShieldLicense.cached() }.getOrNull() }
+            if (cached != null && cached.isActive) {
+                _state.update {
+                    it.copy(license = cached, licenseBusy = false, needsActivation = false)
+                }
+                ensureSubscription()
+                return@launch
+            }
+            requestTrial()
+        }
+    }
+
+    /** «Попробовать бесплатно»: повторная попытка после сетевой ошибки. */
+    fun claimTrial() {
+        if (licenseJob?.isActive == true) return
+        licenseJob = scope.launch { requestTrial() }
+    }
+
+    private suspend fun requestTrial() {
+        _state.update { it.copy(licenseBusy = true, licenseMessage = null) }
+        val result = withContext(Dispatchers.IO) { runCatching { ShieldLicense.requestTrial() } }
+        result.onSuccess { info ->
+            _state.update {
+                it.copy(
+                    license = info,
+                    licenseBusy = false,
+                    needsActivation = false,
+                    licenseMessage = null,
+                )
+            }
+            refreshSubscription()
+        }.onFailure { error ->
+            LogUtil.w("ShieldVPN", "trial request failed: ${error.message}")
+            _state.update {
+                it.copy(
+                    license = null,
+                    licenseBusy = false,
+                    needsActivation = true,
+                    licenseMessage = error.message ?: "Не удалось получить пробный период",
+                )
+            }
+        }
+    }
+
+    /** Activation link from the bot (`https://…/activate/SVS1…`) or a bare code. */
+    fun activateLicense(raw: String) {
+        if (licenseJob?.isActive == true) return
+        licenseJob = scope.launch {
+            _state.update { it.copy(licenseBusy = true, licenseMessage = null) }
+            val result = withContext(Dispatchers.IO) { runCatching { ShieldLicense.activate(raw) } }
+            result.onSuccess { info ->
+                _state.update {
+                    it.copy(
+                        license = info,
+                        licenseBusy = false,
+                        needsActivation = false,
+                        licenseMessage = null,
+                    )
+                }
+                refreshSubscription()
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        licenseBusy = false,
+                        licenseMessage = error.message ?: "Не удалось активировать подписку",
+                    )
+                }
+            }
+        }
+    }
+
+    /** Re-checks the licence on the panel; keeps the cached one when offline. */
+    fun refreshLicense() {
+        if (licenseJob?.isActive == true) return
+        licenseJob = scope.launch {
+            val fresh = withContext(Dispatchers.IO) { runCatching { ShieldLicense.refresh() }.getOrNull() }
+            if (fresh != null) {
+                _state.update {
+                    it.copy(license = fresh, needsActivation = !fresh.isActive)
+                }
+            }
+        }
+    }
+
     /** Downloads the subscription again without dropping the current connection. */
-    fun refreshSubscription() {        scope.launch {
+    fun refreshSubscription() {
+        scope.launch {
             _state.update { it.copy(message = context.getString(R.string.shield_loading_subscription)) }
             val result = withContext(Dispatchers.IO) {
                 runCatching { ShieldRepository.ensureSubscription(forceRefresh = true) }

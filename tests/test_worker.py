@@ -165,6 +165,7 @@ def test_account_authorization_rejects_invalid_values(value):
 
 
 def test_user_param_returns_happ_subscription(monkeypatch):
+    monkeypatch.setattr(worker, "ALLOW_USER_AUTH", True)
     monkeypatch.setattr(
         worker,
         "get_asset",
@@ -254,6 +255,7 @@ def test_incy_route_filters_and_sets_fragmentation(monkeypatch):
 
 
 def test_incy_route_accepts_user_param(monkeypatch):
+    monkeypatch.setattr(worker, "ALLOW_USER_AUTH", True)
     source = (
         b"vless://u3@c.example:443?security=reality&type=tcp"
         b"&flow=xtls-rprx-vision&pbk=K#Berlin"

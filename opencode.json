@@ -1,8 +1,27 @@
 {
-  "mcpServers": {
-    "browse": {
-      "command": "C:\\Users\\el\\.local\\bin\\browse.exe",
-      "args": ["mcp"]
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "browse": {
+        "type": "local",
+        "command": ["C:\\Users\\el\\.local\\bin\\browse.exe", "mcp"],
+        "enabled": true
+      },
+      "git": {
+        "type": "local",
+        "command": ["python", "-m", "mcp_server_git", "--repository", "C:\\Users\\el\\Desktop\\vpn-constructor"],
+        "enabled": true
+      },
+      "memory": {
+        "type": "local",
+        "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+        "enabled": true
+      },
+      "mobile": {
+        "type": "local",
+        "command": ["npx", "-y", "@mobilenext/mobile-mcp@latest"],
+        "enabled": true
+      }
     }
   }
 }

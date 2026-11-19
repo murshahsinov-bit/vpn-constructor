@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui.shield
 
 import android.content.Intent
+import android.net.Uri
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
@@ -83,6 +84,8 @@ import com.v2ray.ang.enums.PermissionType
 import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.shield.ShieldAuth
 import com.v2ray.ang.shield.ShieldAuthState
+import com.v2ray.ang.shield.ShieldConfig
+import com.v2ray.ang.shield.ShieldLicenseInfo
 import com.v2ray.ang.shield.ShieldServer
 import com.v2ray.ang.shield.ShieldStatus
 import com.v2ray.ang.shield.ShieldUiState
@@ -124,6 +127,26 @@ class ShieldActivity : HelperBaseComponentActivity() {
         // Only auto-connect on a cold start, not after a rotation.
         autoConnectAllowed = savedInstanceState == null
         checkAndRequestPermission(PermissionType.POST_NOTIFICATIONS) {}
+        handleActivationIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleActivationIntent(intent)
+    }
+
+    /**
+     * `shieldvpn://activate?token=SVS1…` from the sales bot or the activation
+     * page. Applied immediately: the licence screen is already on top.
+     */
+    private fun handleActivationIntent(intent: Intent?) {
+        val data = intent?.data ?: return
+        if (data.scheme != ShieldConfig.ACTIVATION_SCHEME) return
+        if (data.host != ShieldConfig.ACTIVATION_HOST) return
+        val token = data.getQueryParameter("token").orEmpty()
+        if (token.isBlank()) return
+        viewModel.activateLicense(token)
     }
 
     @Composable
@@ -145,18 +168,38 @@ class ShieldActivity : HelperBaseComponentActivity() {
             return
         }
 
-        // Connect as soon as the account gate is passed and the daemon has
-        // reported whether a tunnel is already up.
-        LaunchedEffect(auth.signedIn, state.initialized) {
-            if (autoConnectAllowed && auth.signedIn && state.initialized) {
+        // Connect as soon as the account gate and the licence gate are passed
+        // and the daemon has reported whether a tunnel is already up.
+        LaunchedEffect(auth.signedIn, state.initialized, state.license) {
+            if (
+                autoConnectAllowed &&
+                auth.signedIn &&
+                state.initialized &&
+                state.license?.isActive == true
+            ) {
                 maybeAutoConnect()
             }
         }
 
-        // Populate the server list from the per-account URL even when the user
-        // keeps auto-connect off: otherwise the picker stays empty until connect.
+        // A signed-in account without a licence either gets the free trial here
+        // or lands on the activation screen.
         LaunchedEffect(auth.signedIn) {
-            if (auth.signedIn) viewModel.prefetchSubscription()
+            if (auth.signedIn) viewModel.ensureLicense()
+        }
+
+        if (state.needsActivation && state.license?.isActive != true) {
+            ShieldActivationScreen(
+                state = state,
+                accountEmail = auth.email,
+                onActivate = viewModel::activateLicense,
+                onTrial = viewModel::claimTrial,
+                onBuy = ::openBot,
+                onSignOut = {
+                    viewModel.disconnect()
+                    ShieldAuth.signOut()
+                },
+            )
+            return
         }
 
         ShieldScreen(
@@ -228,6 +271,13 @@ class ShieldActivity : HelperBaseComponentActivity() {
     }
 
     // -------------------------------------------------------------------- Google
+
+    /** Opens the sales bot: trial, plans and Stars payments live there. */
+    private fun openBot() {
+        runCatching {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(ShieldConfig.BOT_URL)))
+        }
+    }
 
     private fun signInWithGoogle() {
         if (!ShieldAuth.state.value.firebaseAvailable || ShieldAuth.webClientId().isBlank()) {
@@ -461,6 +511,163 @@ private fun fieldColors() = OutlinedTextFieldDefaults.colors(
     cursorColor = AccentGreen,
 )
 
+// ------------------------------------------------------------ licence gate
+
+@Composable
+private fun licenseLabel(info: ShieldLicenseInfo?): String = when {
+    info == null -> stringResource(R.string.shield_license_checking)
+    !info.isActive -> stringResource(R.string.shield_license_expired)
+    info.trial -> stringResource(R.string.shield_license_trial, info.daysLeft)
+    else -> stringResource(R.string.shield_license_paid, info.daysLeft)
+}
+
+/**
+ * Shown when the account has no usable licence: the trial was already claimed,
+ * it expired, or the phone could not reach the panel. The user can paste the
+ * activation link from the sales bot, retry the trial, or open the bot to pay.
+ */
+@Composable
+private fun ShieldActivationScreen(
+    state: ShieldUiState,
+    accountEmail: String?,
+    onActivate: (String) -> Unit,
+    onTrial: () -> Unit,
+    onBuy: () -> Unit,
+    onSignOut: () -> Unit,
+) {
+    var link by rememberSaveable { mutableStateOf("") }
+
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(Brush.verticalGradient(listOf(BackgroundTop, BackgroundBottom))),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .imePadding()
+                .padding(horizontal = 28.dp, vertical = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = accountEmail ?: stringResource(R.string.shield_tagline),
+                        color = TextMuted,
+                        fontSize = 12.sp,
+                    )
+                }
+                TextButton(onClick = onSignOut) {
+                    Text(
+                        text = stringResource(R.string.shield_logout),
+                        color = TextMuted,
+                        fontSize = 12.sp,
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(32.dp))
+            ShieldMark(modifier = Modifier.size(64.dp), fill = AccentGreen, check = BackgroundTop)
+            Spacer(Modifier.height(20.dp))
+
+            Text(
+                text = stringResource(R.string.shield_license_title),
+                color = Color.White,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = stringResource(R.string.shield_license_explain),
+                color = TextMuted,
+                fontSize = 13.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 10.dp),
+            )
+
+            state.licenseMessage?.let { message ->
+                Text(
+                    text = message,
+                    color = AccentAmber,
+                    fontSize = 13.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 16.dp),
+                )
+            }
+
+            OutlinedTextField(
+                value = link,
+                onValueChange = { link = it },
+                label = { Text(stringResource(R.string.shield_license_hint)) },
+                singleLine = false,
+                minLines = 2,
+                colors = fieldColors(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp),
+            )
+
+            Button(
+                onClick = { onActivate(link) },
+                enabled = !state.licenseBusy && link.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(containerColor = AccentGreen),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .heightIn(min = 52.dp),
+            ) {
+                Text(
+                    text = if (state.licenseBusy) {
+                        stringResource(R.string.shield_license_activating)
+                    } else {
+                        stringResource(R.string.shield_license_activate)
+                    },
+                    color = BackgroundTop,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+
+            TextButton(
+                onClick = onTrial,
+                enabled = !state.licenseBusy,
+                modifier = Modifier.padding(top = 4.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.shield_license_try_free),
+                    color = TextMuted,
+                    fontSize = 13.sp,
+                )
+            }
+
+            Button(
+                onClick = onBuy,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = CardBackground,
+                    contentColor = Color.White,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 52.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.shield_license_buy),
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+    }
+}
+
 // ----------------------------------------------------------------- main screen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -537,6 +744,12 @@ private fun ShieldScreen(
                         text = accountEmail ?: stringResource(R.string.shield_tagline),
                         color = TextMuted,
                         fontSize = 12.sp,
+                    )
+                    Text(
+                        text = licenseLabel(state.license),
+                        color = if (state.license?.isActive == true) AccentGreen else AccentAmber,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
                     )
                 }
                 TextButton(onClick = onSignOut) {

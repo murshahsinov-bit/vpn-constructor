@@ -273,3 +273,79 @@ $r = Invoke-WebRequest "https://vpn-auth.de1.netrun.io/sub/incy.txt?user=qa@shie
 - никаких VPN/прокси-серверов: этот проект — только API подписок.
 
 Этого достаточно для небольшого числа клиентов: воркер хранит только JSON, не держит базу и не проксирует трафик.
+
+## 11. Монетизация: лицензии, тарифы и бот
+
+Начиная с этой версии воркер умеет продавать подписку. Подробности — в
+[`MONETIZATION.md`](MONETIZATION.md), здесь только то, что нужно при деплое.
+
+### 11.1. Новые переменные окружения
+
+Добавьте их в кабинете Netrun (Environment / Переменные):
+
+| Переменная | Обязательно | Что делает |
+| --- | --- | --- |
+| `LICENSE_SECRET` | да | Ключ подписи лицензий. Длинная случайная строка, общая с ботом |
+| `ADMIN_TOKEN` | для бота | Секрет ручной выдачи лицензий (`X-Admin-Token`) |
+| `PUBLIC_BASE_URL` | да | `https://vpn-auth.de1.netrun.io` — из него строятся ссылки |
+| `ALLOW_USER_AUTH` | нет | `1` — временно вернуть старый доступ по `?user=` |
+| `STAR_RUB_RATE` | нет | Курс рубля к звезде Telegram, по умолчанию 1.35 |
+| `TRIAL_DAYS` | нет | Длина пробного периода, по умолчанию 3 (максимум 14) |
+| `TRIAL_STORE` | нет | Путь к `trials.json`; по умолчанию `data/trials.json` |
+| `APK_URL`, `HAPP_ANDROID_URL`, `INCY_URL`, `BOT_URL` | нет | Ссылки в `/api/plans` |
+
+`LICENSE_SECRET` не хранится в приложении: клиент получает уже подписанный
+токен. Смените секрет — все старые лицензии станут недействительными.
+
+### 11.2. Новые маршруты
+
+```text
+GET  /api/plans                  → тарифы в рублях + цена в Stars + ссылки
+GET  /api/license?token=<lic>    → проверка лицензии
+POST /api/activate               → {"link": "..."} → данные лицензии
+POST /api/trial                  → {"device":"android","device_id":"..."} → лицензия
+POST /api/admin/issue            → {"plan":"m1","device":"android"} + X-Admin-Token
+GET  /activate/<lic>             → HTML-страница активации и deep link
+```
+
+`/sub/*` теперь принимает `?token=<lic>` (лицензия) наравне с `?token=<token>`
+из `clients.json`. `?user=` работает только при `ALLOW_USER_AUTH=1`.
+
+### 11.3. Проверка после деплоя
+
+```powershell
+Invoke-WebRequest "https://vpn-auth.de1.netrun.io/api/plans" -UseBasicParsing | Select-Object StatusCode
+# 200, в теле "currency":"RUB" и три тарифа
+```
+
+```powershell
+$admin = "ВАШ_ADMIN_TOKEN"
+$r = Invoke-RestMethod -Method Post -Uri "https://vpn-auth.de1.netrun.io/api/admin/issue" `
+  -Headers @{ "X-Admin-Token" = $admin } -ContentType "application/json" `
+  -Body '{"plan":"m1","device":"android"}'
+$r.expires_on           # дата окончания
+$r.subscription_url     # ссылка подписки с лицензией
+```
+
+Затем откройте `subscription_url` — должен вернуться список серверов `200`.
+
+### 11.4. Бот продаж
+
+Бот живёт отдельно от воркера (`billing_bot/`), но использует его API:
+
+```bash
+export BOT_TOKEN=...        # @BotFather
+export ADMIN_TOKEN=...      # тот же, что в Netrun
+export PUBLIC_BASE_URL=https://vpn-auth.de1.netrun.io
+python -m billing_bot.handler
+```
+
+Ему нужны исходящий доступ к `api.telegram.org` и к воркеру. Секрет подписи
+лицензий боту не нужен и не должен передаваться.
+
+### 11.5. Ограничение бесплатного тарифа Netrun
+
+Учёт триалов (`data/trials.json`) живёт в контейнере. Если Netrun пересоздаст
+контейнер, файл может пропасть: защита от повторного триала ослабнет, но
+лицензии продолжат работать — они самодостаточны. Для строгого учёта перенесите
+`TRIAL_STORE` на постоянный диск или в Redis.

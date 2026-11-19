@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ShieldVPN — Твой быстрый и безопасный доступ</title>
-  <meta name="description" content="ShieldVPN — бесплатный VPN с умным автовыбором серверов и локальным обходом DPI для YouTube. Скачать APK для Android." />
+  <title>ShieldVPN — быстрый интернет без блокировок</title>
+  <meta name="description" content="ShieldVPN: VPN с обходом DPI для YouTube, автовыбором серверов и подпиской от 149 ₽. 3 дня бесплатно, оплата звёздами Telegram. Android и iPhone." />
   <meta name="theme-color" content="#0b1220" />
-  <meta property="og:title" content="ShieldVPN — Твой быстрый и безопасный доступ" />
-  <meta property="og:description" content="Умный автовыбор серверов, обход DPI для YouTube, бесплатно и без рекламы." />
+  <meta property="og:title" content="ShieldVPN — быстрый интернет без блокировок" />
+  <meta property="og:description" content="Обход DPI для YouTube, автовыбор серверов, 3 дня бесплатно. Подписка от 149 ₽ в месяц." />
   <meta property="og:type" content="website" />
   <link rel="icon" href="icon.png" />
   <link rel="stylesheet" href="styles.css" />
@@ -20,8 +20,10 @@
     </a>
     <nav>
       <a href="#features">Возможности</a>
+      <a href="#platforms">Устройства</a>
+      <a href="#pricing">Тарифы</a>
       <a href="#install">Установка</a>
-      <a class="nav-cta" href="https://github.com/murshahsinov-bit/vpn-constructor/releases/latest" target="_blank" rel="noopener">Скачать</a>
+      <a class="nav-cta" href="https://t.me/shieldvpn_bot" target="_blank" rel="noopener">Попробовать</a>
     </nav>
   </header>
 
@@ -30,27 +32,31 @@
       <div class="glow" aria-hidden="true"></div>
       <div class="hero-inner">
         <img class="hero-icon" src="icon.png" alt="Иконка ShieldVPN" width="96" height="96" />
-        <h1>ShieldVPN —<br />Твой быстрый и безопасный доступ</h1>
+        <h1>ShieldVPN —<br />интернет без блокировок</h1>
         <p class="lead">
-          Бесплатный VPN для Android без рекламы и регистрационных барьеров.
-          Умный автовыбор серверов, обход DPI для YouTube и один большой кнопки
-          «Подключиться».
+          YouTube снова грузится, сайты открываются, сервер выбирается сам.
+          Три дня бесплатно, потом — от 149 ₽ в месяц. Оплата звёздами
+          Telegram: карта и паспорт не нужны.
         </p>
 
         <div class="hero-actions">
-          <a class="btn btn-primary" id="download" href="https://github.com/murshahsinov-bit/vpn-constructor/releases/latest">
-            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-              <path fill="currentColor" d="M12 3v10.6l3.3-3.3 1.4 1.4L12 17.4l-4.7-4.7 1.4-1.4 3.3 3.3V3h2ZM5 19h14v2H5v-2Z"/>
-            </svg>
-            Скачать APK
-          </a>
-          <span class="meta" id="release-meta">Последний релиз · Android 7.0+</span>
+          <div class="cta-row">
+            <a class="btn btn-primary" id="download" href="https://github.com/murshahsinov-bit/vpn-constructor/releases/latest">
+              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                <path fill="currentColor" d="M12 3v10.6l3.3-3.3 1.4 1.4L12 17.4l-4.7-4.7 1.4-1.4 3.3 3.3V3h2ZM5 19h14v2H5v-2Z"/>
+              </svg>
+              Скачать для Android
+            </a>
+            <a class="btn btn-ghost" href="#platforms">У меня iPhone</a>
+          </div>
+          <span class="meta" id="release-meta">3 дня бесплатно · Android 7.0+ · iPhone через Happ/INCY</span>
         </div>
 
         <ul class="pills">
-          <li>Бесплатно</li>
+          <li>3 дня бесплатно</li>
+          <li>Обход DPI для YouTube</li>
+          <li>Автовыбор сервера</li>
           <li>Без рекламы</li>
-          <li>GPL-3.0</li>
         </ul>
       </div>
     </section>
@@ -77,37 +83,113 @@
       </article>
 
       <article class="card">
-        <div class="card-icon">∞</div>
-        <h2>Бесплатно</h2>
+        <div class="card-icon">🛡</div>
+        <h2>Не бесплатно — честно</h2>
         <p>
-          Никаких подписок и пробных периодов. Актуальные конфиги обновляются
-          автоматически, а приложение собирается из открытого исходного кода.
+          Подписка от 149 ₽ в месяц держит серверы живыми. Никакой рекламы,
+          продажи истории и «безлимита», который умирает через неделю.
+          Пробный период — 3 дня на устройство.
         </p>
       </article>
     </section>
 
+    <section id="platforms" class="platforms">
+      <h2>Выберите своё устройство</h2>
+      <div class="platform-grid">
+        <article class="platform">
+          <div class="platform-head">
+            <span class="platform-icon">🤖</span>
+            <h3>Android</h3>
+          </div>
+          <p>
+            Наше приложение: одна кнопка «Подключиться», встроенный ByeDPI,
+            автовыбор сервера. Ссылка активации вставляется прямо в приложении.
+          </p>
+          <div class="platform-actions">
+            <a class="btn btn-primary btn-sm" id="download-android" href="https://github.com/murshahsinov-bit/vpn-constructor/releases/latest">Скачать APK</a>
+            <a class="btn btn-ghost btn-sm" href="https://happ.su" target="_blank" rel="noopener">Или Happ</a>
+          </div>
+        </article>
+
+        <article class="platform">
+          <div class="platform-head">
+            <span class="platform-icon">🍏</span>
+            <h3>iPhone / iPad</h3>
+          </div>
+          <p>
+            На iOS подписка работает через Happ или INCY: бот пришлёт ссылку,
+            вы добавляете её в приложение и подключаетесь к ближайшему серверу.
+          </p>
+          <div class="platform-actions">
+            <a class="btn btn-primary btn-sm" href="https://t.me/shieldvpn_bot" target="_blank" rel="noopener">Получить подписку</a>
+            <a class="btn btn-ghost btn-sm" href="https://happ.su" target="_blank" rel="noopener">Happ / INCY</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+      <h2>Тарифы</h2>
+      <p class="pricing-lead">
+        Один аккаунт — одно устройство. Оплата звёздами Telegram, срок
+        начинается сразу после оплаты. Первые 3 дня — бесплатно, без карты.
+      </p>
+
+      <div class="price-grid">
+        <article class="price" data-plan="m1">
+          <h3>1 месяц</h3>
+          <div class="price-value"><span data-price="m1">149</span> ₽</div>
+          <div class="price-stars"><span data-stars="m1">111</span> ⭐ в Telegram</div>
+          <a class="btn btn-ghost btn-sm" href="https://t.me/shieldvpn_bot?start=buy" target="_blank" rel="noopener">Оформить</a>
+        </article>
+
+        <article class="price price-hot" data-plan="m3">
+          <span class="badge">Популярный</span>
+          <h3>3 месяца</h3>
+          <div class="price-value"><span data-price="m3">349</span> ₽</div>
+          <div class="price-stars"><span data-stars="m3">259</span> ⭐ в Telegram</div>
+          <div class="price-note">116 ₽ в месяц</div>
+          <a class="btn btn-primary btn-sm" href="https://t.me/shieldvpn_bot?start=buy" target="_blank" rel="noopener">Оформить</a>
+        </article>
+
+        <article class="price" data-plan="m12">
+          <h3>12 месяцев</h3>
+          <div class="price-value"><span data-price="m12">990</span> ₽</div>
+          <div class="price-stars"><span data-stars="m12">734</span> ⭐ в Telegram</div>
+          <div class="price-note">83 ₽ в месяц</div>
+          <a class="btn btn-ghost btn-sm" href="https://t.me/shieldvpn_bot?start=buy" target="_blank" rel="noopener">Оформить</a>
+        </article>
+      </div>
+
+      <div class="notice notice-center">
+        <strong>Сначала попробуйте.</strong> Нажмите «Пробный период» в
+        <a href="https://t.me/shieldvpn_bot" target="_blank" rel="noopener">боте</a>
+        или в приложении — 3 дня бесплатно, один раз на устройство.
+      </div>
+    </section>
+
     <section id="install" class="install">
-      <h2>Как установить</h2>
+      <h2>Как подключиться</h2>
       <ol>
         <li>
           <span class="step">1</span>
           <div>
-            <strong>Скачайте APK</strong>
-            <p>Кнопка выше ведёт на последний релиз в GitHub Releases. Для большинства телефонов берите файл <code>ShieldVPN_1.0.0_arm64-v8a.apk</code>, для старых 32-битных устройств — <code>…_armeabi-v7a.apk</code>.</p>
+            <strong>Получите ссылку активации</strong>
+            <p>В Telegram-боте: «Пробный период» или «Купить подписку» → Android / iPhone → тариф. Бот пришлёт ссылку и код.</p>
           </div>
         </li>
         <li>
           <span class="step">2</span>
           <div>
-            <strong>Разрешите установку</strong>
-            <p>Android спросит про «Установку из неизвестных источников» — разрешите её для браузера или файлового менеджера.</p>
+            <strong>Android: установите приложение</strong>
+            <p>Скачайте APK и разрешите установку из неизвестных источников. Откройте ShieldVPN, войдите и вставьте ссылку из бота на экране активации — серверы подтянутся сами.</p>
           </div>
         </li>
         <li>
           <span class="step">3</span>
           <div>
-            <strong>Откройте ShieldVPN</strong>
-            <p>Войдите через Google или по e-mail, нажмите «Подключиться» и разрешите создание VPN-подключения.</p>
+            <strong>iPhone: добавьте подписку в Happ или INCY</strong>
+            <p>Скопируйте ссылку подписки из бота, в приложении выберите «Добавить подписку» и вставьте её. Затем подключитесь к ближайшему серверу.</p>
           </div>
         </li>
       </ol>
@@ -118,11 +200,33 @@
         сборки проверяется Android автоматически.
       </div>
     </section>
+
+    <section class="faq">
+      <h2>Частые вопросы</h2>
+      <details>
+        <summary>Почему подписка, а не бесплатно?</summary>
+        <p>Серверы, трафик и обход DPI стоят денег. 149 ₽ в месяц покрывают их без рекламы и продажи данных.</p>
+      </details>
+      <details>
+        <summary>Чем платить?</summary>
+        <p>Звёздами Telegram — они покупаются внутри Telegram картой или через бота. Никаких передач данных карты сайту.</p>
+      </details>
+      <details>
+        <summary>Сколько устройств можно подключить?</summary>
+        <p>Одна лицензия — одно устройство. Для второй установки оформите отдельную подписку в боте.</p>
+      </details>
+      <details>
+        <summary>Что будет после пробного периода?</summary>
+        <p>Доступ остановится, серверы останутся в приложении. Оплатите тариф в боте и вставьте новую ссылку активации.</p>
+      </details>
+    </section>
   </main>
 
   <footer>
     <div class="footer-inner">
       <span>© <span id="year">2026</span> ShieldVPN</span>
+      <span class="dot">·</span>
+      <a href="https://t.me/shieldvpn_bot" target="_blank" rel="noopener">Telegram-бот</a>
       <span class="dot">·</span>
       <a href="https://github.com/murshahsinov-bit/vpn-constructor" target="_blank" rel="noopener">GitHub</a>
       <span class="dot">·</span>

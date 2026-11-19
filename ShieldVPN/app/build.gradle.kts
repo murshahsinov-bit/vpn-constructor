@@ -30,19 +30,25 @@ android {
         firebaseAppId.isNotBlank() &&
         firebaseProjectId.isNotBlank()
 
+    // Local end-to-end tests: point the app at a worker running on the phone's
+    // localhost (adb reverse tcp:8098 tcp:8098) instead of the production panel.
+    // Empty (default) keeps the hard-coded production host.
+    val panelUrl = (properties["SHIELD_PANEL_URL"] as? String)?.trim().orEmpty()
+
     defaultConfig {
         // ShieldVPN branding: separate package so it can live next to the upstream client.
         applicationId = "io.netrun.shieldvpn"
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
 
         buildConfigField("boolean", "FIREBASE_ENABLED", firebaseEnabled.toString())
         buildConfigField("String", "FIREBASE_API_KEY", "\"$firebaseApiKey\"")
         buildConfigField("String", "FIREBASE_APP_ID", "\"$firebaseAppId\"")
         buildConfigField("String", "FIREBASE_PROJECT_ID", "\"$firebaseProjectId\"")
         buildConfigField("String", "FIREBASE_WEB_CLIENT_ID", "\"$firebaseWebClientId\"")
+        buildConfigField("String", "PANEL_URL", "\"$panelUrl\"")
 
         // One universal APK for phones (arm64 + armeabi-v7a): the Xray core is ~33 MB per
         // ABI, so bundling every ABI would produce a ~150 MB file.

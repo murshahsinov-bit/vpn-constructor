@@ -23,6 +23,14 @@ class ShieldViewModel(application: Application) : AndroidViewModel(application) 
 
     fun prefetchSubscription() = controller.ensureSubscription()
 
+    fun ensureLicense() = controller.ensureLicense()
+
+    fun claimTrial() = controller.claimTrial()
+
+    fun activateLicense(raw: String) = controller.activateLicense(raw)
+
+    fun refreshLicense() = controller.refreshLicense()
+
     fun refreshSubscription() = controller.refreshSubscription()
 
     fun refreshServers() = controller.refreshServers()

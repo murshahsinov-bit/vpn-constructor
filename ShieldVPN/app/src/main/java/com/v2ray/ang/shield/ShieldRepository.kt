@@ -65,12 +65,21 @@ object ShieldRepository {
         // core launch. Cheap: they are only copied on the very first run.
         ShieldGeoAssets.ensure(AngApplication.application)
 
-        // The panel is asked for the signed-in account only. There is deliberately
-        // no shared fallback token: without an account there is nothing to fetch.
-        val account = ShieldPrefs.subscriptionUser()
-            ?: error("Войдите в аккаунт, чтобы загрузить подписку")
-        val subscriptionUrl = ShieldConfig.subscriptionUrl(account)
-            .ifBlank { error("Не удалось построить адрес подписки") }
+        // The panel is asked with the signed licence token. The account-based
+        // `?user=` URL stays only as a migration path for builds that have no
+        // licence yet (the worker can keep it enabled with ALLOW_USER_AUTH).
+        val license = ShieldLicense.cached()
+        if (license != null && !license.isActive) {
+            error("Срок подписки истёк. Продлите её в боте и активируйте новую ссылку.")
+        }
+        val subscriptionUrl = license?.let { ShieldConfig.licenseSubscriptionUrl(it.token) }
+            ?.takeIf { it.isNotBlank() }
+            ?: run {
+                val account = ShieldPrefs.subscriptionUser()
+                    ?: error("Войдите в аккаунт, чтобы загрузить подписку")
+                ShieldConfig.subscriptionUrl(account)
+            }
+        if (subscriptionUrl.isBlank()) error("Не удалось построить адрес подписки")
 
         val stored = MmkvManager.decodeSubscription(ShieldConfig.SUBSCRIPTION_ID)
         val created = stored == null

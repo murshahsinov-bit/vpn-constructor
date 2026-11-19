@@ -285,6 +285,229 @@ h1 {
 
 .notice strong { color: var(--text); }
 
+/* --------------------------------------------------------------- platforms */
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn-ghost {
+  padding: 17px 30px;
+  font-size: 16px;
+  border: 1px solid var(--stroke);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.08); }
+
+.btn-sm {
+  padding: 12px 22px;
+  font-size: 14px;
+}
+
+.platforms {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 clamp(18px, 5vw, 64px) clamp(40px, 6vw, 80px);
+}
+
+.platforms h2,
+.pricing h2,
+.faq h2 {
+  font-size: clamp(24px, 3.4vw, 34px);
+  margin: 0 0 14px;
+  letter-spacing: -0.01em;
+}
+
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.platform {
+  padding: 26px;
+  border-radius: var(--radius);
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, var(--card), var(--bg-soft));
+  display: flex;
+  flex-direction: column;
+}
+
+.platform-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.platform-icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(34, 197, 94, 0.14);
+  font-size: 22px;
+}
+
+.platform h3 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.platform p {
+  margin: 14px 0 20px;
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+.platform-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: auto;
+}
+
+/* ----------------------------------------------------------------- pricing */
+
+.pricing {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 clamp(18px, 5vw, 64px) clamp(40px, 6vw, 80px);
+}
+
+.pricing-lead {
+  max-width: 620px;
+  margin: 0 0 26px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.price-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.price {
+  position: relative;
+  padding: 28px 24px;
+  border-radius: var(--radius);
+  border: 1px solid var(--stroke);
+  background: var(--bg-soft);
+  text-align: center;
+}
+
+.price h3 {
+  margin: 0 0 14px;
+  font-size: 17px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.price-value {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.price-stars {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.price-note {
+  margin-top: 8px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.price .btn {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.price-hot {
+  border-color: rgba(34, 197, 94, 0.55);
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.12), var(--bg-soft));
+  box-shadow: 0 18px 50px rgba(34, 197, 94, 0.16);
+}
+
+.badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #05130a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.notice-center {
+  margin-top: 26px;
+  text-align: center;
+}
+
+.notice a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------- faq */
+
+.faq {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 clamp(18px, 5vw, 64px) clamp(48px, 7vw, 90px);
+}
+
+.faq details {
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: var(--bg-soft);
+}
+
+.faq summary {
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+
+.faq summary::-webkit-details-marker { display: none; }
+
+.faq summary::after {
+  content: "+";
+  float: right;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.faq details[open] summary::after { content: "−"; }
+
+.faq p {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
 /* ---------------------------------------------------------------- footer */
 
 footer {

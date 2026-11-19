@@ -76,6 +76,21 @@
     <string name="shield_settings_footer">ShieldVPN · быстрый и безопасный доступ</string>
     <string name="shield_subscription_failed">Не удалось обновить подписку</string>
 
+    <!-- Лицензия и монетизация -->
+    <string name="shield_license_trial">Пробный период · %1$d дн.</string>
+    <string name="shield_license_paid">Подписка · %1$d дн.</string>
+    <string name="shield_license_expired">Срок подписки истёк</string>
+    <string name="shield_license_title">Активация подписки</string>
+    <string name="shield_license_explain">Подписка оформляется в Telegram-боте: оплата звёздами, карта не нужна. После оплаты бот пришлёт ссылку — вставьте её здесь.</string>
+    <string name="shield_license_hint">Ссылка активации или код SVS1…</string>
+    <string name="shield_license_activate">Активировать</string>
+    <string name="shield_license_activating">Активируем…</string>
+    <string name="shield_license_try_free">Попробовать бесплатно</string>
+    <string name="shield_license_buy">Купить подписку</string>
+    <string name="shield_license_trial_used">Пробный период уже использован на этом устройстве. Оформите подписку в боте.</string>
+    <string name="shield_license_checking">Проверяем подписку…</string>
+    <string name="shield_license_success">Подписка активирована</string>
+
     <string name="app_tile_first_use">Add a profile in the app before using this feature.</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

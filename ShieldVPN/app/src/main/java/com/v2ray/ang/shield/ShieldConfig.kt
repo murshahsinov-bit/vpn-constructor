@@ -1,5 +1,6 @@
 package com.v2ray.ang.shield
 
+import com.v2ray.ang.BuildConfig
 import java.net.URLEncoder
 
 /**
@@ -14,8 +15,18 @@ object ShieldConfig {
     /** Panel host. Also routed outside the tunnel when the VPN is connected. */
     const val SUBSCRIPTION_HOST = "vpn-auth.de1.netrun.io"
 
-    /** Panel that serves the Android/Happ share-link list. */
-    const val SUBSCRIPTION_BASE_URL = "https://$SUBSCRIPTION_HOST/sub"
+    /**
+     * Panel root. A build made with `-PSHIELD_PANEL_URL=http://127.0.0.1:8098`
+     * talks to a local worker instead (adb reverse + emulator/device tests).
+     */
+    private val panelBase: String =
+        BuildConfig.PANEL_URL.trim().ifBlank { "https://$SUBSCRIPTION_HOST" }
+
+    /** Panel API root: licences, trial and pricing. */
+    val PANEL_API_BASE_URL: String get() = panelBase
+
+    /** Happ/INCY share-link list root. */
+    private val subscriptionBase: String get() = "$panelBase/sub"
 
     /** Happ-compatible TXT list (one share link per line). */
     const val SUBSCRIPTION_PATH = "auto_happ.txt"
@@ -29,13 +40,27 @@ object ShieldConfig {
     /**
      * Per-account subscription URL. Returns an empty string while the user is not
      * signed in: the app must never fall back to a shared token.
+     *
+     * Since the monetisation release the panel only serves licenses, so this is
+     * used as a migration/debug path and for Firestore bookkeeping.
      */
     fun subscriptionUrl(user: String?): String {
         val account = user?.trim().orEmpty()
         if (account.isEmpty()) return ""
         val encoded = URLEncoder.encode(account, "UTF-8")
-        return "$SUBSCRIPTION_BASE_URL/$SUBSCRIPTION_PATH?user=$encoded"
+        return "$subscriptionBase/$SUBSCRIPTION_PATH?user=$encoded"
     }
+
+    /** Happ/INCY subscription URL for a paid or trial license. */
+    fun licenseSubscriptionUrl(token: String): String {
+        val clean = token.trim()
+        if (clean.isEmpty()) return ""
+        return "$subscriptionBase/$SUBSCRIPTION_PATH?token=${URLEncoder.encode(clean, "UTF-8")}"
+    }
+
+    /** Deep link the bot and the activation page hand back to the app. */
+    const val ACTIVATION_SCHEME = "shieldvpn"
+    const val ACTIVATION_HOST = "activate"
 
     const val SUBSCRIPTION_TITLE = "ShieldVPN"
 
@@ -104,6 +129,21 @@ object ShieldConfig {
 
     /** Firebase UID of the signed-in account. Used to build the panel URL. */
     const val PREF_AUTH_UID = "shield_auth_uid"
+
+    // -------------------------------------------------------------- license
+
+    /** Signed `SVS1…` token issued by the panel (trial or paid plan). */
+    const val PREF_LICENSE_TOKEN = "shield_license_token"
+    const val PREF_LICENSE_EXPIRES_AT = "shield_license_expires_at"
+    const val PREF_LICENSE_PLAN = "shield_license_plan"
+    const val PREF_LICENSE_DEVICE = "shield_license_device"
+    const val PREF_LICENSE_TRIAL = "shield_license_trial"
+
+    /** Random install id used only to rate-limit the free trial. */
+    const val PREF_LICENSE_DEVICE_ID = "shield_license_device_id"
+
+    /** Panel upgrade page shown when the trial is over or was already used. */
+    const val BOT_URL = "https://t.me/shieldvpn_bot"
 
     /**
      * Data-plane probe endpoint, requested through the tunnel with a plain HTTP
